@@ -5,6 +5,7 @@ import { SignInDialog } from "./components/navigation/SignInDialog";
 import { OpeningSequence } from "./components/common/OpeningSequence";
 import { useScrollStory } from "./hooks/useScrollStory";
 import { usePhotoCamera } from "./hooks/usePhotoCamera";
+import { useHeaderTheme } from "./hooks/useHeaderTheme";
 import { HeroStory } from "./sections/HeroStory";
 import { Solutions } from "./sections/Solutions";
 import { Platform } from "./sections/Platform";
@@ -33,6 +34,7 @@ export default function App() {
   });
 
   usePhotoCamera({ storyRef, stageRef });
+  useHeaderTheme(stageRef);
 
   return (
     <div className="site-shell" id="top">
