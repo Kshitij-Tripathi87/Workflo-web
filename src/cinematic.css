@@ -1,13 +1,26 @@
 /* ------------------------------------------------------------------
-   Cinematic photography layer.
-   Photos: public/media/{hero-chamber,portal,hall,path,pod}.webp
-   Layer opacity vars (--photo-*) and data-tone are set by usePhotoCamera.
+   WORKFLO - the execution facility.
+   Photos: public/media/{pod,portal,hall,path,hero-chamber}.webp
+   --photo-* opacities are written by usePhotoCamera.
 ------------------------------------------------------------------- */
 
+/* Amber accent family (replaces the brown); deeper value on light sections */
+.site-shell {
+  --accent: #d9964f;
+  --accent2: #a8672a;
+}
+
 .cinematic-stage {
+  --accent2: #e3a766;
   --photo-portal: 0;
   --photo-hall: 0;
   --photo-path: 0;
+  --photo-sealed: 0;
+  background: #0b0d0e;
+}
+
+.cinematic-stage .scene-backdrop {
+  background: radial-gradient(ellipse at 70% 50%, #1a1d1f, #0b0d0e 70%);
 }
 
 /* ---------- Photo stack ---------- */
@@ -22,14 +35,8 @@
 .scene-photos::after {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(6, 7, 8, 0.5) 100%);
+  background: radial-gradient(ellipse at 50% 48%, transparent 50%, rgba(5, 6, 7, 0.55) 100%);
   content: "";
-  opacity: 0;
-  transition: opacity 600ms ease;
-}
-
-.cinematic-stage[data-tone="dark"] .scene-photos::after {
-  opacity: 1;
 }
 
 .scene-photo {
@@ -43,24 +50,36 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.scene-photo-base {
   animation: photo-drift 28s ease-in-out infinite alternate;
+}
+
+/* Feathered copy of the lower part of each photograph, moved a little faster
+   than the rest of the scene to separate floor from background. */
+.scene-photo-near {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(0deg, #000 0%, #000 16%, transparent 48%);
+  mask-image: linear-gradient(0deg, #000 0%, #000 16%, transparent 48%);
+  will-change: transform;
 }
 
 .scene-photo-scrim {
   position: absolute;
   inset: 0;
+  background:
+    linear-gradient(90deg, rgba(8, 9, 10, 0.66) 0%, rgba(8, 9, 10, 0.3) 42%, rgba(8, 9, 10, 0) 72%),
+    linear-gradient(0deg, rgba(8, 9, 10, 0.4) 0%, transparent 34%);
 }
 
-.scene-photo-hero {
-  transform-origin: 78% 55%;
+.scene-photo-exterior {
+  transform-origin: 66% 56%;
 }
-.scene-photo-hero img {
+.scene-photo-exterior img {
   object-position: 62% 50%;
-}
-.scene-photo-hero .scene-photo-scrim {
-  background:
-    linear-gradient(90deg, rgba(247, 247, 245, 0.88) 0%, rgba(247, 247, 245, 0.52) 36%, rgba(247, 247, 245, 0) 66%),
-    linear-gradient(0deg, rgba(247, 247, 245, 0.4) 0%, transparent 28%);
 }
 
 .scene-photo-portal {
@@ -71,48 +90,101 @@
   opacity: var(--photo-hall);
   transform-origin: 50% 58%;
 }
-.scene-photo-path {
-  opacity: var(--photo-path);
-  transform-origin: 62% 52%;
-}
-
-.scene-photo-portal .scene-photo-scrim,
-.scene-photo-hall .scene-photo-scrim,
-.scene-photo-path .scene-photo-scrim {
-  background:
-    linear-gradient(90deg, rgba(8, 9, 10, 0.62) 0%, rgba(8, 9, 10, 0.28) 42%, rgba(8, 9, 10, 0) 70%),
-    linear-gradient(0deg, rgba(8, 9, 10, 0.4) 0%, transparent 34%);
-}
-
 .scene-photo-hall .scene-photo-scrim {
   background:
-    linear-gradient(90deg, rgba(8, 9, 10, 0.72) 0%, rgba(8, 9, 10, 0.4) 46%, rgba(8, 9, 10, 0.12) 80%),
+    linear-gradient(90deg, rgba(8, 9, 10, 0.74) 0%, rgba(8, 9, 10, 0.42) 46%, rgba(8, 9, 10, 0.12) 80%),
     linear-gradient(0deg, rgba(8, 9, 10, 0.42) 0%, transparent 34%);
 }
-
-.cinematic-stage[data-tone="dark"] .scene-mist {
-  opacity: 0.1;
+.scene-photo-path {
+  opacity: var(--photo-path);
+  transform-origin: 66% 46%;
 }
 
-/* ---------- Light-on-dark text for scenes 2-4 ---------- */
-.cinematic-stage :is(.entry-layer, .inside-layer, .station-layer) {
+/* The sealed module is the one bright photograph: grade it down to match. */
+.scene-photo-sealed {
+  opacity: var(--photo-sealed);
+  transform-origin: 72% 56%;
+}
+.scene-photo-sealed .scene-photo-scrim {
+  background:
+    linear-gradient(90deg, rgba(8, 9, 10, 0.86) 0%, rgba(8, 9, 10, 0.6) 44%, rgba(8, 9, 10, 0.36) 100%),
+    linear-gradient(0deg, rgba(8, 9, 10, 0.5) 0%, transparent 40%);
+  mix-blend-mode: multiply;
+}
+
+/* ---------- Volumetric fog: two planes, opposite directions ---------- */
+.scene-fog {
+  position: absolute;
+  z-index: 2;
+  inset: -10% -20%;
+  pointer-events: none;
+  opacity: 0.22;
+  will-change: transform;
+}
+.scene-fog-a {
+  background:
+    radial-gradient(ellipse 40% 22% at 25% 78%, rgba(190, 196, 198, 0.5), transparent 70%),
+    radial-gradient(ellipse 34% 18% at 78% 70%, rgba(190, 196, 198, 0.4), transparent 70%);
+  animation: fog-slow 46s ease-in-out infinite alternate;
+}
+.scene-fog-b {
+  opacity: 0.16;
+  background:
+    radial-gradient(ellipse 46% 16% at 60% 84%, rgba(210, 205, 196, 0.5), transparent 70%),
+    radial-gradient(ellipse 30% 14% at 12% 60%, rgba(210, 205, 196, 0.35), transparent 70%);
+  animation: fog-fast 30s ease-in-out infinite alternate;
+}
+
+.cinematic-stage .scene-mist {
+  opacity: 0.08;
+}
+
+/* ---------- Light-on-dark text for every story scene ---------- */
+.cinematic-stage :is(.hero-layer, .entry-layer, .inside-layer, .station-layer) {
   --on: #f4f0ea;
   --on-dim: rgba(244, 240, 234, 0.7);
   --on-line: rgba(244, 240, 234, 0.2);
-  --on-accent: #dcb89e;
+  --on-accent: #e3b189;
   color: var(--on);
 }
 
-.cinematic-stage :is(.entry-layer, .inside-layer, .station-layer) .section-eyebrow {
+.cinematic-stage :is(.hero-layer, .entry-layer, .inside-layer, .station-layer) .section-eyebrow {
   color: var(--on-dim);
 }
-.cinematic-stage :is(.entry-layer, .inside-layer, .station-layer) .section-eyebrow > span:first-child {
+.cinematic-stage :is(.hero-layer, .entry-layer, .inside-layer, .station-layer) .section-eyebrow > span:first-child {
   color: var(--on-accent);
 }
-.cinematic-stage :is(.entry-layer, .inside-layer, .station-layer) .section-eyebrow > i {
+.cinematic-stage :is(.hero-layer, .entry-layer, .inside-layer, .station-layer) .section-eyebrow > i {
   background: var(--on-line);
 }
 
+/* Hero */
+.cinematic-stage .hero-wordmark {
+  color: var(--on-dim);
+}
+.cinematic-stage .hero-wordmark span {
+  color: var(--on-accent);
+}
+.cinematic-stage .hero-copy h1 {
+  color: var(--on);
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.5);
+}
+.cinematic-stage .hero-description,
+.cinematic-stage .hero-capabilities,
+.cinematic-stage .hero-object-note,
+.cinematic-stage .hero-scroll-hint,
+.cinematic-stage .hero-corner-mark {
+  color: var(--on-dim);
+}
+.cinematic-stage .hero-note-line,
+.cinematic-stage .hero-scroll-hint > i {
+  background: var(--on-line);
+}
+.cinematic-stage .hero-object-note > span:last-child {
+  color: var(--on-accent);
+}
+
+/* Headings */
 .cinematic-stage .entry-heading h2,
 .cinematic-stage .inside-copy-block h2,
 .cinematic-stage .station-heading h2 {
@@ -158,7 +230,7 @@
   background: rgba(244, 240, 234, 0.4);
 }
 .cinematic-stage .hotspot-point {
-  border-color: rgba(220, 184, 158, 0.8);
+  border-color: rgba(227, 177, 137, 0.8);
   background: rgba(14, 16, 17, 0.6);
   color: var(--on-accent);
 }
@@ -173,7 +245,7 @@
 }
 .cinematic-stage .hotspot-trigger:hover .hotspot-label,
 .cinematic-stage .hotspot.is-open .hotspot-label {
-  border-color: rgba(220, 184, 158, 0.6);
+  border-color: rgba(227, 177, 137, 0.6);
   background: rgba(24, 22, 21, 0.86);
 }
 .cinematic-stage .hotspot-number {
@@ -199,10 +271,11 @@
   background: var(--on-line);
 }
 
-/* Station: light receipt stays light for contrast, capabilities go dark */
+/* Station: receipt stays light for contrast, capabilities go dark */
 .cinematic-stage .receipt-card {
-  background: rgba(250, 250, 248, 0.93);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(87, 101, 96, 0.045);
+  --accent2: #a8672a;
+  background: rgba(250, 250, 248, 0.94);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(87, 101, 96, 0.045);
   color: var(--ink);
 }
 .cinematic-stage .station-capabilities {
@@ -226,19 +299,126 @@
   color: var(--on-dim);
 }
 
-/* Bottom stage UI follows the tone */
-.story-stage-code,
-.story-progress {
-  transition: color 400ms ease, background 400ms ease;
+/* Bottom stage UI */
+.cinematic-stage .story-stage-code {
+  color: rgba(244, 240, 234, 0.7);
 }
-.cinematic-stage[data-tone="dark"] .story-stage-code {
-  color: var(--on-dim, rgba(244, 240, 234, 0.7));
-}
-.cinematic-stage[data-tone="dark"] .story-stage-code > i {
+.cinematic-stage .story-stage-code > i {
   background: rgba(244, 240, 234, 0.3);
 }
-.cinematic-stage[data-tone="dark"] .story-progress {
+.cinematic-stage .story-progress {
   background: rgba(244, 240, 234, 0.22);
+}
+
+/* ---------- Dark navigation ---------- */
+.site-header {
+  border-bottom-color: rgba(244, 240, 234, 0.09);
+  background: rgba(11, 13, 14, 0.68);
+  color: #f4f0ea;
+  animation: nav-in 900ms cubic-bezier(0.2, 0.7, 0.2, 1) 1.9s both;
+}
+.site-header .brand-link {
+  color: #f4f0ea;
+}
+.site-header :is(.nav-menu-trigger, .nav-direct, .sign-in-link) {
+  color: rgba(244, 240, 234, 0.78);
+}
+.site-header :is(.nav-menu-trigger, .nav-direct, .sign-in-link):hover,
+.site-header .nav-menu-trigger.is-open {
+  color: var(--accent);
+}
+.site-header .nav-cta {
+  color: #f4f0ea;
+}
+.site-header .nav-cta-arrow {
+  background: var(--accent);
+  color: #14110d;
+}
+.site-header .nav-cta:hover .nav-cta-arrow {
+  background: #f1b878;
+}
+.site-header .nav-dropdown {
+  border-color: rgba(244, 240, 234, 0.14);
+  background: rgba(16, 18, 19, 0.94);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.4);
+}
+.site-header .nav-dropdown a {
+  color: rgba(244, 240, 234, 0.8);
+}
+.site-header .nav-dropdown a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+.site-header .nav-dropdown a span {
+  color: rgba(244, 240, 234, 0.55);
+}
+
+/* ---------- Cinematic opening ---------- */
+.opening {
+  position: fixed;
+  z-index: 400;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.opening-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.2%;
+  background: #050607;
+  animation-duration: 1.1s;
+  animation-delay: 0.7s;
+  animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  animation-fill-mode: forwards;
+}
+.opening-panel-left {
+  left: 0;
+  box-shadow: 1px 0 0 rgba(227, 167, 102, 0.55);
+  animation-name: shutter-left;
+}
+.opening-panel-right {
+  right: 0;
+  box-shadow: -1px 0 0 rgba(227, 167, 102, 0.55);
+  animation-name: shutter-right;
+}
+.opening-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: linear-gradient(180deg, transparent, #e3a766 30%, #e3a766 70%, transparent);
+  box-shadow: 0 0 24px rgba(227, 167, 102, 0.7);
+  transform: scaleY(0);
+  animation: seam 1.3s ease-out forwards;
+}
+.opening-label {
+  position: absolute;
+  bottom: 38px;
+  left: 34px;
+  color: rgba(244, 240, 234, 0.7);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  opacity: 0;
+  animation: label-in 0.9s ease 0.1s both;
+}
+
+/* Hero emerges from darkness while the camera pushes in */
+.scene-photo-exterior .scene-photo-base {
+  animation:
+    photo-drift 28s ease-in-out infinite alternate,
+    opening-emerge 3.4s cubic-bezier(0.3, 0.6, 0.2, 1) 0.5s both,
+    opening-push 5.2s cubic-bezier(0.16, 0.7, 0.2, 1) 0.4s both;
+}
+
+/* Branding and chrome enter once the machine has settled */
+.cinematic-stage .hero-copy {
+  animation: hero-in 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 3.4s both;
+}
+.cinematic-stage :is(.hero-object-note, .hero-scroll-hint, .hero-corner-mark) {
+  animation: hero-in 1.2s ease 4.4s both;
 }
 
 /* ---------- Contact photograph ---------- */
@@ -256,13 +436,64 @@
   mask-image: linear-gradient(270deg, #000 38%, transparent 100%);
 }
 
+/* ---------- Keyframes ---------- */
 @keyframes photo-drift {
   from { transform: scale(1) translate3d(-0.6%, 0.4%, 0); }
   to { transform: scale(1.025) translate3d(0.6%, -0.4%, 0); }
 }
+@keyframes fog-slow {
+  from { transform: translate3d(-4%, 0, 0); }
+  to { transform: translate3d(5%, -1.5%, 0); }
+}
+@keyframes fog-fast {
+  from { transform: translate3d(6%, 0, 0); }
+  to { transform: translate3d(-7%, 1%, 0); }
+}
+@keyframes shutter-left {
+  to { transform: translateX(-101%); }
+}
+@keyframes shutter-right {
+  to { transform: translateX(101%); }
+}
+@keyframes seam {
+  0% { opacity: 1; transform: scaleY(0); }
+  45% { opacity: 1; transform: scaleY(1); }
+  75% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(1); }
+}
+@keyframes label-in {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes opening-emerge {
+  from { filter: brightness(0.08) saturate(0.5); }
+  to { filter: brightness(1) saturate(1); }
+}
+@keyframes opening-push {
+  from { scale: 1.2; }
+  to { scale: 1; }
+}
+@keyframes hero-in {
+  from { opacity: 0; translate: 0 22px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes nav-in {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .scene-photo img {
+  .opening {
+    display: none;
+  }
+  .scene-photo-base,
+  .scene-photo-exterior .scene-photo-base,
+  .scene-fog,
+  .site-header,
+  .cinematic-stage .hero-copy,
+  .cinematic-stage :is(.hero-object-note, .hero-scroll-hint, .hero-corner-mark) {
     animation: none;
   }
 }
