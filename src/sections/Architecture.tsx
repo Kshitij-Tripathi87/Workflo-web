@@ -1,9 +1,13 @@
 import React from "react";
 import { SectionEyebrow } from "../components/common/SectionEyebrow";
+import flowingBridges from "../assets/scenes/flowing-bridges.png";
 
 export function Architecture() {
   return (
     <section className="architecture-section section-pad" id="architecture">
+      <div className="architecture-bg-photo" aria-hidden="true">
+        <img src={flowingBridges} alt="" />
+      </div>
       <div className="architecture-head">
         <SectionEyebrow number="09">SANDBOX ARCHITECTURE</SectionEyebrow>
         <h2>A workspace with edges.</h2>
