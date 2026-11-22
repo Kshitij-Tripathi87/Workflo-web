@@ -5,6 +5,17 @@ import { ArrowIcon } from "../components/navigation/Icons";
 export function Contact() {
   return (
     <section className="contact-section" id="contact">
+      <img
+        className="contact-photo"
+        src="/media/pod.webp"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        onError={(event) => {
+          event.currentTarget.style.display = "none";
+        }}
+      />
       <div className="contact-noise" aria-hidden="true" />
       <div className="contact-content">
         <SectionEyebrow number="14">MAKE THE NEXT CHANGE VERIFIABLE</SectionEyebrow>
