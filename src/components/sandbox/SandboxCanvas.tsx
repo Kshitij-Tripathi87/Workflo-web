@@ -6,17 +6,23 @@ type SandboxCanvasProps = {
 };
 
 // Files live in public/media (see public/media/README.md).
+// Order = journey: exterior, gateway, chamber, pathways, sealed module.
 const PHOTOS = [
-  { key: "hero", src: "/media/hero-chamber.webp" },
+  { key: "exterior", src: "/media/pod.webp" },
   { key: "portal", src: "/media/portal.webp" },
   { key: "hall", src: "/media/hall.webp" },
   { key: "path", src: "/media/path.webp" },
+  { key: "sealed", src: "/media/hero-chamber.webp" },
 ] as const;
 
+const hideOnError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+  event.currentTarget.style.display = "none";
+};
+
 /**
- * The wireframe canvases are no longer rendered. The refs are kept in the
- * props so useScrollStory keeps working unchanged: drawSandbox() returns
- * early when its canvas is null, so no drawing cost remains.
+ * The wireframe canvases are no longer rendered. The refs stay in the props
+ * so useScrollStory keeps working unchanged: drawSandbox() returns early when
+ * its canvas is null, so no drawing cost remains.
  */
 export const SandboxCanvas = forwardRef<HTMLDivElement, SandboxCanvasProps>(
   (_props, _ref) => {
@@ -31,19 +37,29 @@ export const SandboxCanvas = forwardRef<HTMLDivElement, SandboxCanvasProps>(
               key={photo.key}
             >
               <img
+                className="scene-photo-base"
                 src={photo.src}
                 alt=""
                 draggable={false}
                 decoding="async"
-                loading={photo.key === "hero" ? "eager" : "lazy"}
-                onError={(event) => {
-                  event.currentTarget.style.display = "none";
-                }}
+                loading={photo.key === "exterior" ? "eager" : "lazy"}
+                onError={hideOnError}
+              />
+              <img
+                className="scene-photo-near"
+                src={photo.src}
+                alt=""
+                draggable={false}
+                decoding="async"
+                loading={photo.key === "exterior" ? "eager" : "lazy"}
+                onError={hideOnError}
               />
               <span className="scene-photo-scrim" />
             </div>
           ))}
         </div>
+        <div className="scene-fog scene-fog-a" aria-hidden="true" />
+        <div className="scene-fog scene-fog-b" aria-hidden="true" />
         <div className="scene-mist" aria-hidden="true" />
       </>
     );
