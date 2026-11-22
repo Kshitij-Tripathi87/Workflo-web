@@ -38,8 +38,9 @@ export function usePhotoCamera({storyRef,stageRef}:Props) {
     element.style.transform=`translate3d(${pose.x.toFixed(2)}px,${pose.y.toFixed(2)}px,0) rotate(${pose.rotate.toFixed(3)}deg) scale(${pose.scale.toFixed(4)})`;
     if(near)near.style.transform=`translate3d(${(-px*(compact?4:9)).toFixed(2)}px,${(t*(compact?5:11)).toFixed(2)}px,0) scale(${(1+t*(compact?.012:.028)).toFixed(4)})`;
    });
-   const transitions:[string,number][]=[["portal",smoothstep(.105,.225,progress)],["hall",smoothstep(.345,.455,progress)],["path",smoothstep(.515,.625,progress)],["sealed",smoothstep(.69,.80,progress)]];
-   transitions.forEach(([key,value])=>setVar(stage,`--photo-${key}`,animate?value:0));
+   const transitions:[string,number][]=[["exterior",1-smoothstep(.105,.225,progress)],["portal",smoothstep(.105,.225,progress)*(1-smoothstep(.32,.43,progress))],["hall",smoothstep(.345,.455,progress)*(1-smoothstep(.50,.60,progress))],["path",smoothstep(.515,.625,progress)*(1-smoothstep(.68,.78,progress))],["sealed",smoothstep(.69,.80,progress)]];
+   const staticScene=progress<.17?"exterior":progress<.39?"portal":progress<.55?"hall":progress<.74?"path":"sealed";
+   transitions.forEach(([key,value])=>setVar(stage,`--photo-${key}`,animate?value:(key===staticScene?1:0)));
    setVar(stage,"--floor-scan",animate?1:0);setVar(stage,"--scan-progress",progress);
    if(Math.abs(raw-progress)>.0008||Math.abs(targetX-px)>.002||Math.abs(targetY-py)>.002)schedule();
   };
