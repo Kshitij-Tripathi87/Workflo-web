@@ -74,8 +74,8 @@ jobs:
           CDK_DEFAULT_REGION: ap-south-1
         run: npx cdk synth -c environment=staging
 
-  visual-quality:
-    name: Typography, no-gradient, photography and accessibility checks
+  browser:
+    name: Desktop, mobile and reduced-motion browser checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,33 +95,6 @@ jobs:
           grep -q 'og:image' index.html
           grep -q 'twitter:image' index.html
           ! grep -Eqi 'purple|indigo|violet' src/cinematic.css
-      - name: Install Playwright runtime
-        run: |
-          npm install --no-save --no-package-lock playwright@latest
-          npx playwright install --with-deps chromium
-      - name: Verify responsive scenes, navigation, forms and reduced motion
-        run: |
-          mkdir -p artifacts
-          node tests/e2e/run.mjs
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: workflo-visual-quality-artifacts
-          path: artifacts/*.png
-          if-no-files-found: ignore
-          retention-days: 14
-
-  browser:
-    name: Desktop, mobile and reduced-motion browser checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npm run build
       - name: Install Playwright runtime
         run: |
           npm install --no-save --no-package-lock playwright@latest
