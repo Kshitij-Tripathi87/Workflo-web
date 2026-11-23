@@ -1,26 +1,15 @@
 import { randomUUID } from "node:crypto";
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { z } from "zod";
 import { HttpInputError, json, parseJson, requestId } from "../shared/http.js";
 import { persistSubmission, submissionExpiryEpoch } from "../shared/storage.js";
-
-const schema = z.object({
-  name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(254),
-  company: z.string().trim().max(160).optional().default(""),
-  role: z.string().trim().max(120).optional().default(""),
-  inquiryType: z.enum(["product", "security", "partnership", "privacy", "other"]),
-  message: z.string().trim().min(10).max(5000),
-  consentToReply: z.literal(true),
-  website: z.string().max(0).optional().default("")
-}).strict();
+import { contactSchema } from "../validation/submissions.js";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const id = requestId(event);
   try {
     if (event.requestContext.http.method === "OPTIONS") return json(204, {}, event);
     if (event.requestContext.http.method !== "POST") return json(405, { error: "method_not_allowed", requestId: id }, event);
-    const input = schema.safeParse(parseJson(event));
+    const input = contactSchema.safeParse(parseJson(event));
     if (!input.success) return json(400, { error: "invalid_request", issues: input.error.flatten(), requestId: id }, event);
     if (input.data.website) return json(202, { accepted: true, requestId: id }, event);
 
