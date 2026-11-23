@@ -841,7 +841,31 @@ mask-image: none;
   -webkit-mask-image:none !important;
   mask-image:none !important;
 }
-.scene-photo-near,.scene-fog,.scene-mist { display:none !important; }
+.scene-photo-near {
+  position:absolute;
+  inset:0;
+  opacity:.42;
+  transform-origin:50% 100%;
+  -webkit-mask-image:linear-gradient(0deg,#000 0%,#000 13%,transparent 56%);
+  mask-image:linear-gradient(0deg,#000 0%,#000 13%,transparent 56%);
+  will-change:transform;
+}
+.scene-fog,.scene-mist { display:block !important; }
+.scene-fog { opacity:.16; mix-blend-mode:screen; }
+.scene-fog-a { background:rgba(174,184,188,.10); animation:fog-slow 46s ease-in-out infinite alternate; }
+.scene-fog-b { background:rgba(210,190,169,.075); animation:fog-fast 32s ease-in-out infinite alternate; }
+.scene-mist { opacity:.08; }
+.scene-floor-scan {
+  position:absolute; z-index:3; left:4%; right:4%; bottom:7%; height:1px;
+  background:#e3a766;
+  box-shadow:0 0 8px rgba(227,167,102,.7),0 0 22px rgba(227,167,102,.26);
+  opacity:calc(var(--floor-scan,0) * .68);
+  transform:translateX(calc((var(--scan-progress,0) - .5) * 22%));
+  pointer-events:none;
+}
+.scene-photo-hall .scene-floor-scan { bottom:20%; }
+.scene-photo-path .scene-floor-scan { bottom:12%; }
+.scene-photo-sealed .scene-floor-scan { bottom:26%; }
 .contact-content {
   padding:clamp(20px,3vw,36px);
   background:rgba(8,11,13,.9);
@@ -928,3 +952,108 @@ mask-image: none;
  .solutions-bottomline { align-items:flex-start; flex-direction:column; }
 }
 @media(prefers-reduced-motion:reduce) { .solution-editorial-row { opacity:1; transform:none; transition:none; } }
+
+/* ---------- Workflo final art direction and motion restoration ---------- */
+:root, .site-shell {
+  --display: "Fraunces", Georgia, serif;
+  --sans: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "Courier New", monospace;
+}
+@font-face {
+  font-family:"Fraunces";
+  src:url("/fonts/fraunces-latin.woff2") format("woff2");
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+}
+@font-face {
+  font-family:"DM Sans";
+  src:url("/fonts/dm-sans-latin.woff2") format("woff2");
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+}
+@font-face {
+  font-family:"IBM Plex Mono";
+  src:url("/fonts/ibm-plex-mono-latin.woff2") format("woff2");
+  font-style:normal;
+  font-weight:400 600;
+  font-display:swap;
+}
+
+/* The no-gradient rule remains global; local photographic masks are masks, not gradients. */
+.scene-photo-near {
+  -webkit-mask-image:linear-gradient(0deg,#000 0%,#000 13%,transparent 56%) !important;
+  mask-image:linear-gradient(0deg,#000 0%,#000 13%,transparent 56%) !important;
+}
+.cinematic-stage {
+  --photo-exterior:1;
+  background:#0b0d0e;
+}
+.cinematic-stage .scene-backdrop { background:#0b0d0e !important; }
+.cinematic-stage .hero-copy {
+  width:min(760px,62vw);
+  padding:clamp(24px,3vw,42px) clamp(26px,3.2vw,48px);
+  border-left:2px solid #e3a766;
+  background:rgba(8,11,13,.82);
+  box-shadow:0 18px 64px rgba(0,0,0,.18);
+}
+.cinematic-stage .hero-copy h1 {
+  max-width:720px;
+  font:500 clamp(52px,5.6vw,82px)/.96 var(--display);
+  letter-spacing:-.055em;
+}
+.cinematic-stage .hero-description {
+  max-width:510px;
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.7;
+}
+.cinematic-stage .hero-wordmark { font:500 clamp(30px,3vw,42px)/1 var(--display); }
+.cinematic-stage .entry-heading h2,
+.cinematic-stage .inside-copy-block h2,
+.cinematic-stage .station-heading h2 {
+  font-family:var(--display);
+  font-weight:500;
+}
+.cinematic-stage .scene-photo-hall .scene-photo-scrim {
+  background:rgba(5,7,8,.65) !important;
+}
+.cinematic-stage .scene-photo-path .scene-photo-scrim {
+  background:rgba(5,7,8,.62) !important;
+}
+.cinematic-stage .scene-photo-sealed .scene-photo-scrim {
+  background:rgba(5,7,8,.68) !important;
+}
+.site-shell .solutions-heading h2,
+.site-shell .solution-editorial-copy h3,
+.site-shell .platform-section h2,
+.site-shell .features-section h2,
+.site-shell .architecture-section h2,
+.site-shell .security-section h2,
+.site-shell .evidence-section h2,
+.site-shell .pricing-section h2,
+.site-shell .contact-section h2 {
+  font-family:var(--display);
+}
+.site-shell p,.site-shell label,.site-shell input,.site-shell textarea,.site-shell select {
+  font-family:var(--sans);
+}
+.site-shell :is(.nav-menu-trigger,.nav-direct,.sign-in-link,.nav-cta,.section-eyebrow,.mono-label,.footer-bottom) {
+  font-family:var(--mono);
+}
+@media(max-width:900px) {
+  .cinematic-stage .hero-copy { width:min(680px,78vw); }
+}
+@media(max-width:760px) {
+  .cinematic-stage { display:none; }
+  .story { height:auto; }
+  .story-reduced { display:block; }
+}
+@media(min-width:761px) {
+  .story-reduced { display:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .scene-photo-near,.scene-fog,.scene-mist,.scene-floor-scan { display:none !important; animation:none !important; }
+  .cinematic-stage .hero-copy { transition:none !important; }
+}
