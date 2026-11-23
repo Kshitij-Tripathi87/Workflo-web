@@ -27,11 +27,14 @@ function CookiePreferences() {
   const [saved,setSaved]=useState(false);
   const [consent,setConsent]=useState<Consent>({essential:true,functional:false,analytics:false,marketing:false,updatedAt:""});
   useEffect(()=>{
+    const handleOpenPreferences = () => setOpen(true);
+    window.addEventListener("workflo:open-privacy-settings", handleOpenPreferences);
     try {
       const existing=localStorage.getItem(CONSENT_KEY);
       if(existing) setConsent(JSON.parse(existing) as Consent);
       else setOpen(true);
     } catch { setOpen(true); }
+    return () => window.removeEventListener("workflo:open-privacy-settings", handleOpenPreferences);
   },[]);
   const save=(next:Consent)=>{
     const value={...next,updatedAt:new Date().toISOString()};
