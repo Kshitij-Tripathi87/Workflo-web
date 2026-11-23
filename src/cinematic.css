@@ -20,7 +20,7 @@
 }
 
 .cinematic-stage .scene-backdrop {
-  background: radial-gradient(ellipse at 70% 50%, #1a1d1f, #0b0d0e 70%);
+  background: #0b0d0e;
 }
 
 /* ---------- Photo stack ---------- */
@@ -35,7 +35,7 @@
 .scene-photos::after {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 48%, transparent 50%, rgba(5, 6, 7, 0.55) 100%);
+  background: rgba(5, 6, 7, 0.38);
   content: "";
 }
 
@@ -62,8 +62,8 @@
   position: absolute;
   inset: 0;
   transform-origin: 50% 100%;
-  -webkit-mask-image: linear-gradient(0deg, #000 0%, #000 16%, transparent 48%);
-  mask-image: linear-gradient(0deg, #000 0%, #000 16%, transparent 48%);
+  -webkit-mask-image: none;
+  mask-image: none;
   opacity: .72;
   will-change: transform;
 }
@@ -71,9 +71,7 @@
 .scene-photo-scrim {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(8, 9, 10, 0.66) 0%, rgba(8, 9, 10, 0.3) 42%, rgba(8, 9, 10, 0) 72%),
-    linear-gradient(0deg, rgba(8, 9, 10, 0.4) 0%, transparent 34%);
+  background: rgba(5, 7, 8, 0.42);
 }
 
 .scene-photo-exterior {
@@ -93,9 +91,7 @@
   transform-origin: 50% 58%;
 }
 .scene-photo-hall .scene-photo-scrim {
-  background:
-    linear-gradient(90deg, rgba(8, 9, 10, 0.74) 0%, rgba(8, 9, 10, 0.42) 46%, rgba(8, 9, 10, 0.12) 80%),
-    linear-gradient(0deg, rgba(8, 9, 10, 0.42) 0%, transparent 34%);
+  background: rgba(5, 7, 8, 0.52);
 }
 .scene-photo-path {
   opacity: var(--photo-path);
@@ -108,9 +104,7 @@
   transform-origin: 72% 56%;
 }
 .scene-photo-sealed .scene-photo-scrim {
-  background:
-    linear-gradient(90deg, rgba(8, 9, 10, 0.86) 0%, rgba(8, 9, 10, 0.6) 44%, rgba(8, 9, 10, 0.36) 100%),
-    linear-gradient(0deg, rgba(8, 9, 10, 0.5) 0%, transparent 40%);
+  background: rgba(5, 7, 8, 0.58);
   mix-blend-mode: multiply;
 }
 
@@ -124,9 +118,7 @@
   will-change: transform;
 }
 .scene-fog-a {
-  background:
-    radial-gradient(ellipse 40% 22% at 25% 78%, rgba(190, 196, 198, 0.5), transparent 70%),
-    radial-gradient(ellipse 34% 18% at 78% 70%, rgba(190, 196, 198, 0.4), transparent 70%);
+  background: rgba(190, 196, 198, 0.08);
   animation: fog-slow 46s ease-in-out infinite alternate;
 }
 .scene-fog-b {
