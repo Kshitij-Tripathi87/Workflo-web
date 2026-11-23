@@ -3,14 +3,15 @@ import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
-import * as apigw from "aws-cdk-lib/aws-apigateway";
+import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
+import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as wafv2 from "aws-cdk-lib/aws-wafv2";
-import * as targets from "aws-cdk-lib/aws-events-targets";
+
 
 export interface WorkfloWebStackProps extends cdk.StackProps {
   environmentName: "staging" | "production";
@@ -63,7 +64,7 @@ export class WorkfloWebStack extends cdk.Stack {
       ALLOWED_ORIGIN: process.env.SITE_ORIGIN ?? "",
     };
 
-    const makeFunction = (logicalId: string, entry: string, timeout = 10) => new lambda.Function(this, logicalId, {
+    const makeFunction = (logicalId: string, handler: string, timeout = 10) => new lambda.Function(this, logicalId, {
       functionName: name(logicalId.toLowerCase()),
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
@@ -76,9 +77,9 @@ export class WorkfloWebStack extends cdk.Stack {
       description: `Workflo website ${logicalId} (${envName})`,
     });
 
-    const contactFn = makeFunction("ContactHandler", "handlers/contact");
-    const earlyAccessFn = makeFunction("EarlyAccessHandler", "handlers/early-access");
-    const healthFn = makeFunction("HealthHandler", "handlers/health");
+    const contactFn = makeFunction("ContactHandler", "handlers/contact.handler");
+    const earlyAccessFn = makeFunction("EarlyAccessHandler", "handlers/early-access.handler");
+    const healthFn = makeFunction("HealthHandler", "handlers/health.handler");
 
     for (const fn of [contactFn, earlyAccessFn]) {
       table.grantWriteData(fn);
@@ -95,9 +96,9 @@ export class WorkfloWebStack extends cdk.Stack {
       },
     });
 
-    api.addRoutes({ path: "/api/v1/health", methods: [apigw.HttpMethod.GET], integration: new apigw_integrations_HttpLambdaIntegration("HealthIntegration", healthFn) });
-    api.addRoutes({ path: "/api/v1/contact", methods: [apigw.HttpMethod.POST], integration: new apigw_integrations_HttpLambdaIntegration("ContactIntegration", contactFn) });
-    api.addRoutes({ path: "/api/v1/early-access", methods: [apigw.HttpMethod.POST], integration: new apigw_integrations_HttpLambdaIntegration("EarlyAccessIntegration", earlyAccessFn) });
+    api.addRoutes({ path: "/v1/health", methods: [apigw.HttpMethod.GET], integration: new integrations.HttpLambdaIntegration("HealthIntegration", healthFn) });
+    api.addRoutes({ path: "/v1/contact", methods: [apigw.HttpMethod.POST], integration: new integrations.HttpLambdaIntegration("ContactIntegration", contactFn) });
+    api.addRoutes({ path: "/v1/early-access", methods: [apigw.HttpMethod.POST], integration: new integrations.HttpLambdaIntegration("EarlyAccessIntegration", earlyAccessFn) });
 
     const distribution = new cloudfront.Distribution(this, "SiteDistribution", {
       defaultBehavior: {
@@ -116,7 +117,7 @@ export class WorkfloWebStack extends cdk.Stack {
           responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
         },
         "/api/*": {
-          origin: new origins.HttpOrigin(cdk.Fn.select(2, cdk.Fn.split("/", api.apiEndpoint))),
+          origin: new origins.HttpOrigin(cdk.Fn.select(2, cdk.Fn.split("/", api.apiEndpoint)), { originPath: "/api" }),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
