@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, feat/cinematic-imagery]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflo-web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend typecheck and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+  backend:
+    name: Backend typecheck, build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+      - name: Typecheck and build
+        working-directory: backend
+        run: |
+          npm run typecheck
+          npm run build
+      - name: Handler validation tests
+        working-directory: backend
+        run: npm test
+
+  infrastructure:
+    name: CDK typecheck and synthesis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build backend handlers for Lambda asset synthesis
+        working-directory: backend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Install CDK dependencies
+        working-directory: infra
+        run: npm install --no-audit --no-fund
+      - name: Typecheck CDK application
+        working-directory: infra
+        run: npm run build
+      - name: Synthesize staging and edge stacks
+        working-directory: infra
+        env:
+          CDK_DEFAULT_ACCOUNT: "111111111111"
+          CDK_DEFAULT_REGION: ap-south-1
+        run: npx cdk synth -c environment=staging
+
+  browser:
+    name: Desktop, mobile and reduced-motion browser checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Install Playwright runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@latest
+          npx playwright install --with-deps chromium
+      - name: Run visual and interaction smoke tests
+        run: |
+          mkdir -p artifacts
+          node tests/e2e/run.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workflo-browser-screenshots
+          path: artifacts/*.png
+          if-no-files-found: ignore
+          retention-days: 14
