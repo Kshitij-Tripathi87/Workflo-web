@@ -1,6 +1,14 @@
+import { randomUUID } from "node:crypto";
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN ?? "";
+
+export class HttpInputError extends Error {
+  constructor(public readonly statusCode: number, message: string) {
+    super(message);
+    this.name = "HttpInputError";
+  }
+}
 
 export function json(statusCode: number, body: unknown, event?: APIGatewayProxyEventV2): APIGatewayProxyResultV2 {
   const origin = event?.headers.origin ?? "";
@@ -10,7 +18,7 @@ export function json(statusCode: number, body: unknown, event?: APIGatewayProxyE
     "x-content-type-options": "nosniff",
     "referrer-policy": "no-referrer",
     "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
-    "vary": "Origin",
+    vary: "Origin",
   };
   if (allowedOrigin && origin === allowedOrigin) {
     headers["access-control-allow-origin"] = allowedOrigin;
@@ -21,12 +29,16 @@ export function json(statusCode: number, body: unknown, event?: APIGatewayProxyE
 }
 
 export function parseJson(event: APIGatewayProxyEventV2): unknown {
-  if (!event.body) return {};
+  if (!event.body) throw new HttpInputError(400, "request_body_required");
   const raw = event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf8") : event.body;
-  if (Buffer.byteLength(raw, "utf8") > 16_384) throw new Error("PAYLOAD_TOO_LARGE");
-  return JSON.parse(raw);
+  if (Buffer.byteLength(raw, "utf8") > 16_384) throw new HttpInputError(413, "payload_too_large");
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new HttpInputError(400, "invalid_json");
+  }
 }
 
 export function requestId(event: APIGatewayProxyEventV2): string {
-  return event.requestContext.requestId || crypto.randomUUID();
+  return event.requestContext.requestId || randomUUID();
 }
