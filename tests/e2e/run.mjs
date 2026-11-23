@@ -53,6 +53,7 @@ try {
     await desktop.getByRole("button", { name: "Reject optional" }).click();
   }
   await desktop.evaluate(() => window.scrollTo(0, 0));
+  await desktop.waitForFunction(() => !document.querySelector(".opening"), null, { timeout: 7000 });
   await desktop.waitForTimeout(180);
   await desktop.screenshot({ path: "artifacts/workflo-desktop-hero.png" });
 
