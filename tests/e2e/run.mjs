@@ -90,7 +90,8 @@ try {
     await desktop.evaluate((value) => {
       const story = document.querySelector("#story");
       const range = Math.max(1, story.offsetHeight - window.innerHeight);
-      window.scrollTo(0, story.offsetTop + range * value);
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: story.offsetTop + range * value, behavior: "instant" });
     }, progress);
     await desktop.waitForFunction((scene) => {
       const stage = document.querySelector(".cinematic-stage");
@@ -104,6 +105,19 @@ try {
     });
     const active = Object.entries(state).filter(([, opacity]) => opacity > 0.72).map(([key]) => key);
     assert.deepEqual(active, [expectedScene], "scroll should resolve to " + expectedScene);
+    const chapterOpacity = await desktop.locator(".cinematic-stage").evaluate((stage) => ({
+      entry: Number.parseFloat(stage.style.getPropertyValue("--enter-alpha")) || 0,
+      inside: Number.parseFloat(stage.style.getPropertyValue("--inside-alpha")) || 0,
+      station: Number.parseFloat(stage.style.getPropertyValue("--station-alpha")) || 0,
+      floorScanHeight: getComputedStyle(stage.querySelector(`[data-photo="${expectedScene}"] .scene-floor-scan`)).height,
+    }));
+    if (expectedScene === "hall") {
+      assert.ok(chapterOpacity.entry < 0.03 && chapterOpacity.inside > 0.9, "hall chapter must not retain the previous entry headline");
+    }
+    if (expectedScene === "path") {
+      assert.ok(chapterOpacity.inside < 0.03 && chapterOpacity.station < 0.2, "path chapter must not stack the previous isolation copy");
+    }
+    assert.ok(Number.parseFloat(chapterOpacity.floorScanHeight) <= 2, "floor light must remain a thin scan line");
     scrollStates.push(active[0]);
     await desktop.screenshot({ path: `artifacts/workflo-scene-${expectedScene}.png` });
   }
