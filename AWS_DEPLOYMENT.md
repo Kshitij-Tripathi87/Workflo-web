@@ -77,7 +77,25 @@ Replace all example addresses and account placeholders. Do not commit actual val
 
 ## GitHub Actions deployment
 
-The workflow `.github/workflows/deploy-aws.yml` is manually triggered using `workflow_dispatch`, with a staging or production choice. It uses GitHub OIDC rather than persistent AWS access keys.
+The workflow `.github/workflows/deploy-aws.yml` is manually triggered using `workflow_dispatch` and offers separate staging and production targets. It uses GitHub OIDC rather than persistent AWS access keys.
+
+### Deploy staging first
+
+1. Open **Actions → Deploy Workflo website to AWS → Run workflow**.
+2. Select the exact branch/commit intended for release and choose `staging`.
+3. Wait for the workflow to complete successfully.
+4. Confirm the workflow output includes the CloudFront URL and that homepage/API health smoke tests pass.
+5. Record the successful staging workflow run ID and the commit SHA it deployed.
+
+### Promote the exact tested commit
+
+1. Trigger the same workflow again, selecting the same exact ref/commit.
+2. Choose `production`.
+3. Enter the successful staging workflow run ID in `staging_run_id`.
+4. GitHub verifies the referenced run was a successful, explicitly named staging deployment and that its `head_sha` matches the production workflow's `github.sha`.
+5. The protected `production` GitHub Environment must approve the deployment before AWS credentials are assumed.
+
+If the branch has moved since staging, the SHA check intentionally fails. Deploy that new commit to staging first; do not bypass the gate.
 
 Before use:
 - Create the `staging` and `production` GitHub Environments.
