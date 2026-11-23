@@ -60,7 +60,7 @@ try {
   assert.ok(gradientState.every((value) => value === "none" || value === "missing"), "no-gradient visual rule should be present");
 
   const scrollStates = [];
-  for (const progress of [0.04, 0.26, 0.48, 0.65, 0.9]) {
+  for (const progress of [0.04, 0.28, 0.47, 0.64, 0.86]) {
     await desktop.evaluate((value) => {
       const story = document.querySelector("#story");
       const range = Math.max(1, story.offsetHeight - window.innerHeight);
