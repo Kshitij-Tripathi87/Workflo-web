@@ -1,0 +1,20 @@
+{
+  "name": "@workflo/web-infrastructure",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "synth": "cdk synth",
+    "diff:staging": "cdk diff WorkfloWebStaging",
+    "diff:production": "cdk diff WorkfloWebProduction"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.190.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "aws-cdk": "^2.1000.0",
+    "typescript": "^5.9.3"
+  }
+}
