@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "test": "node --test dist/handlers/*.test.js"
+    "build": "node build.mjs",
+    "test": "tsx --test src/handlers/*.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.800.0",
@@ -17,6 +17,8 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
     "@types/node": "^24.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.19.3"
   }
 }
