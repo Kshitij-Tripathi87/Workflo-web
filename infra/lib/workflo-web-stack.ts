@@ -156,10 +156,11 @@ export class WorkfloWebStack extends cdk.Stack {
     });
     const apiStageName = api.deploymentStage.stageName;
     const apiStageArn = `arn:${cdk.Aws.PARTITION}:apigateway:${cdk.Aws.REGION}::/restapis/${api.restApiId}/stages/${apiStageName}`;
-    new wafv2.CfnWebACLAssociation(this, "ApiWebAclAssociation", {
+    const apiWebAclAssociation = new wafv2.CfnWebACLAssociation(this, "ApiWebAclAssociation", {
       resourceArn: apiStageArn,
       webAclArn: apiWebAcl.attrArn,
     });
+    apiWebAclAssociation.node.addDependency(api.deploymentStage);
 
     const contentSecurityPolicy = [
       "default-src 'self'",
