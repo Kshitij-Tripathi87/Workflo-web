@@ -84,7 +84,7 @@ try {
     ["portal", 0.32],
     ["hall", 0.49],
     ["path", 0.65],
-    ["sealed", 0.95],
+    ["sealed", 0.82],
   ];
   for (const [expectedScene, progress] of sceneTargets) {
     await desktop.evaluate((value) => {
