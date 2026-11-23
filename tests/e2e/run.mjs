@@ -48,6 +48,14 @@ try {
     assert.equal(assetResponse.status(), 200, "missing image asset: " + asset);
   }
 
+  const initialConsent = desktop.getByRole("dialog", { name: /choose what this site may remember/i });
+  if (await initialConsent.count()) {
+    await desktop.getByRole("button", { name: "Reject optional" }).click();
+  }
+  await desktop.evaluate(() => window.scrollTo(0, 0));
+  await desktop.waitForTimeout(180);
+  await desktop.screenshot({ path: "artifacts/workflo-desktop-hero.png" });
+
   const gradientState = await desktop.evaluate(() => {
     const targets = [
       document.body,
@@ -96,6 +104,7 @@ try {
     const active = Object.entries(state).filter(([, opacity]) => opacity > 0.72).map(([key]) => key);
     assert.deepEqual(active, [expectedScene], "scroll should resolve to " + expectedScene);
     scrollStates.push(active[0]);
+    await desktop.screenshot({ path: `artifacts/workflo-scene-${expectedScene}.png` });
   }
   assert.deepEqual(scrollStates, ["exterior", "portal", "hall", "path", "sealed"], "scroll choreography should reveal each scene in sequence");
 
@@ -103,7 +112,7 @@ try {
   assert.equal(await desktop.locator("#early-access form input[type=email]").count(), 1, "early-access email field should render");
   await desktop.locator("#contact").scrollIntoViewIfNeeded();
   assert.equal(await desktop.locator("#contact form textarea").count(), 1, "contact message field should render");
-  await desktop.screenshot({ path: "artifacts/workflo-desktop.png", fullPage: true });
+  await desktop.screenshot({ path: "artifacts/workflo-desktop-contact.png" });
 
   const consentPanel = desktop.getByRole("dialog", { name: /choose what this site may remember/i });
   if (await consentPanel.count()) {
@@ -139,6 +148,12 @@ try {
   reduced.on("pageerror", (error) => failures.push("reduced-motion page error: " + error.message));
   await reduced.emulateMedia({ reducedMotion: "reduce" });
   await reduced.goto(origin, { waitUntil: "networkidle" });
+  const reducedConsent = reduced.getByRole("dialog", { name: /choose what this site may remember/i });
+  if (await reducedConsent.count()) {
+    await reduced.getByRole("button", { name: "Reject optional" }).click();
+  }
+  await reduced.evaluate(() => window.scrollTo(0, 0));
+  await reduced.waitForTimeout(100);
   const reducedMotionState = await reduced.evaluate(() => ({
     motion: matchMedia("(prefers-reduced-motion: reduce)").matches,
     nearLayer: getComputedStyle(document.querySelector(".scene-photo-near") ?? document.body).display,
