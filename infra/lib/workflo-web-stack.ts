@@ -3,8 +3,7 @@ import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
-import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
-import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as apigw from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
@@ -77,7 +76,7 @@ export class WorkfloWebStack extends cdk.Stack {
     const makeFunction = (logicalId: string, handler: string, timeout = 10) =>
       new lambda.Function(this, logicalId, {
         functionName: name(logicalId.toLowerCase()),
-        runtime: lambda.Runtime.NODEJS_24_X,
+        runtime: lambda.Runtime.NODEJS_26_X,
         architecture: lambda.Architecture.ARM_64,
         handler,
         code: lambda.Code.fromAsset("../backend/dist"),
@@ -106,34 +105,28 @@ export class WorkfloWebStack extends cdk.Stack {
       onFailure: new eventSources.SqsDlq(streamFailureQueue),
     }));
 
-    const api = new apigw.HttpApi(this, "PublicApi", {
-      apiName: name("api"),
-      // Browser calls are same-origin through the CloudFront /api/* behaviour.
-      // Set SITE_ORIGIN only for approved direct cross-origin staging use.
-      ...(process.env.SITE_ORIGIN ? {
-        corsPreflight: {
-          allowOrigins: [process.env.SITE_ORIGIN],
-          allowMethods: [apigw.CorsHttpMethod.POST, apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.OPTIONS],
-          allowHeaders: ["content-type"],
-          maxAge: cdk.Duration.hours(1),
-        },
-      } : {}),
+    const apiAccessLogs = new logs.LogGroup(this, "ApiAccessLogs", {
+      logGroupName: `/aws/apigateway/${name("public-api")}`,
+      retention: logs.RetentionDays.ONE_MONTH,
+      removalPolicy: production ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
     });
-    api.addRoutes({
-      path: "/api/v1/health",
-      methods: [apigw.HttpMethod.GET],
-      integration: new integrations.HttpLambdaIntegration("HealthIntegration", healthFn),
+    const api = new apigw.RestApi(this, "PublicApi", {
+      restApiName: name("api"),
+      endpointConfiguration: { types: [apigw.EndpointType.REGIONAL] },
+      deployOptions: {
+        stageName: envName,
+        metricsEnabled: true,
+        loggingLevel: apigw.MethodLoggingLevel.ERROR,
+        dataTraceEnabled: false,
+        accessLogDestination: new apigw.LogGroupLogDestination(apiAccessLogs),
+        accessLogFormat: apigw.AccessLogFormat.jsonWithStandardFields(),
+      },
     });
-    api.addRoutes({
-      path: "/api/v1/contact",
-      methods: [apigw.HttpMethod.POST],
-      integration: new integrations.HttpLambdaIntegration("ContactIntegration", contactFn),
-    });
-    api.addRoutes({
-      path: "/api/v1/early-access",
-      methods: [apigw.HttpMethod.POST],
-      integration: new integrations.HttpLambdaIntegration("EarlyAccessIntegration", earlyAccessFn),
-    });
+
+    const apiV1 = api.root.addResource("api").addResource("v1");
+    apiV1.addResource("health").addMethod("GET", new apigw.LambdaIntegration(healthFn));
+    apiV1.addResource("contact").addMethod("POST", new apigw.LambdaIntegration(contactFn));
+    apiV1.addResource("early-access").addMethod("POST", new apigw.LambdaIntegration(earlyAccessFn));
 
     const apiWebAcl = new wafv2.CfnWebACL(this, "ApiWebAcl", {
       name: name("api-web-acl"),
@@ -161,8 +154,8 @@ export class WorkfloWebStack extends cdk.Stack {
         },
       ],
     });
-    const apiStageName = api.defaultStage?.stageName ?? "$default";
-    const apiStageArn = `arn:${cdk.Aws.PARTITION}:apigateway:${cdk.Aws.REGION}::/apis/${api.apiId}/stages/${apiStageName}`;
+    const apiStageName = api.deploymentStage.stageName;
+    const apiStageArn = `arn:${cdk.Aws.PARTITION}:apigateway:${cdk.Aws.REGION}::/restapis/${api.restApiId}/stages/${apiStageName}`;
     new wafv2.CfnWebACLAssociation(this, "ApiWebAclAssociation", {
       resourceArn: apiStageArn,
       webAclArn: apiWebAcl.attrArn,
@@ -225,7 +218,7 @@ export class WorkfloWebStack extends cdk.Stack {
           responseHeadersPolicy: securityHeaders,
         },
         "/api/*": {
-          origin: new origins.HttpOrigin(cdk.Fn.select(2, cdk.Fn.split("/", api.apiEndpoint))),
+          origin: new origins.HttpOrigin(cdk.Fn.select(2, cdk.Fn.split("/", api.url)), { originPath: `/${envName}` }),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
@@ -294,7 +287,7 @@ export class WorkfloWebStack extends cdk.Stack {
     new cdk.CfnOutput(this, "SiteBucketName", { value: siteBucket.bucketName });
     new cdk.CfnOutput(this, "CloudFrontDomain", { value: distribution.domainName });
     new cdk.CfnOutput(this, "CloudFrontDistributionId", { value: distribution.distributionId });
-    new cdk.CfnOutput(this, "ApiUrl", { value: api.apiEndpoint });
+    new cdk.CfnOutput(this, "ApiUrl", { value: api.url });
     new cdk.CfnOutput(this, "SubmissionsTable", { value: table.tableName });
     new cdk.CfnOutput(this, "NotificationQueue", { value: notificationQueue.queueUrl });
     new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
