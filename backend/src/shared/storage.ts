@@ -1,20 +1,25 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 const region = process.env.AWS_REGION ?? "ap-south-1";
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region }), {
   marshallOptions: { removeUndefinedValues: true },
 });
-const sqs = new SQSClient({ region });
 
 export type Submission = {
   id: string;
   kind: "contact" | "early_access";
   createdAt: string;
+  expiresAt: number;
   status: "received";
   payload: Record<string, unknown>;
 };
+
+export function submissionExpiryEpoch(): number {
+  const configuredDays = Number(process.env.SUBMISSION_RETENTION_DAYS ?? "365");
+  const retentionDays = Number.isFinite(configuredDays) ? Math.min(3650, Math.max(30, configuredDays)) : 365;
+  return Math.floor(Date.now() / 1000) + retentionDays * 24 * 60 * 60;
+}
 
 export async function persistSubmission(record: Submission): Promise<void> {
   const tableName = process.env.SUBMISSIONS_TABLE;
@@ -23,16 +28,5 @@ export async function persistSubmission(record: Submission): Promise<void> {
     TableName: tableName,
     Item: record,
     ConditionExpression: "attribute_not_exists(id)",
-  }));
-}
-
-export async function enqueueNotification(record: Submission): Promise<void> {
-  const queueUrl = process.env.NOTIFICATION_QUEUE_URL;
-  if (!queueUrl) throw new Error("NOTIFICATION_QUEUE_URL is not configured");
-  await sqs.send(new SendMessageCommand({
-    QueueUrl: queueUrl,
-    MessageBody: JSON.stringify({ id: record.id, kind: record.kind, createdAt: record.createdAt }),
-    MessageGroupId: record.kind,
-    MessageDeduplicationId: record.id,
   }));
 }
