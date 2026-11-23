@@ -254,9 +254,11 @@ export class WorkfloWebStack extends cdk.Stack {
     if (!senderIdentityArn) {
       cdk.Annotations.of(worker).addWarning("SES_IDENTITY_ARN is unset; restrict ses:SendEmail to the verified sender identity before production.");
     }
-    worker.addEventSource("NotificationQueueMapping", new eventSources.SqsEventSource(notificationQueue, {
+    worker.addEventSourceMapping("NotificationQueueMapping", {
+      eventSourceArn: notificationQueue.queueArn,
       batchSize: 1,
-    }));
+      reportBatchItemFailures: true,
+    });
 
     const cfnDistribution = distribution.node.defaultChild as cloudfront.CfnDistribution;
     if (props.webAclArn) {
