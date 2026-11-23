@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { SectionEyebrow } from "../components/common/SectionEyebrow";
-import { SolutionVisual, solutionCards } from "../components/cards/SolutionCard";
+import { solutionCards } from "../components/cards/SolutionCard";
+import { SolutionVisual } from "../components/cards/SolutionVisual";
 import { ArrowIcon } from "../components/navigation/Icons";
 
 export function Solutions() {
