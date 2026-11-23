@@ -5,18 +5,13 @@ on:
     paths-ignore:
       - "docs/**"
       - "*.md"
-  push:
-    branches: [main, feat/cinematic-imagery]
-    paths-ignore:
-      - "docs/**"
-      - "*.md"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: workflo-web-ci-${{ github.ref }}-${{ github.event_name }}
+  group: workflo-web-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
