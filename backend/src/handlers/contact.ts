@@ -9,7 +9,7 @@ const schema = z.object({
   email: z.string().trim().email().max(254),
   company: z.string().trim().max(160).optional().default(""),
   role: z.string().trim().max(120).optional().default(""),
-  inquiryType: z.enum(["product", "security", "partnership", "other"]),
+  inquiryType: z.enum(["product", "security", "partnership", "privacy", "other"]),
   message: z.string().trim().min(10).max(5000),
   consentToReply: z.literal(true),
   website: z.string().max(0).optional().default("")
