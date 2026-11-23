@@ -126,9 +126,7 @@ try {
   await mobile.waitForTimeout(100);
   await mobile.evaluate(() => window.scrollTo(0, 0));
   await mobile.locator(".mobile-nav-toggle").click();
-  const mobileAccessLink = mobile.locator(".mobile-drawer-backdrop .mobile-drawer-content a[href='#early-access']").first();
-  await mobileAccessLink.scrollIntoViewIfNeeded();
-  await mobileAccessLink.evaluate((element) => element.click());
+  await mobile.locator(".mobile-drawer-cta").click();
   await mobile.waitForFunction(() => window.location.hash === "#early-access", { timeout: 3000 });
   const mobileMetrics = await mobile.evaluate(() => ({
     viewport: window.innerWidth,
