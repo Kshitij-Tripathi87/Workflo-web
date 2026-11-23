@@ -45,8 +45,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     await persistSubmission(record);
     return json(202, { accepted: true, reference: record.id, requestId: id }, event);
   } catch (error) {
-    const tooLarge = error instanceof Error && error.message === "PAYLOAD_TOO_LARGE";
+    const inputError = error instanceof HttpInputError ? error : undefined;
     console.error(JSON.stringify({ event: "early_access_submission_failed", requestId: id, name: error instanceof Error ? error.name : "unknown" }));
-    return json(tooLarge ? 413 : 503, { error: tooLarge ? "payload_too_large" : "submission_unavailable", requestId: id }, event);
+    return json(inputError?.statusCode ?? 503, { error: inputError?.message ?? "submission_unavailable", requestId: id }, event);
   }
 };
