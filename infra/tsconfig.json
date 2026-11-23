@@ -9,7 +9,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": "bin"
+    "rootDir": "."
   },
-  "include": ["bin/**/*.ts"]
+  "include": [
+    "bin/**/*.ts",
+    "lib/**/*.ts"
+  ]
 }
