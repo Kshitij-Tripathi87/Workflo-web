@@ -92,8 +92,8 @@ export function Navigation({ onSignIn }: NavigationProps) {
                 </div>
               </div>
             ))}
-            <a className="nav-direct" href="#pricing">
-              Pricing
+            <a className="nav-direct" href="#early-access">
+              Early access
             </a>
             <div className="nav-menu-wrap">
               <button
