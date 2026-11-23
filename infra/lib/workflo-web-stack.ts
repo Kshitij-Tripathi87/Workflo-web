@@ -47,7 +47,12 @@ export class WorkfloWebStack extends cdk.Stack {
       stream: dynamodb.StreamViewType.NEW_IMAGE,
     });
 
-    const streamFailureQueue = new sqs.Queue(this, "StreamDispatchDLQ", {\n      queueName: name("stream-dispatch-dlq"),\n      retentionPeriod: cdk.Duration.days(14),\n      encryption: sqs.QueueEncryption.SQS_MANAGED,\n    });\n    const deadLetterQueue = new sqs.Queue(this, "NotificationDLQ", {
+    const streamFailureQueue = new sqs.Queue(this, "StreamDispatchDLQ", {
+      queueName: name("stream-dispatch-dlq"),
+      retentionPeriod: cdk.Duration.days(14),
+      encryption: sqs.QueueEncryption.SQS_MANAGED,
+    });
+    const notificationDlq = new sqs.Queue(this, "NotificationDLQ", {
       queueName: name("notification-dlq.fifo"),
       fifo: true,
       retentionPeriod: cdk.Duration.days(14),
@@ -59,7 +64,7 @@ export class WorkfloWebStack extends cdk.Stack {
       contentBasedDeduplication: true,
       encryption: sqs.QueueEncryption.SQS_MANAGED,
       visibilityTimeout: cdk.Duration.seconds(120),
-      deadLetterQueue: { queue: deadLetterQueue, maxReceiveCount: 5 },
+      deadLetterQueue: { queue: notificationDlq, maxReceiveCount: 5 },
     });
 
     const commonEnvironment = {
@@ -277,7 +282,7 @@ export class WorkfloWebStack extends cdk.Stack {
     });
     new cloudwatch.Alarm(this, "NotificationDLQAlarm", {
       alarmName: name("notification-dlq-non-empty"),
-      metric: deadLetterQueue.metricApproximateNumberOfMessagesVisible({ period: cdk.Duration.minutes(5) }),
+      metric: notificationDlq.metricApproximateNumberOfMessagesVisible({ period: cdk.Duration.minutes(5) }),
       threshold: 1,
       evaluationPeriods: 1,
       datapointsToAlarm: 1,
@@ -291,8 +296,6 @@ export class WorkfloWebStack extends cdk.Stack {
     new cdk.CfnOutput(this, "SubmissionsTable", { value: table.tableName });
     new cdk.CfnOutput(this, "NotificationQueue", { value: notificationQueue.queueUrl });
     new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
-    new cdk.CfnOutput(this, "NotificationDLQ", { value: deadLetterQueue.queueUrl });
-    new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
-    new cdk.CfnOutput(this, "NotificationDLQ", { value: deadLetterQueue.queueUrl });
+    new cdk.CfnOutput(this, "NotificationDLQ", { value: notificationDlq.queueUrl });
   }
 }
