@@ -92,12 +92,14 @@ export function useScrollStory({
       if (Math.abs(targetPointerY - pointerY) < 0.0015) pointerY = targetPointerY;
 
       const hero = 1 - smoothstep(0.135, 0.22, progress);
+      // Each chapter hands off before the next copy block takes over. This keeps
+      // long editorial headlines from stacking during the pinned camera move.
       const entering =
-        smoothstep(0.12, 0.19, progress) * (1 - smoothstep(0.43, 0.51, progress));
+        smoothstep(0.12, 0.19, progress) * (1 - smoothstep(0.37, 0.41, progress));
       const inside =
-        smoothstep(0.35, 0.43, progress) * (1 - smoothstep(0.65, 0.73, progress));
+        smoothstep(0.39, 0.45, progress) * (1 - smoothstep(0.59, 0.63, progress));
       const station =
-        smoothstep(0.59, 0.68, progress) * (1 - smoothstep(0.88, 0.96, progress));
+        smoothstep(0.63, 0.69, progress) * (1 - smoothstep(0.88, 0.96, progress));
       const fly = smoothstep(0.12, 0.46, progress);
       const frontMesh = (1 - smoothstep(0.12, 0.31, progress)) * 0.9;
 
@@ -133,7 +135,7 @@ export function useScrollStory({
         element.style.transform = `translate3d(${drift + pointerX * (index + 1) * 5}px, ${-drift * 0.45 + pointerY * 4}px, 0) rotate(${(1 - show) * (index % 2 === 0 ? -4 : 4)}deg)`;
       });
 
-      const wordProgress = smoothstep(0.39, 0.59, progress);
+      const wordProgress = smoothstep(0.43, 0.59, progress);
       wordSpans.forEach((word, index) => {
         const amount = clamp(wordProgress * (wordSpans.length + 2) - index);
         word.style.opacity = amount.toFixed(3);
@@ -141,7 +143,7 @@ export function useScrollStory({
         word.style.filter = `blur(${(1 - amount) * 3}px)`;
       });
 
-      const stationProgress = smoothstep(0.64, 0.84, progress);
+      const stationProgress = smoothstep(0.69, 0.85, progress);
       receiptRows.forEach((row, index) => {
         const amount = clamp(
           stationProgress * (receiptRows.length + 1) - index * 0.88
