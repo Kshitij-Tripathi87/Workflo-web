@@ -42,7 +42,13 @@ jobs:
           RUN="$(gh api "repos/$GH_REPOSITORY/actions/runs/$STAGING_RUN_ID")"
           echo "$RUN" | jq -e '.conclusion == "success" and .event == "workflow_dispatch" and (.name == "Deploy Workflo website to AWS")' >/dev/null
           echo "$RUN" | jq -e '(.head_branch == "feat/cinematic-imagery" or .head_branch == "main")' >/dev/null
-          echo "Verified a successful staging deployment workflow run. Check its commit and staging URL in the Actions run before approving production."
+          STAGING_SHA="$(echo "$RUN" | jq -r '.head_sha')"
+          CURRENT_SHA="${GITHUB_SHA}"
+          test "$STAGING_SHA" = "$CURRENT_SHA" || {
+            echo "Staging deployed $STAGING_SHA but this production workflow is building $CURRENT_SHA. Deploy this exact commit to staging and retry."
+            exit 1
+          }
+          echo "Verified that the successful staging deployment used the exact commit selected for production."
 
   deploy:
     name: Build and deploy ${{ inputs.target }}
