@@ -8,6 +8,7 @@ const server = spawn("npm", ["run", "dev", "--", "--host", "127.0.0.1", "--port"
   stdio: "ignore",
   shell: process.platform === "win32",
 });
+const failures = [];
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 60; attempt += 1) {
@@ -23,126 +24,100 @@ async function waitForServer() {
 }
 
 const browser = await chromium.launch({ headless: true });
-const failures = [];
 
 try {
   await waitForServer();
-  const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+
+  const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   desktop.on("pageerror", (error) => failures.push("desktop page error: " + error.message));
+
   const response = await desktop.goto(origin, { waitUntil: "networkidle" });
   assert.equal(response?.status(), 200, "homepage should respond with HTTP 200");
-  assert.match(await desktop.title(), /Workflo/i, "homepage should have product-specific title");
-  assert.equal(await desktop.locator("#solutions").count(), 1, "solutions section should exist");
-  assert.equal(await desktop.locator("#early-access").count(), 1, "early-access form should exist");
-  assert.equal(await desktop.locator("#contact").count(), 1, "contact form should exist");
+  assert.match(await desktop.title(), /Workflo/i, "homepage should have a product-specific title");
+  assert.equal(await desktop.locator("main > section").count(), 5, "homepage should contain five intentional sections");
 
-  const sceneKeys = await desktop.locator("[data-photo]").evaluateAll((nodes) =>
-    nodes.map((node) => node.getAttribute("data-photo"))
-  );
-  for (const key of ["exterior", "portal", "hall", "path", "sealed"]) {
-    assert.ok(sceneKeys.includes(key), "missing cinematic scene: " + key);
+  for (const section of ["process", "evidence", "security", "access"]) {
+    assert.equal(await desktop.locator("#" + section).count(), 1, "missing section: #" + section);
   }
 
-  for (const asset of ["pod.webp", "portal.webp", "hall.webp", "path.webp", "hero-chamber.webp"]) {
+  assert.equal(await desktop.locator("#access form").count(), 1, "one early-access form should exist");
+  assert.equal(await desktop.locator("#access form input[type=email]").count(), 1, "early-access email field should render");
+  assert.equal(await desktop.locator("#access form textarea").count(), 1, "use-case field should render");
+  assert.equal(await desktop.locator("#contact").count(), 0, "duplicate contact section should not return");
+  assert.equal(await desktop.locator("#solutions").count(), 0, "superseded solutions section should not return");
+
+  const expectedAssets = [
+    "pod.webp",
+    "portal.webp",
+    "hero-chamber.webp",
+    "path.webp",
+    "hall.webp",
+  ];
+  const assetResults = await Promise.all(expectedAssets.map(async (asset) => {
     const assetResponse = await desktop.request.get(origin + "/media/" + asset);
-    assert.equal(assetResponse.status(), 200, "missing image asset: " + asset);
+    return { asset, status: assetResponse.status() };
+  }));
+  for (const result of assetResults) {
+    assert.equal(result.status, 200, "missing image asset: " + result.asset);
   }
 
-  const initialConsent = desktop.getByRole("dialog", { name: /choose what this site may remember/i });
-  if (await initialConsent.count()) {
-    await desktop.getByRole("button", { name: "Reject optional" }).click();
-  }
-  await desktop.evaluate(() => window.scrollTo(0, 0));
-  await desktop.waitForFunction(() => !document.querySelector(".opening"), null, { timeout: 7000 });
-  await desktop.waitForTimeout(180);
-  await desktop.screenshot({ path: "artifacts/workflo-desktop-hero.png" });
+  await desktop.evaluate(async () => {
+    const images = [...document.images];
+    images.forEach((image) => { image.loading = "eager"; });
+    for (let y = 0; y < document.body.scrollHeight; y += 700) {
+      window.scrollTo(0, y);
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    await Promise.all(images.map((image) => image.decode().catch(() => undefined)));
+    window.scrollTo(0, 0);
+  });
 
-  const gradientState = await desktop.evaluate(() => {
+  const imageState = await desktop.evaluate(() => [...document.images].map((image) => ({
+    source: image.getAttribute("src"),
+    loaded: image.complete && image.naturalWidth > 0,
+  })));
+  assert.equal(imageState.length, 5, "five purposeful photographs should be present");
+  assert.ok(imageState.every((image) => image.loaded), "all five photographs should load");
+
+  const firstVisitConsent = desktop.getByRole("dialog", { name: /privacy preferences/i });
+  assert.equal(await firstVisitConsent.count(), 1, "privacy preferences should be shown on first visit");
+  await desktop.getByRole("button", { name: "Reject optional" }).click();
+  await desktop.reload({ waitUntil: "networkidle" });
+  assert.equal(await desktop.getByRole("dialog", { name: /privacy preferences/i }).count(), 0, "saved consent should persist after reload");
+
+  const headlineStyle = await desktop.locator("h1").evaluate((node) => ({
+    text: node.textContent.trim(),
+    family: getComputedStyle(node).fontFamily,
+    size: getComputedStyle(node).fontSize,
+  }));
+  assert.equal(headlineStyle.text, "Verify every change before it ships.");
+  assert.match(headlineStyle.family, /Host Grotesk/i, "the selected display typeface should be applied");
+
+  const noGradientState = await desktop.evaluate(() => {
     const targets = [
       document.body,
-      document.querySelector(".cinematic-stage .scene-backdrop"),
-      document.querySelector(".scene-photo-scrim"),
-      document.querySelector(".solution-editorial-art"),
+      document.querySelector(".hero-photo"),
+      document.querySelector(".process-photo"),
+      document.querySelector(".evidence-photo"),
+      document.querySelector(".security-photo"),
     ];
     return targets.map((node) => node ? getComputedStyle(node).backgroundImage : "missing");
   });
-  assert.ok(gradientState.every((value) => value === "none" || value === "missing"), "no-gradient visual rule should be present");
-  const typography = await desktop.evaluate(() => ({
-    display: getComputedStyle(document.querySelector(".hero-copy h1")).fontFamily,
-    body: getComputedStyle(document.querySelector(".hero-description")).fontFamily,
-    mono: getComputedStyle(document.querySelector(".section-eyebrow")).fontFamily,
-  }));
-  assert.match(typography.display, /Georgia|Palatino|Iowan/i, "display typography should use the editorial serif stack");
-  assert.match(typography.body, /Arial|Helvetica/i, "body typography should use the readable sans stack");
-  assert.match(typography.mono, /Consolas|Courier/i, "technical labels should use a monospace stack");
-  const floorMask = await desktop.locator(".scene-photo-near").first().evaluate((node) => getComputedStyle(node).maskImage);
-  assert.notEqual(floorMask, "none", "the photographic floor plane must retain its authored mask");
+  assert.ok(noGradientState.every((value) => value === "none" || value === "missing"), "backgrounds should not use gradient fills");
 
-  const scrollStates = [];
-  const sceneTargets = [
-    ["exterior", 0.05],
-    ["portal", 0.32],
-    ["hall", 0.49],
-    ["path", 0.65],
-    ["sealed", 0.82],
-  ];
-  for (const [expectedScene, progress] of sceneTargets) {
-    await desktop.evaluate((value) => {
-      const story = document.querySelector("#story");
-      const range = Math.max(1, story.offsetHeight - window.innerHeight);
-      document.documentElement.style.scrollBehavior = "auto";
-      window.scrollTo({ top: story.offsetTop + range * value, behavior: "instant" });
-    }, progress);
-    await desktop.waitForFunction((scene) => {
-      const stage = document.querySelector(".cinematic-stage");
-      if (!stage) return false;
-      const opacity = Number.parseFloat(stage.style.getPropertyValue("--photo-" + scene)) || 0;
-      return opacity > 0.72;
-    }, expectedScene, { timeout: 4000 });
-    await desktop.waitForFunction((scene) => {
-      const stage = document.querySelector(".cinematic-stage");
-      if (!stage) return false;
-      const value = (name) => Number.parseFloat(stage.style.getPropertyValue(name)) || 0;
-      if (scene === "hall") return value("--enter-alpha") < 0.03 && value("--inside-alpha") > 0.9;
-      if (scene === "path") return value("--inside-alpha") < 0.03 && value("--station-alpha") < 0.2;
-      return true;
-    }, expectedScene, { timeout: 4000 });
-    const state = await desktop.locator(".cinematic-stage").evaluate((stage) => {
-      const keys = ["exterior", "portal", "hall", "path", "sealed"];
-      return Object.fromEntries(keys.map((key) => [key, Number.parseFloat(stage.style.getPropertyValue("--photo-" + key)) || 0]));
-    });
-    const active = Object.entries(state).filter(([, opacity]) => opacity > 0.72).map(([key]) => key);
-    assert.deepEqual(active, [expectedScene], "scroll should resolve to " + expectedScene);
-    const chapterOpacity = await desktop.locator(".cinematic-stage").evaluate((stage, scene) => ({
-      entry: Number.parseFloat(stage.style.getPropertyValue("--enter-alpha")) || 0,
-      inside: Number.parseFloat(stage.style.getPropertyValue("--inside-alpha")) || 0,
-      station: Number.parseFloat(stage.style.getPropertyValue("--station-alpha")) || 0,
-      floorScanHeight: getComputedStyle(stage.querySelector(`[data-photo="${scene}"] .scene-floor-scan`)).height,
-    }), expectedScene);
-    if (expectedScene === "hall") {
-      assert.ok(chapterOpacity.entry < 0.03 && chapterOpacity.inside > 0.9, "hall chapter must not retain the previous entry headline");
-    }
-    if (expectedScene === "path") {
-      assert.ok(chapterOpacity.inside < 0.03 && chapterOpacity.station < 0.2, "path chapter must not stack the previous isolation copy");
-    }
-    assert.ok(Number.parseFloat(chapterOpacity.floorScanHeight) <= 2, "floor light must remain a thin scan line");
-    scrollStates.push(active[0]);
-    await desktop.screenshot({ path: `artifacts/workflo-scene-${expectedScene}.png` });
-  }
-  assert.deepEqual(scrollStates, ["exterior", "portal", "hall", "path", "sealed"], "scroll choreography should reveal each scene in sequence");
+  await desktop.locator("#evidence").scrollIntoViewIfNeeded();
+  await desktop.waitForFunction(() => document.querySelector("#evidence")?.classList.contains("is-revealed"));
+  const receiptOpacity = await desktop.locator(".receipt-card").evaluate((node) => getComputedStyle(node).opacity);
+  assert.equal(receiptOpacity, "1", "evidence receipt should reveal when its section enters view");
+  await desktop.evaluate(() => window.scrollTo(0, 0));
+  await desktop.screenshot({ path: "artifacts/workflo-desktop-hero.png" });
+  await desktop.locator("#evidence").scrollIntoViewIfNeeded();
+  await desktop.screenshot({ path: "artifacts/workflo-desktop-evidence.png" });
+  await desktop.locator("#access").scrollIntoViewIfNeeded();
+  await desktop.screenshot({ path: "artifacts/workflo-desktop-access.png" });
 
-  await desktop.locator("#early-access").scrollIntoViewIfNeeded();
-  assert.equal(await desktop.locator("#early-access form input[type=email]").count(), 1, "early-access email field should render");
-  await desktop.locator("#contact").scrollIntoViewIfNeeded();
-  assert.equal(await desktop.locator("#contact form textarea").count(), 1, "contact message field should render");
-  await desktop.screenshot({ path: "artifacts/workflo-desktop-contact.png" });
-
-  const consentPanel = desktop.getByRole("dialog", { name: /choose what this site may remember/i });
-  if (await consentPanel.count()) {
-    await desktop.getByRole("button", { name: "Reject optional" }).click();
-  }
-  await desktop.locator(".privacy-reopen").click();
-  assert.equal(await consentPanel.count(), 1, "footer privacy settings should reopen the preferences panel");
+  await desktop.getByRole("button", { name: "Privacy settings" }).click();
+  assert.equal(await desktop.getByRole("dialog", { name: /privacy preferences/i }).count(), 1, "footer privacy control should reopen the preferences panel");
   await desktop.getByRole("button", { name: "Reject optional" }).click();
 
   const mobile = await browser.newPage({
@@ -152,14 +127,17 @@ try {
   });
   mobile.on("pageerror", (error) => failures.push("mobile page error: " + error.message));
   await mobile.goto(origin, { waitUntil: "networkidle" });
-  const mobileConsent = mobile.getByRole("dialog", { name: /choose what this site may remember/i });
+  const mobileConsent = mobile.getByRole("dialog", { name: /privacy preferences/i });
   if (await mobileConsent.count()) await mobile.getByRole("button", { name: "Reject optional" }).click();
-  await mobile.evaluate(() => window.scrollTo(0, 100));
-  await mobile.waitForTimeout(100);
-  await mobile.evaluate(() => window.scrollTo(0, 0));
-  await mobile.locator(".mobile-nav-toggle").click();
-  await mobile.locator(".mobile-drawer-cta").click();
-  await mobile.waitForFunction(() => window.location.hash === "#early-access", { timeout: 3000 });
+
+  const menuButton = mobile.getByRole("button", { name: "Open navigation" });
+  await menuButton.click();
+  const mobileNavigation = mobile.getByRole("navigation", { name: "Mobile navigation" });
+  assert.equal(await mobileNavigation.isVisible(), true, "mobile navigation should open");
+  await mobileNavigation.getByRole("link", { name: "Evidence" }).click();
+  assert.equal(await mobileNavigation.count(), 0, "mobile navigation should close after selection");
+  assert.equal(new URL(mobile.url()).hash, "#evidence", "mobile navigation should reach the selected section");
+
   const mobileMetrics = await mobile.evaluate(() => ({
     viewport: window.innerWidth,
     document: document.documentElement.scrollWidth,
@@ -167,28 +145,33 @@ try {
   assert.ok(mobileMetrics.document <= mobileMetrics.viewport + 1, "mobile layout has horizontal overflow");
   await mobile.screenshot({ path: "artifacts/workflo-mobile.png", fullPage: true });
 
-  const reduced = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const reduced = await browser.newPage({
+    viewport: { width: 1280, height: 900 },
+    reducedMotion: "reduce",
+  });
   reduced.on("pageerror", (error) => failures.push("reduced-motion page error: " + error.message));
-  await reduced.emulateMedia({ reducedMotion: "reduce" });
   await reduced.goto(origin, { waitUntil: "networkidle" });
-  const reducedConsent = reduced.getByRole("dialog", { name: /choose what this site may remember/i });
-  if (await reducedConsent.count()) {
-    await reduced.getByRole("button", { name: "Reject optional" }).click();
-  }
-  await reduced.evaluate(() => window.scrollTo(0, 0));
-  await reduced.waitForTimeout(100);
+  const reducedConsent = reduced.getByRole("dialog", { name: /privacy preferences/i });
+  if (await reducedConsent.count()) await reduced.getByRole("button", { name: "Reject optional" }).click();
+
   const reducedMotionState = await reduced.evaluate(() => ({
-    motion: matchMedia("(prefers-reduced-motion: reduce)").matches,
-    nearLayer: getComputedStyle(document.querySelector(".scene-photo-near") ?? document.body).display,
-    heroVisible: !!document.querySelector("#main-content h1"),
+    enabled: matchMedia("(prefers-reduced-motion: reduce)").matches,
+    copyOpacity: getComputedStyle(document.querySelector(".hero-copy")).opacity,
+    visualOpacity: getComputedStyle(document.querySelector(".hero-visual")).opacity,
+    copyAnimation: getComputedStyle(document.querySelector(".hero-copy")).animationName,
+    visualAnimation: getComputedStyle(document.querySelector(".hero-visual")).animationName,
+    receiptOpacity: getComputedStyle(document.querySelector(".receipt-card")).opacity,
   }));
-  assert.equal(reducedMotionState.motion, true);
-  assert.equal(reducedMotionState.nearLayer, "none", "decorative depth layer should be disabled for reduced motion");
-  assert.equal(reducedMotionState.heroVisible, true, "content must remain available with reduced motion");
-  await reduced.screenshot({ path: "artifacts/workflo-reduced-motion.png", fullPage: false });
+  assert.equal(reducedMotionState.enabled, true);
+  assert.equal(reducedMotionState.copyOpacity, "1", "hero copy should remain visible with reduced motion");
+  assert.equal(reducedMotionState.visualOpacity, "1", "hero photograph should remain visible with reduced motion");
+  assert.equal(reducedMotionState.copyAnimation, "none", "hero copy animation should be disabled");
+  assert.equal(reducedMotionState.visualAnimation, "none", "hero photograph animation should be disabled");
+  assert.equal(reducedMotionState.receiptOpacity, "1", "evidence receipt should remain visible with reduced motion");
+  await reduced.screenshot({ path: "artifacts/workflo-reduced-motion.png" });
 
   assert.deepEqual(failures, [], "browser must not emit page errors");
-  console.log("Workflo browser checks passed: desktop, mobile, five scenes, images, forms, consent, no gradients and reduced motion.");
+  console.log("Workflo browser checks passed: five sections, five images, typography, no gradients, early access, consent, mobile navigation and reduced motion.");
 } finally {
   await browser.close();
   server.kill("SIGTERM");
