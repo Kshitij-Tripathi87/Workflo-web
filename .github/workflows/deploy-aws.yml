@@ -1,0 +1,101 @@
+name: Deploy Workflo website to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: workflo-web-deploy-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy ${{ inputs.target }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    env:
+      AWS_REGION: ap-south-1
+      CDK_DEFAULT_REGION: ap-south-1
+      SES_FROM_ADDRESS: ${{ secrets.SES_FROM_ADDRESS }}
+      SES_IDENTITY_ARN: ${{ secrets.SES_IDENTITY_ARN }}
+      LEAD_NOTIFICATION_ADDRESS: ${{ secrets.LEAD_NOTIFICATION_ADDRESS }}
+      SUBMISSION_RETENTION_DAYS: "365"
+      TARGET: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install and build frontend
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Build backend handlers
+        working-directory: backend
+        run: |
+          npm install --no-audit --no-fund
+          npm run typecheck
+          npm run build
+          npm test
+      - name: Install and validate AWS CDK
+        working-directory: infra
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Validate required email configuration
+        run: |
+          test -n "$SES_FROM_ADDRESS"
+          test -n "$SES_IDENTITY_ARN"
+          test -n "$LEAD_NOTIFICATION_ADDRESS"
+      - name: Configure AWS credentials through OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-south-1
+      - name: Deploy WAF and application stacks, then publish website
+        working-directory: infra
+        shell: bash
+        run: |
+          ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+          EDGE_STACK="WorkfloWebEdgeWaf${TARGET^}"
+          APP_STACK="WorkfloWeb${TARGET^}"
+          export CDK_DEFAULT_ACCOUNT="$ACCOUNT_ID"
+
+          npx cdk bootstrap "aws://$ACCOUNT_ID/us-east-1"
+          npx cdk bootstrap "aws://$ACCOUNT_ID/ap-south-1"
+
+          npx cdk deploy "$EDGE_STACK" \
+            -c "environment=$TARGET" \
+            --outputs-file edge-outputs.json \
+            --require-approval never
+
+          WEB_ACL_ARN="$(node -e 'const fs=require("node:fs");const o=JSON.parse(fs.readFileSync("edge-outputs.json","utf8"));const s=Object.keys(o).find(k=>k.startsWith("WorkfloWebEdgeWaf"));if(!s||!o[s].CloudFrontWebAclArn)process.exit(2);process.stdout.write(o[s].CloudFrontWebAclArn)')"
+
+          npx cdk deploy "$APP_STACK" \
+            -c "environment=$TARGET" \
+            -c "webAclArn=$WEB_ACL_ARN" \
+            --outputs-file app-outputs.json \
+            --require-approval never
+
+          OUTPUTS="$(node -e 'const fs=require("node:fs");const o=JSON.parse(fs.readFileSync("app-outputs.json","utf8"));const s=Object.keys(o).find(k=>k.startsWith("WorkfloWeb")&&!k.includes("EdgeWaf"));if(!s)process.exit(2);process.stdout.write(JSON.stringify(o[s]))')"
+          BUCKET="$(node -e 'const o=JSON.parse(process.argv[1]);process.stdout.write(o.SiteBucketName)' "$OUTPUTS")"
+          DISTRIBUTION="$(node -e 'const o=JSON.parse(process.argv[1]);process.stdout.write(o.CloudFrontDistributionId)' "$OUTPUTS")"
+          SITE_DOMAIN="$(node -e 'const o=JSON.parse(process.argv[1]);process.stdout.write(o.CloudFrontDomain)' "$OUTPUTS")"
+
+          bash ./deploy-frontend.sh "$BUCKET" "$DISTRIBUTION" ../dist
+          echo "Deployed site: https://$SITE_DOMAIN"
+          curl --fail --retry 8 --retry-delay 10 "https://$SITE_DOMAIN/"
+          curl --fail --retry 8 --retry-delay 5 "https://$SITE_DOMAIN/api/v1/health"
