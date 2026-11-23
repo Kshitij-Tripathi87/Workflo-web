@@ -292,7 +292,7 @@ export class WorkfloWebStack extends cdk.Stack {
     new cdk.CfnOutput(this, "ApiUrl", { value: api.url });
     new cdk.CfnOutput(this, "SubmissionsTable", { value: table.tableName });
     new cdk.CfnOutput(this, "NotificationQueueUrl", { value: notificationQueue.queueUrl });
-    new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
-    new cdk.CfnOutput(this, "NotificationDLQ", { value: notificationDlq.queueUrl });
+    new cdk.CfnOutput(this, "StreamDispatchDLQUrl", { value: streamFailureQueue.queueUrl });
+    new cdk.CfnOutput(this, "NotificationDLQUrl", { value: notificationDlq.queueUrl });
   }
 }
