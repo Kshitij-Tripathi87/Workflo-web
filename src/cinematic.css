@@ -836,11 +836,7 @@ mask-image: none;
 @media(max-width:680px) { .early-access-grid { grid-template-columns:1fr; } .early-access-form .early-access-wide { grid-column:auto; } .early-access-form-heading { gap:16px; flex-wrap:wrap; } .consent-actions button { flex-basis:100%; } }
 
 /* Final no-gradient art direction: solid surfaces, photographic source images. */
-*,*::before,*::after {
-  background-image:none !important;
-  -webkit-mask-image:none !important;
-  mask-image:none !important;
-}
+*,*::before,*::after { background-image:none !important; }
 .scene-photo-near {
   position:absolute;
   inset:0;
@@ -955,32 +951,10 @@ mask-image: none;
 
 /* ---------- Workflo final art direction and motion restoration ---------- */
 :root, .site-shell {
-  --display: "Fraunces", Georgia, serif;
-  --sans: "DM Sans", "Helvetica Neue", Arial, sans-serif;
-  --mono: "IBM Plex Mono", "Courier New", monospace;
+  --display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --sans: "Helvetica Neue", Arial, sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
-@font-face {
-  font-family:"Fraunces";
-  src:url("/fonts/fraunces-latin.woff2") format("woff2");
-  font-style:normal;
-  font-weight:400 700;
-  font-display:swap;
-}
-@font-face {
-  font-family:"DM Sans";
-  src:url("/fonts/dm-sans-latin.woff2") format("woff2");
-  font-style:normal;
-  font-weight:400 700;
-  font-display:swap;
-}
-@font-face {
-  font-family:"IBM Plex Mono";
-  src:url("/fonts/ibm-plex-mono-latin.woff2") format("woff2");
-  font-style:normal;
-  font-weight:400 600;
-  font-display:swap;
-}
-
 /* The no-gradient rule remains global; local photographic masks are masks, not gradients. */
 .scene-photo-near {
   -webkit-mask-image:linear-gradient(0deg,#000 0%,#000 13%,transparent 56%) !important;
@@ -1056,4 +1030,13 @@ mask-image: none;
 @media(prefers-reduced-motion:reduce) {
   .scene-photo-near,.scene-fog,.scene-mist,.scene-floor-scan { display:none !important; animation:none !important; }
   .cinematic-stage .hero-copy { transition:none !important; }
+}
+
+/* Contrast-safe hero reading area: asymmetrical and photographic, never frosted glass. */
+@media(min-width:761px) {
+ .cinematic-stage .hero-copy {
+   background:#090c0e;
+   border-left:2px solid #e3a766;
+   box-shadow:0 18px 50px rgba(0,0,0,.14);
+ }
 }
