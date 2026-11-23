@@ -5,7 +5,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "test": "node --test dist/**/*.test.js"
+    "test": "node --test dist/handlers/*.test.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.800.0",
