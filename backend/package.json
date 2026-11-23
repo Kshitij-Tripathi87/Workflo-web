@@ -1,0 +1,24 @@
+{
+  "name": "@workflo/web-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node build.mjs",
+    "test": "tsx --test src/handlers/*.test.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.800.0",
+    "@aws-sdk/client-sqs": "^3.800.0",
+    "@aws-sdk/lib-dynamodb": "^3.800.0",
+    "@aws-sdk/client-sesv2": "^3.800.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.19.3"
+  }
+}

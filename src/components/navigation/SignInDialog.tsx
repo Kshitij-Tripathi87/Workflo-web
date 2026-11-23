@@ -1,79 +1,46 @@
-import React, { FormEvent, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { BrandLink } from "./BrandLink";
-import { ArrowIcon } from "./Icons";
 import { SectionEyebrow } from "../common/SectionEyebrow";
 
-export function SignInDialog({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+const workspaceUrl = import.meta.env.VITE_WORKSPACE_URL;
+
+export function SignInDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open && !dialog.open) {
       dialog.showModal();
-      window.setTimeout(() => inputRef.current?.focus(), 0);
     } else if (!open && dialog.open) {
       dialog.close();
     }
   }, [open]);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitted(true);
-  };
-
   return (
     <dialog
       className="access-dialog"
       ref={dialogRef}
+      aria-labelledby="workspace-access-title"
       onClose={onClose}
       onClick={(event) => {
         if (event.target === dialogRef.current) onClose();
       }}
     >
-      <button
-        className="dialog-close"
-        onClick={onClose}
-        aria-label="Close sign in dialog"
-      >
-        ✕
-      </button>
+      <button className="dialog-close" type="button" onClick={onClose} aria-label="Close workspace access dialog">×</button>
       <BrandLink />
       <SectionEyebrow number="WORKSPACE">ACCESS</SectionEyebrow>
-      <h2>Sign in to Workflo.</h2>
-      <p>
-        This preview is not connected to a live workspace. Use your
-        organization-provided sign-in link to access a deployed Workflo
-        environment.
-      </p>
-      <form onSubmit={submit}>
-        <label htmlFor="workflo-email">Work email</label>
-        <input
-          ref={inputRef}
-          id="workflo-email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@company.com"
-          required
-        />
-        <button className="button-dark" type="submit">
-          {submitted ? "Request noted" : "Continue"}
-          <ArrowIcon />
-        </button>
-      </form>
-      {submitted && (
-        <p className="dialog-note" role="status">
-          No sign-in request was sent. Connect your identity provider to enable
-          workspace access.
-        </p>
+      <h2 id="workspace-access-title">Workflo workspace</h2>
+      {workspaceUrl ? (
+        <>
+          <p>Continue to your organisation’s Workflo workspace. Access is controlled by that workspace’s identity provider.</p>
+          <a className="button-dark" href={workspaceUrl}>Open workspace <span aria-hidden="true">↗</span></a>
+        </>
+      ) : (
+        <>
+          <p>Workspace sign-in is not enabled on this public website yet. No credentials are collected here. Early-access applications are open for teams evaluating the product.</p>
+          <a className="button-dark" href="#early-access" onClick={onClose}>Request early access <span aria-hidden="true">↗</span></a>
+        </>
       )}
     </dialog>
   );

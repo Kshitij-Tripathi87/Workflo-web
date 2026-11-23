@@ -9,8 +9,8 @@
   --accent2: #8d674e;
   --glass: rgba(255, 255, 255, 0.68);
   --line: #e5e6e4;
-  --sans: "Inter Tight", "Arial Narrow", sans-serif;
-  --mono: "JetBrains Mono", monospace;
+  --sans: "Arial", "Helvetica Neue", sans-serif;
+  --mono: "Courier New", monospace;
   color: var(--ink);
   font-family: var(--sans);
   font-synthesis: none;

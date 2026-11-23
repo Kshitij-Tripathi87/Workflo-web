@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0d0f"><meta name="robots" content="index,follow">
+<title>Privacy Policy — Workflo</title><link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root{color-scheme:dark;--bg:#0a0d0f;--panel:#121719;--paper:#e9e7e0;--muted:#aaa9a2;--amber:#e0a165;--line:rgba(233,231,224,.18);font-family:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--paper);line-height:1.7}header,main,footer{width:min(900px,calc(100% - 40px));margin:auto}header{padding:44px 0 26px;border-bottom:1px solid var(--line)}a{color:var(--amber);text-underline-offset:3px}nav{display:flex;gap:18px;flex-wrap:wrap;font:11px "Courier New",monospace}main{padding:60px 0 100px}h1,h2{font-weight:500;letter-spacing:-.045em;line-height:1.05}h1{font-size:clamp(44px,8vw,76px);margin:18px 0}h2{font-size:27px;margin:46px 0 12px}p,li{color:var(--muted)}.eyebrow{font:11px "Courier New",monospace;color:var(--amber);letter-spacing:.08em}.draft{border:1px solid var(--amber);padding:16px 18px;margin:24px 0;background:var(--panel);color:var(--paper)}.draft strong{display:block;color:var(--amber);font:11px "Courier New",monospace;margin-bottom:5px}footer{border-top:1px solid var(--line);padding:24px 0 48px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header><nav><a href="/">WORKFLO</a><a href="/cookies.html">Cookie policy</a><a href="/terms.html">Terms</a><a href="/#contact">Contact</a></nav></header>
+<main>
+<div class="eyebrow">LEGAL / PRIVACY</div>
+<h1>Privacy Policy</h1>
+<p>Last updated: 23 November 2026</p>
+<div class="draft"><strong>PRE-LAUNCH DRAFT — OWNER DETAILS REQUIRED</strong>This policy describes the public Workflo website implementation currently in this repository. Before production publication, the operator must replace every bracketed field, confirm processors and regions from the deployed AWS account, approve retention periods, and obtain legal review for each market served.</div>
+
+<h2>1. Who operates Workflo</h2>
+<p>This website is operated by <strong>[Legal entity name]</strong>, registered at <strong>[Registered business address]</strong> (“Workflo”, “we”, “us” or “our”). Privacy enquiries and rights requests should be sent to <strong>[Privacy contact email]</strong>. The appointed grievance contact / Data Protection Officer, where required, is <strong>[Name and contact details]</strong>.</p>
+
+<h2>2. Information collected</h2>
+<p>When you submit a contact enquiry, we ask for your name, work email, company, role, enquiry category and message. When you apply for early access, we ask for your name, work email, company, role, team size, intended use case and optional information about your current workflow. The forms also contain a hidden anti-spam field; it is not displayed as a user question and is not used as a profile field.</p>
+<p>The website stores your privacy preference selection in browser local storage under the key <code>workflo-privacy-consent-v1</code>. The current public website does not load analytics, advertising, retargeting or social-media tracking tags.</p>
+<p>Infrastructure providers may process technical request information such as IP address, request time, URL, user-agent and security events as part of delivering and protecting the website. Configure deployed access-log settings and retention to match this notice before launch.</p>
+
+<h2>3. Why information is used</h2>
+<ul>
+<li>To receive, review and respond to contact enquiries and early-access applications.</li>
+<li>To assess product fit and arrange a requested follow-up.</li>
+<li>To protect the site, detect spam and investigate service issues.</li>
+<li>To remember your optional privacy preferences.</li>
+<li>To meet applicable legal obligations and handle privacy requests.</li>
+</ul>
+<p>We do not use form contents to create advertising profiles. Submitting an enquiry does not subscribe you to marketing communications.</p>
+
+<h2>4. Consent and other legal grounds</h2>
+<p>Each form requires you to affirm that Workflo may use the details you submit to review the request and reply to you. We process the details for that requested interaction and, where applicable, on other lawful grounds permitted by the laws that apply to the processing. Optional analytics and marketing trackers are not active on the current website.</p>
+<p>Consent can be withdrawn for future processing that relies on consent. Withdrawal does not make prior processing unlawful. We may retain limited records where required to establish, exercise or defend legal claims or comply with law.</p>
+
+<h2>5. Service providers and infrastructure</h2>
+<p>The planned deployment architecture uses Amazon Web Services. The website assets are served from private Amazon S3 storage through Amazon CloudFront. Contact and early-access requests are processed by API Gateway and Lambda, stored in DynamoDB, and notification work is sent through DynamoDB Streams and Amazon SQS to an email worker using Amazon SES. The initial application region is planned as Asia Pacific (Mumbai), while CloudFront uses a global edge network.</p>
+<p>These AWS components must not be described as live processors until the AWS environment has been provisioned and the service configuration has been verified. Current deployment status and the actual AWS account configuration take precedence over this planning description.</p>
+
+<h2>6. Retention</h2>
+<p>The application currently sets an expiry timestamp for submitted enquiries. The initial configurable value is 365 days and can be changed through the <code>SUBMISSION_RETENTION_DAYS</code> deployment setting (bounded in code between 30 and 3,650 days). DynamoDB TTL deletion is asynchronous and should not be treated as an exact deletion deadline. Before launch, Workflo must approve a retention schedule for active enquiries, unsuccessful applications, security logs, backups and legal holds, and implement any separate deletion process required for copies in queues, logs or backups.</p>
+
+<h2>7. Sharing and international processing</h2>
+<p>We share information only with service providers required to operate the site, provide email delivery, secure the infrastructure, or comply with law. We do not sell submitted contact or application information. Depending on where you access the site and where providers operate, technical data may be processed outside your country. Before launch, Workflo must verify the actual AWS regions, provider terms, transfer safeguards and any required notices for the countries it serves.</p>
+
+<h2>8. Security</h2>
+<p>The planned architecture uses private S3 access through CloudFront Origin Access Control, HTTPS, server-side validation, IAM-scoped permissions, AWS WAF, encrypted DynamoDB and SQS resources, and CloudWatch monitoring. These are implementation intentions, not a guarantee that a deployed environment is secure. Security settings, backups, access controls and incident procedures must be reviewed and tested before the website is made public.</p>
+
+<h2>9. Your choices and rights</h2>
+<p>Depending on the laws that apply to you, you may have rights to request access to, correction of, deletion of or information about personal data, to withdraw consent, or to raise a grievance. To make a request, use the website contact form and select “Something else”, and state that the request concerns privacy. Do not include passwords, government identity numbers or other sensitive credentials in the form. You may also contact <strong>[Privacy contact email]</strong>.</p>
+<p>For India-facing processing, Workflo must assess and comply with the Digital Personal Data Protection Act, 2023 and the applicable provisions of the Digital Personal Data Protection Rules, 2025 as they commence. The Rules were notified with staged commencement dates; this notice must be reviewed against the requirements in force at the time of processing. Official texts: <a href="https://egazette.gov.in/WriteReadData/2025/267647.pdf">Act commencement notification</a> and <a href="https://egazette.gov.in/WriteReadData/2025/267650.pdf">DPDP Rules, 2025</a>.</p>
+
+<h2>10. Children</h2>
+<p>This website and the Workflo product are intended for business and professional use, not for children. Do not submit information about a child. If you believe a child’s personal information has been submitted, contact <strong>[Privacy contact email]</strong>.</p>
+
+<h2>11. Changes</h2>
+<p>We may update this policy to reflect changes to the website, providers or applicable requirements. The “Last updated” date will change when the policy is revised. Material changes will be communicated through an appropriate notice on the website or by another suitable channel where required.</p>
+
+<h2>12. Contact and grievance</h2>
+<p>Operator: <strong>[Legal entity name]</strong><br>Address: <strong>[Registered business address]</strong><br>Privacy contact: <strong>[Privacy contact email]</strong><br>Grievance officer / privacy contact: <strong>[Name, role and contact details]</strong></p>
+</main>
+<footer>Workflo · Privacy and data handling · <a href="/">Return to website</a></footer>
+</body></html>
