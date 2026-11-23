@@ -107,8 +107,12 @@ try {
 
   await desktop.locator("#evidence").scrollIntoViewIfNeeded();
   await desktop.waitForFunction(() => document.querySelector("#evidence")?.classList.contains("is-revealed"));
+  await desktop.waitForFunction(() => {
+    const card = document.querySelector(".receipt-card");
+    return card && Number.parseFloat(getComputedStyle(card).opacity) > 0.99;
+  }, { timeout: 2500 });
   const receiptOpacity = await desktop.locator(".receipt-card").evaluate((node) => getComputedStyle(node).opacity);
-  assert.equal(receiptOpacity, "1", "evidence receipt should reveal when its section enters view");
+  assert.equal(receiptOpacity, "1", "evidence receipt should finish its reveal when its section enters view");
   await desktop.evaluate(() => window.scrollTo(0, 0));
   await desktop.screenshot({ path: "artifacts/workflo-desktop-hero.png" });
   await desktop.locator("#evidence").scrollIntoViewIfNeeded();
