@@ -1,7 +1,7 @@
 import React,{useEffect,useState} from "react";
 const INTRO_MS=5100;
 export function OpeningSequence(){
- const [active,setActive]=useState(()=>typeof window!=="undefined"&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches&&window.scrollY<40);
+ const [active,setActive]=useState(()=>typeof window!=="undefined"&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches&&!window.matchMedia("(max-width: 760px)").matches&&window.scrollY<40);
  useEffect(()=>{
   if(!active)return;
   const skip=()=>{if(window.scrollY>40)setActive(false);};
