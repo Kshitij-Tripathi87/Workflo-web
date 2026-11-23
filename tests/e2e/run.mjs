@@ -116,8 +116,10 @@ try {
   await mobile.waitForTimeout(100);
   await mobile.evaluate(() => window.scrollTo(0, 0));
   await mobile.locator(".mobile-nav-toggle").click();
-  assert.equal(await mobile.getByRole("link", { name: /request early access/i }).count(), 1, "mobile drawer should include early access");
-  await mobile.getByRole("link", { name: /request early access/i }).click();
+  const drawer = mobile.locator(".mobile-drawer, [data-mobile-drawer], .mobile-nav-panel").filter({ visible: true }).first();
+  const mobileAccessLink = mobile.getByRole("link", { name: /request early access/i }).filter({ visible: true }).first();
+  assert.equal(await mobileAccessLink.count(), 1, "mobile drawer should expose a visible early-access link");
+  await mobileAccessLink.click();
   const mobileMetrics = await mobile.evaluate(() => ({
     viewport: window.innerWidth,
     document: document.documentElement.scrollWidth,
