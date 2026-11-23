@@ -49,7 +49,7 @@ export function MobileDrawer({ isOpen, onClose, onSignIn }: MobileDrawerProps) {
     {
       title: "Commercial & Docs",
       items: [
-        { label: "Pricing / Workflow sizing", href: "#pricing", desc: "Tailored to your repository" },
+        { label: "Request early access", href: "#early-access", desc: "Apply for the engineering preview" },
         { label: "Discuss your workflow", href: "#contact", desc: "Connect with the Workflo team" },
       ],
     },
@@ -113,14 +113,14 @@ export function MobileDrawer({ isOpen, onClose, onSignIn }: MobileDrawerProps) {
               onSignIn();
             }}
           >
-            Sign in
+            Workspace access
           </button>
           <a
             href="#early-access"
             className="mobile-drawer-cta"
             onClick={onClose}
           >
-            <span>Get started</span>
+            <span>Request early access</span>
             <ArrowIcon />
           </a>
         </div>
