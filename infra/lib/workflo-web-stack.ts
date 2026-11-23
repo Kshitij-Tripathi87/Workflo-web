@@ -43,9 +43,10 @@ export class WorkfloWebStack extends cdk.Stack {
       pointInTimeRecovery: production,
       removalPolicy: production ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
       timeToLiveAttribute: "expiresAt",
+      stream: dynamodb.StreamViewType.NEW_IMAGE,
     });
 
-    const deadLetterQueue = new sqs.Queue(this, "NotificationDLQ", {
+    const streamFailureQueue = new sqs.Queue(this, "StreamDispatchDLQ", {\n      queueName: name("stream-dispatch-dlq"),\n      retentionPeriod: cdk.Duration.days(14),\n      encryption: sqs.QueueEncryption.SQS_MANAGED,\n    });\n    const deadLetterQueue = new sqs.Queue(this, "NotificationDLQ", {
       queueName: name("notification-dlq.fifo"),
       fifo: true,
       retentionPeriod: cdk.Duration.days(14),
@@ -88,6 +89,17 @@ export class WorkfloWebStack extends cdk.Stack {
       table.grantWriteData(fn);
       notificationQueue.grantSendMessages(fn);
     }
+
+    const notificationDispatcher = makeFunction("NotificationDispatcher", "handlers/dispatch-notification.handler");
+    table.grantStreamRead(notificationDispatcher);
+    notificationQueue.grantSendMessages(notificationDispatcher);
+    notificationDispatcher.addEventSource(new eventSources.DynamoEventSource(table, {
+      startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+      batchSize: 10,
+      retryAttempts: 5,
+      bisectBatchOnError: true,
+      onFailure: new eventSources.SqsDlq(streamFailureQueue),
+    }));
 
     const api = new apigw.HttpApi(this, "PublicApi", {
       apiName: name("api"),
@@ -260,5 +272,7 @@ export class WorkfloWebStack extends cdk.Stack {
     new cdk.CfnOutput(this, "ApiUrl", { value: api.apiEndpoint });
     new cdk.CfnOutput(this, "SubmissionsTable", { value: table.tableName });
     new cdk.CfnOutput(this, "NotificationQueue", { value: notificationQueue.queueUrl });
+    new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
+    new cdk.CfnOutput(this, "NotificationDLQ", { value: deadLetterQueue.queueUrl });
   }
 }
