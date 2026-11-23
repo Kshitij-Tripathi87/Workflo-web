@@ -246,11 +246,13 @@ export class WorkfloWebStack extends cdk.Stack {
       memorySize: 256,
       logRetention: logs.RetentionDays.ONE_MONTH,
       environment: {
+        SUBMISSIONS_TABLE: table.tableName,
         SES_FROM_ADDRESS: process.env.SES_FROM_ADDRESS ?? "",
         LEAD_NOTIFICATION_ADDRESS: process.env.LEAD_NOTIFICATION_ADDRESS ?? "",
       },
     });
     notificationQueue.grantConsumeMessages(worker);
+    table.grantReadData(worker);
     const senderIdentityArn = process.env.SES_IDENTITY_ARN;
     worker.addToRolePolicy(new iam.PolicyStatement({
       actions: ["ses:SendEmail"],
@@ -260,8 +262,7 @@ export class WorkfloWebStack extends cdk.Stack {
       cdk.Annotations.of(worker).addWarning("SES_IDENTITY_ARN is unset; restrict ses:SendEmail to the verified sender identity before production.");
     }
     worker.addEventSource("NotificationQueueMapping", new eventSources.SqsEventSource(notificationQueue, {
-      batchSize: 5,
-      reportBatchItemFailures: true,
+      batchSize: 1,
     }));
 
     const cfnDistribution = distribution.node.defaultChild as cloudfront.CfnDistribution;
@@ -292,6 +293,7 @@ export class WorkfloWebStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "SiteBucketName", { value: siteBucket.bucketName });
     new cdk.CfnOutput(this, "CloudFrontDomain", { value: distribution.domainName });
+    new cdk.CfnOutput(this, "CloudFrontDistributionId", { value: distribution.distributionId });
     new cdk.CfnOutput(this, "ApiUrl", { value: api.apiEndpoint });
     new cdk.CfnOutput(this, "SubmissionsTable", { value: table.tableName });
     new cdk.CfnOutput(this, "NotificationQueue", { value: notificationQueue.queueUrl });
