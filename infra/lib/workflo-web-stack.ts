@@ -68,7 +68,7 @@ export class WorkfloWebStack extends cdk.Stack {
       functionName: name(logicalId.toLowerCase()),
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
-      handler: "index.handler",
+      handler,
       code: lambda.Code.fromAsset("../backend/dist"),
       timeout: cdk.Duration.seconds(timeout),
       memorySize: 256,
