@@ -10,7 +10,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
-import * as wafv2 from "aws-cdk-lib/aws-wafv2";
+import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
 
 
 export interface WorkfloWebStackProps extends cdk.StackProps {
@@ -66,7 +66,7 @@ export class WorkfloWebStack extends cdk.Stack {
 
     const makeFunction = (logicalId: string, handler: string, timeout = 10) => new lambda.Function(this, logicalId, {
       functionName: name(logicalId.toLowerCase()),
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       architecture: lambda.Architecture.ARM_64,
       handler,
       code: lambda.Code.fromAsset("../backend/dist"),
@@ -96,9 +96,9 @@ export class WorkfloWebStack extends cdk.Stack {
       },
     });
 
-    api.addRoutes({ path: "/v1/health", methods: [apigw.HttpMethod.GET], integration: new integrations.HttpLambdaIntegration("HealthIntegration", healthFn) });
-    api.addRoutes({ path: "/v1/contact", methods: [apigw.HttpMethod.POST], integration: new integrations.HttpLambdaIntegration("ContactIntegration", contactFn) });
-    api.addRoutes({ path: "/v1/early-access", methods: [apigw.HttpMethod.POST], integration: new integrations.HttpLambdaIntegration("EarlyAccessIntegration", earlyAccessFn) });
+    api.addRoutes({ path: "/api/v1/health", methods: [apigw.HttpMethod.GET], integration: new integrations.HttpLambdaIntegration("HealthIntegration", healthFn) });
+    api.addRoutes({ path: "/api/v1/contact", methods: [apigw.HttpMethod.POST], integration: new integrations.HttpLambdaIntegration("ContactIntegration", contactFn) });
+    api.addRoutes({ path: "/api/v1/early-access", methods: [apigw.HttpMethod.POST], integration: new integrations.HttpLambdaIntegration("EarlyAccessIntegration", earlyAccessFn) });
 
     const distribution = new cloudfront.Distribution(this, "SiteDistribution", {
       defaultBehavior: {
@@ -117,7 +117,7 @@ export class WorkfloWebStack extends cdk.Stack {
           responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
         },
         "/api/*": {
-          origin: new origins.HttpOrigin(cdk.Fn.select(2, cdk.Fn.split("/", api.apiEndpoint)), { originPath: "/api" }),
+          origin: new origins.HttpOrigin(cdk.Fn.select(2, cdk.Fn.split("/", api.apiEndpoint))),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
@@ -156,39 +156,12 @@ export class WorkfloWebStack extends cdk.Stack {
       reportBatchItemFailures: true,
     });
 
-    const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
-      name: name("web-acl"),
-      scope: "CLOUDFRONT",
-      defaultAction: { allow: {} },
-      visibilityConfig: {
-        cloudWatchMetricsEnabled: true,
-        metricName: name("web-acl"),
-        sampledRequestsEnabled: true,
-      },
-      rules: [
-        {
-          name: "AWSManagedCommonRules",
-          priority: 10,
-          overrideAction: { none: {} },
-          statement: { managedRuleGroupStatement: { vendorName: "AWS", name: "AWSManagedRulesCommonRuleSet" } },
-          visibilityConfig: { cloudWatchMetricsEnabled: true, metricName: "common-rules", sampledRequestsEnabled: true },
-        },
-        {
-          name: "PublicApiRateLimit",
-          priority: 20,
-          action: { block: {} },
-          statement: { rateBasedStatement: { limit: production ? 1200 : 600, aggregateKeyType: "IP" } },
-          visibilityConfig: { cloudWatchMetricsEnabled: true, metricName: "api-rate", sampledRequestsEnabled: true },
-        },
-      ],
-    });
-    new cloudfront.CfnDistribution(this, "WebAclAssociationNote", {
-      // CloudFront Distribution L1 cannot be modified safely after L2 construction.
-      // The Distribution is associated via the override below.
-      distributionConfig: { enabled: false },
-    }).overrideLogicalId("WorkfloNoopWafAssociationPlaceholder");
     const cfnDistribution = distribution.node.defaultChild as cloudfront.CfnDistribution;
-    cfnDistribution.addPropertyOverride("DistributionConfig.WebACLId", webAcl.attrArn);
+    if (props.webAclArn) {
+      cfnDistribution.addPropertyOverride("DistributionConfig.WebACLId", props.webAclArn);
+    } else {
+      cdk.Annotations.of(distribution).addWarning("CloudFront WAF ACL is not attached. Deploy the Edge WAF stack in us-east-1 and redeploy with -c webAclArn=<ACL ARN> before production.");
+    }
 
     new cdk.CfnOutput(this, "SiteBucketName", { value: siteBucket.bucketName });
     new cdk.CfnOutput(this, "CloudFrontDomain", { value: distribution.domainName });
