@@ -99,7 +99,7 @@ export function useScrollStory({
       const inside =
         smoothstep(0.39, 0.45, progress) * (1 - smoothstep(0.59, 0.63, progress));
       const station =
-        smoothstep(0.63, 0.69, progress) * (1 - smoothstep(0.88, 0.96, progress));
+        smoothstep(0.66, 0.72, progress) * (1 - smoothstep(0.88, 0.96, progress));
       const fly = smoothstep(0.12, 0.46, progress);
       const frontMesh = (1 - smoothstep(0.12, 0.31, progress)) * 0.9;
 
