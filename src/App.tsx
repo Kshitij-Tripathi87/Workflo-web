@@ -67,11 +67,18 @@ function CookiePreferences() {
       setOpen(true);
     };
     window.addEventListener("workflo:open-privacy-settings", handleOpenPreferences);
-    const existing = parseConsent(localStorage.getItem(CONSENT_KEY));
+    let existing: Consent | null = null;
+    try {
+      existing = parseConsent(localStorage.getItem(CONSENT_KEY));
+      if (!existing) localStorage.removeItem(CONSENT_KEY);
+    } catch {
+      // Storage may be unavailable in restrictive browser contexts; keep the
+      // essential-only defaults and still expose the user's privacy controls.
+      existing = null;
+    }
     if (existing) {
       setConsent(existing);
     } else {
-      localStorage.removeItem(CONSENT_KEY);
       hasOpenedRef.current = true;
       setOpen(true);
     }
