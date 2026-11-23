@@ -10,18 +10,44 @@ on:
         options:
           - staging
           - production
+      staging_run_id:
+        description: Successful staging deployment workflow run ID (required for production)
+        required: false
+        type: string
 
 permissions:
   contents: read
   id-token: write
+  actions: read
 
 concurrency:
   group: workflo-web-deploy-${{ inputs.target }}
   cancel-in-progress: false
 
 jobs:
+  production-gate:
+    name: Verify staging release before production
+    if: inputs.target == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require staging deployment reference
+        env:
+          STAGING_RUN_ID: ${{ inputs.staging_run_id }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test -n "$STAGING_RUN_ID" || { echo "Provide a successful staging deployment run ID."; exit 1; }
+          [[ "$STAGING_RUN_ID" =~ ^[0-9]+$ ]] || { echo "Staging run ID must be numeric."; exit 1; }
+          RUN="$(gh api "repos/$GH_REPOSITORY/actions/runs/$STAGING_RUN_ID")"
+          echo "$RUN" | jq -e '.conclusion == "success" and .event == "workflow_dispatch" and (.name == "Deploy Workflo website to AWS")' >/dev/null
+          echo "$RUN" | jq -e '(.head_branch == "feat/cinematic-imagery" or .head_branch == "main")' >/dev/null
+          echo "Verified a successful staging deployment workflow run. Check its commit and staging URL in the Actions run before approving production."
+
   deploy:
     name: Build and deploy ${{ inputs.target }}
+    needs: [production-gate]
+    if: always() && (inputs.target == 'staging' || needs.production-gate.result == 'success')
     runs-on: ubuntu-latest
     environment: ${{ inputs.target }}
     env:
@@ -60,6 +86,13 @@ jobs:
           test -n "$SES_FROM_ADDRESS"
           test -n "$SES_IDENTITY_ARN"
           test -n "$LEAD_NOTIFICATION_ADDRESS"
+      - name: Block deployment with uncompleted legal operator fields
+        run: |
+          set -euo pipefail
+          if grep -nE '\\[(Legal entity name|Registered business address|Privacy contact email|Name and contact details|Name, role and contact details|Approved governing law and jurisdiction|Business contact email)\\]' public/privacy.html public/terms.html; then
+            echo "Replace legal placeholders and approve legal documents before deployment."
+            exit 1
+          fi
       - name: Configure AWS credentials through OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -69,6 +102,7 @@ jobs:
         working-directory: infra
         shell: bash
         run: |
+          set -euo pipefail
           ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
           EDGE_STACK="WorkfloWebEdgeWaf${TARGET^}"
           APP_STACK="WorkfloWeb${TARGET^}"
