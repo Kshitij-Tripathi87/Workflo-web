@@ -231,7 +231,7 @@ export class WorkfloWebStack extends cdk.Stack {
 
     const worker = new lambda.Function(this, "NotificationWorker", {
       functionName: name("notification-worker"),
-      runtime: lambda.Runtime.NODEJS_24_X,
+      runtime: lambda.Runtime.NODEJS_26_X,
       architecture: lambda.Architecture.ARM_64,
       handler: "handlers/notify.handler",
       code: lambda.Code.fromAsset("../backend/dist"),
