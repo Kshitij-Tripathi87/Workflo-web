@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import type { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { z } from "zod";
-import { json, parseJson, requestId } from "../shared/http.js";
-import { enqueueNotification, persistSubmission } from "../shared/storage.js";
+import { HttpInputError, json, parseJson, requestId } from "../shared/http.js";
+import { persistSubmission, submissionExpiryEpoch } from "../shared/storage.js";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -29,6 +29,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       id: randomUUID(),
       kind: "early_access" as const,
       createdAt: new Date().toISOString(),
+      expiresAt: submissionExpiryEpoch(),
       status: "received" as const,
       payload: {
         name: input.data.name,
@@ -42,11 +43,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       }
     };
     await persistSubmission(record);
-    try {
-      await enqueueNotification(record);
-    } catch (error) {
-      console.error(JSON.stringify({ event: "notification_enqueue_failed", requestId: id, submissionId: record.id, name: error instanceof Error ? error.name : "unknown" }));
-    }
     return json(202, { accepted: true, reference: record.id, requestId: id }, event);
   } catch (error) {
     const tooLarge = error instanceof Error && error.message === "PAYLOAD_TOO_LARGE";
