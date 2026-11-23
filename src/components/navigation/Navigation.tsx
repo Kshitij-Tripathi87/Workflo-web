@@ -46,6 +46,9 @@ export function Navigation({ onSignIn }: NavigationProps) {
       { label: "Architecture overview", href: "#architecture" },
       { label: "Receipt format", href: "#evidence" },
       { label: "Integrations guide", href: "#integrations" },
+      { label: "Privacy policy", href: "/privacy.html" },
+      { label: "Cookie policy", href: "/cookies.html" },
+      { label: "Terms of service", href: "/terms.html" },
     ],
   };
 
@@ -124,10 +127,10 @@ export function Navigation({ onSignIn }: NavigationProps) {
 
           <div className="nav-actions">
             <button className="sign-in-link" onClick={onSignIn}>
-              Sign in
+              Workspace access
             </button>
-            <a href="#pricing" className="nav-cta">
-              <span>Get started</span>
+            <a href="#early-access" className="nav-cta">
+              <span>Request early access</span>
               <span className="nav-cta-arrow">
                 <ArrowIcon />
               </span>
