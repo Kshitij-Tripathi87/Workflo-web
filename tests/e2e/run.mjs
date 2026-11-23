@@ -58,6 +58,16 @@ try {
     return targets.map((node) => node ? getComputedStyle(node).backgroundImage : "missing");
   });
   assert.ok(gradientState.every((value) => value === "none" || value === "missing"), "no-gradient visual rule should be present");
+  const typography = await desktop.evaluate(() => ({
+    display: getComputedStyle(document.querySelector(".hero-copy h1")).fontFamily,
+    body: getComputedStyle(document.querySelector(".hero-description")).fontFamily,
+    mono: getComputedStyle(document.querySelector(".section-eyebrow")).fontFamily,
+  }));
+  assert.match(typography.display, /Georgia|Palatino|Iowan/i, "display typography should use the editorial serif stack");
+  assert.match(typography.body, /Arial|Helvetica/i, "body typography should use the readable sans stack");
+  assert.match(typography.mono, /Consolas|Courier/i, "technical labels should use a monospace stack");
+  const floorMask = await desktop.locator(".scene-photo-near").first().evaluate((node) => getComputedStyle(node).maskImage);
+  assert.notEqual(floorMask, "none", "the photographic floor plane must retain its authored mask");
 
   const scrollStates = [];
   const sceneTargets = [
