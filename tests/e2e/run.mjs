@@ -99,6 +99,14 @@ try {
       const opacity = Number.parseFloat(stage.style.getPropertyValue("--photo-" + scene)) || 0;
       return opacity > 0.72;
     }, expectedScene, { timeout: 4000 });
+    await desktop.waitForFunction((scene) => {
+      const stage = document.querySelector(".cinematic-stage");
+      if (!stage) return false;
+      const value = (name) => Number.parseFloat(stage.style.getPropertyValue(name)) || 0;
+      if (scene === "hall") return value("--enter-alpha") < 0.03 && value("--inside-alpha") > 0.9;
+      if (scene === "path") return value("--inside-alpha") < 0.03 && value("--station-alpha") < 0.2;
+      return true;
+    }, expectedScene, { timeout: 4000 });
     const state = await desktop.locator(".cinematic-stage").evaluate((stage) => {
       const keys = ["exterior", "portal", "hall", "path", "sealed"];
       return Object.fromEntries(keys.map((key) => [key, Number.parseFloat(stage.style.getPropertyValue("--photo-" + key)) || 0]));
