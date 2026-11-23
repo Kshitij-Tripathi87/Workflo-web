@@ -11,6 +11,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 
 export interface WorkfloWebStackProps extends cdk.StackProps {
@@ -87,7 +88,6 @@ export class WorkfloWebStack extends cdk.Stack {
     const healthFn = makeFunction("HealthHandler", "handlers/health.handler");
     for (const fn of [contactFn, earlyAccessFn]) {
       table.grantWriteData(fn);
-      notificationQueue.grantSendMessages(fn);
     }
 
     const notificationDispatcher = makeFunction("NotificationDispatcher", "handlers/dispatch-notification.handler");
@@ -246,7 +246,6 @@ export class WorkfloWebStack extends cdk.Stack {
       },
     });
     notificationQueue.grantConsumeMessages(worker);
-    const senderAddress = process.env.SES_FROM_ADDRESS;
     const senderIdentityArn = process.env.SES_IDENTITY_ARN;
     worker.addToRolePolicy(new iam.PolicyStatement({
       actions: ["ses:SendEmail"],
@@ -267,11 +266,32 @@ export class WorkfloWebStack extends cdk.Stack {
       cdk.Annotations.of(distribution).addWarning("CloudFront WAF ACL is not attached. Deploy the Edge WAF stack in us-east-1 and redeploy with -c webAclArn=<ACL ARN> before production.");
     }
 
+    new cloudwatch.Alarm(this, "StreamDispatchDLQAlarm", {
+      alarmName: name("stream-dispatch-dlq-non-empty"),
+      metric: streamFailureQueue.metricApproximateNumberOfMessagesVisible({ period: cdk.Duration.minutes(5) }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      datapointsToAlarm: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription: "DynamoDB stream events require manual replay from the notification dispatch failure queue.",
+    });
+    new cloudwatch.Alarm(this, "NotificationDLQAlarm", {
+      alarmName: name("notification-dlq-non-empty"),
+      metric: deadLetterQueue.metricApproximateNumberOfMessagesVisible({ period: cdk.Duration.minutes(5) }),
+      threshold: 1,
+      evaluationPeriods: 1,
+      datapointsToAlarm: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      alarmDescription: "Notification messages failed delivery and require investigation.",
+    });
+
     new cdk.CfnOutput(this, "SiteBucketName", { value: siteBucket.bucketName });
     new cdk.CfnOutput(this, "CloudFrontDomain", { value: distribution.domainName });
     new cdk.CfnOutput(this, "ApiUrl", { value: api.apiEndpoint });
     new cdk.CfnOutput(this, "SubmissionsTable", { value: table.tableName });
     new cdk.CfnOutput(this, "NotificationQueue", { value: notificationQueue.queueUrl });
+    new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
+    new cdk.CfnOutput(this, "NotificationDLQ", { value: deadLetterQueue.queueUrl });
     new cdk.CfnOutput(this, "StreamDispatchDLQ", { value: streamFailureQueue.queueUrl });
     new cdk.CfnOutput(this, "NotificationDLQ", { value: deadLetterQueue.queueUrl });
   }
