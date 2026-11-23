@@ -116,7 +116,7 @@ export function MobileDrawer({ isOpen, onClose, onSignIn }: MobileDrawerProps) {
             Sign in
           </button>
           <a
-            href="#pricing"
+            href="#early-access"
             className="mobile-drawer-cta"
             onClick={onClose}
           >
