@@ -123,9 +123,7 @@
 }
 .scene-fog-b {
   opacity: 0.16;
-  background:
-    radial-gradient(ellipse 46% 16% at 60% 84%, rgba(210, 205, 196, 0.5), transparent 70%),
-    radial-gradient(ellipse 30% 14% at 12% 60%, rgba(210, 205, 196, 0.35), transparent 70%);
+  background: rgba(210, 205, 196, 0.06);
   animation: fog-fast 30s ease-in-out infinite alternate;
 }
 
@@ -376,7 +374,7 @@
   bottom: 0;
   left: calc(50% - 1px);
   width: 2px;
-  background: linear-gradient(180deg, transparent, #e3a766 30%, #e3a766 70%, transparent);
+  background: #e3a766;
   box-shadow: 0 0 24px rgba(227, 167, 102, 0.7);
   transform: scaleY(0);
   animation: seam 1.3s ease-out forwards;
@@ -554,7 +552,7 @@
   .mobile-scene-sequence { display:grid; gap:0; background:#090c0e; }
   .mobile-scene-card { position:relative; min-height:56svh; overflow:hidden; background:#111719; border-block:1px solid rgba(238,232,222,.12); }
   .mobile-scene-card>img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  .mobile-scene-vignette { position:absolute; inset:0; background:linear-gradient(0deg,rgba(4,6,7,.88),rgba(4,6,7,.04) 78%),linear-gradient(90deg,rgba(4,6,7,.32),transparent 72%); }
+  .mobile-scene-vignette { position:absolute; inset:0; background:rgba(4,6,7,.52); }
   .mobile-scene-copy { position:absolute; left:22px; right:22px; bottom:28px; color:#f2eee7; }
   .mobile-scene-copy small,.mobile-scene-code { font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#e3a766; }
   .mobile-scene-copy h2 { margin:12px 0 0; max-width:500px; font-size:clamp(32px,8vw,48px); line-height:.98; letter-spacing:-.055em; font-weight:500; color:#f2eee7; }
@@ -564,7 +562,7 @@
   .mobile-scene-hero { position:absolute; inset:0 0 auto; height:54svh; opacity:.9; }
   .reduced-hero { position:relative; min-height:92svh; padding:calc(54svh - 12px) 22px 54px !important; overflow:hidden; }
   .reduced-hero-copy { position:relative; z-index:2; }
-  .mobile-scene-hero .mobile-scene-vignette { background:linear-gradient(0deg,#0b0f11 0%,rgba(4,6,7,.02) 82%); }
+  .mobile-scene-hero .mobile-scene-vignette { background:rgba(4,6,7,.38); }
   .mobile-scene-code { position:absolute; right:20px; bottom:24px; }
   .reduced-brand { color:rgba(238,235,228,.72) !important; }
   .mobile-step-list li>i,.mobile-step-list li>span,.mobile-hotspot-list summary>span { color:#e3a766 !important; }
@@ -578,7 +576,7 @@
 .scene-floor-scan {
   position:absolute; z-index:3; left:3%; right:3%; bottom:5%; height:1px;
   opacity:calc(var(--floor-scan,0) * .62);
-  background:linear-gradient(90deg,transparent,rgba(230,166,103,.08) 12%,rgba(247,192,130,.88) 50%,rgba(230,166,103,.08) 88%,transparent);
+  background:#e6a667;
   box-shadow:0 0 9px rgba(226,158,88,.58),0 0 24px rgba(226,158,88,.18);
   transform:translateX(calc((var(--scan-progress,0) - .5) * 18%));
   pointer-events:none;
@@ -595,9 +593,7 @@
 /* The top of the hall/path frame needs a stronger falloff behind white copy. */
 .scene-photo-hall .scene-photo-scrim,
 .scene-photo-path .scene-photo-scrim {
-  background:
-    linear-gradient(90deg,rgba(4,6,7,.82) 0%,rgba(4,6,7,.48) 42%,rgba(4,6,7,.1) 86%),
-    linear-gradient(180deg,rgba(4,6,7,.28),transparent 34%,rgba(4,6,7,.30));
+  background:rgba(4,6,7,.42);
 }
 
 /* Keep the mobile navigation and all mobile scene copy contrast-safe. */
@@ -745,7 +741,7 @@ body { font-family:var(--sans); }
   .site-header { background:#0b0e10 !important; }
   .site-header.is-light { background:#e9e7e0 !important; }
   .contact-section { min-height:760px; padding:82px 24px 116px; }
-  .contact-photo { width:100% !important; height:100% !important; object-position:69% center !important; opacity:.5 !important; -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.45),#000 54%) !important; mask-image:linear-gradient(180deg,rgba(0,0,0,.45),#000 54%) !important; }
+  .contact-photo { width:100% !important; height:100% !important; object-position:69% center !important; opacity:.5 !important; -webkit-mask-image:none !important; mask-image:none !important; }
   .contact-content h2 { font-size:clamp(44px,12vw,72px); }
   .contact-content p { font-size:15px; }
   .site-footer .footer-top { gap:28px; }
