@@ -99,7 +99,7 @@ try {
   if (await consentPanel.count()) {
     await desktop.getByRole("button", { name: "Reject optional" }).click();
   }
-  await desktop.getByRole("button", { name: "Privacy settings" }).click();
+  await desktop.locator(".privacy-reopen").click();
   assert.equal(await consentPanel.count(), 1, "footer privacy settings should reopen the preferences panel");
   await desktop.getByRole("button", { name: "Reject optional" }).click();
 
