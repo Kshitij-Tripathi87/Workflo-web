@@ -78,3 +78,36 @@ test("early-access application rejects malformed requests and unexpected propert
   assert.equal(malformed.success, false);
   assert.equal(unexpected.success, false);
 });
+
+
+test("contact and early-access schemas require explicit response consent", () => {
+  const contact = {
+    name: "Ada Example",
+    email: "ada@example.com",
+    inquiryType: "product",
+    message: "Please contact me about a controlled verification pilot.",
+    consentToReply: true,
+  };
+  const application = {
+    name: "Ada Example",
+    email: "ada@example.com",
+    company: "Example Engineering",
+    teamSize: "6-20",
+    useCase: "We need repeatable isolated verification for each repository change.",
+    consentToReply: true,
+  };
+  assert.equal(contactSchema.safeParse({ ...contact, consentToReply: false }).success, false);
+  assert.equal(earlyAccessSchema.safeParse({ ...application, consentToReply: false }).success, false);
+});
+
+test("honeypot field must be empty for non-spam submissions", () => {
+  const contact = {
+    name: "Ada Example",
+    email: "ada@example.com",
+    inquiryType: "product",
+    message: "Please contact me about a controlled verification pilot.",
+    consentToReply: true,
+    website: "https://spam.example",
+  };
+  assert.equal(contactSchema.safeParse(contact).success, false);
+});
