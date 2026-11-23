@@ -59,7 +59,7 @@ export function Contact() {
             <label>Role<input name="role" autoComplete="organization-title" maxLength={120} value={fields.role} onChange={e=>update("role",e.target.value)}/></label>
             <label className="contact-form-wide">What is this about?
               <select value={fields.inquiryType} onChange={e=>update("inquiryType",e.target.value)}>
-                <option value="product">Product evaluation</option><option value="security">Security and architecture</option><option value="partnership">Partnership</option><option value="other">Something else</option>
+                <option value="product">Product evaluation</option><option value="security">Security and architecture</option><option value="partnership">Partnership</option><option value="privacy">Privacy or data request</option><option value="other">Something else</option>
               </select>
             </label>
             <label className="contact-form-wide">What are you trying to verify?
