@@ -512,12 +512,12 @@ mask-image: none;
 .button-dark:hover { background:#f0bd88 !important; }
 .site-footer { border-top:1px solid rgba(236,232,223,.12); }
 
-/* Floor scans belong to each photographic plane and therefore follow its camera/crop. */
-.scene-photo-hall .scene-floor-scan { left:12%; right:12%; height:32%; }
-.scene-photo-path .scene-floor-scan { left:2%; right:2%; height:34%; opacity:calc(var(--floor-scan) * .48); }
-.scene-photo-exterior .scene-floor-scan { left:4%; right:3%; height:25%; opacity:calc(var(--floor-scan) * .5); }
-.scene-photo-portal .scene-floor-scan { opacity:calc(var(--floor-scan) * .22); }
-.scene-photo-sealed .scene-floor-scan { opacity:calc(var(--floor-scan) * .3); }
+/* Floor scans stay as a fine amber line, never a translucent floor panel. */
+.scene-photo-hall .scene-floor-scan { left:12%; right:12%; bottom:20%; height:1px !important; opacity:calc(var(--floor-scan) * .52); }
+.scene-photo-path .scene-floor-scan { left:2%; right:2%; bottom:12%; height:1px !important; opacity:calc(var(--floor-scan) * .62); }
+.scene-photo-exterior .scene-floor-scan { left:4%; right:3%; bottom:7%; height:1px !important; opacity:calc(var(--floor-scan) * .5); }
+.scene-photo-portal .scene-floor-scan { bottom:8%; height:1px !important; opacity:calc(var(--floor-scan) * .22); }
+.scene-photo-sealed .scene-floor-scan { bottom:26%; height:1px !important; opacity:calc(var(--floor-scan) * .3); }
 
 @media (min-width:821px) { .story-reduced { display:none !important; } }
 @media (max-width:820px) {
@@ -1030,6 +1030,25 @@ mask-image: none;
 @media(prefers-reduced-motion:reduce) {
   .scene-photo-near,.scene-fog,.scene-mist,.scene-floor-scan { display:none !important; animation:none !important; }
   .cinematic-stage .hero-copy { transition:none !important; }
+}
+
+/* Reduce the duplicate foreground plane to a restrained near-floor cue.
+   A shorter feather avoids a broad bright slab over the actual photograph. */
+.scene-photo-near {
+  opacity:.2 !important;
+  mix-blend-mode:normal !important;
+  filter:none !important;
+  -webkit-mask-image:linear-gradient(0deg,#000 0%,#000 4%,transparent 30%) !important;
+  mask-image:linear-gradient(0deg,#000 0%,#000 4%,transparent 30%) !important;
+}
+
+/* The verification receipt is a solid paper artifact, not a glass panel. */
+.cinematic-stage .receipt-card {
+  background:#f7f7f5 !important;
+  border:1px solid #d8dad7 !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
 }
 
 /* Contrast-safe hero reading area: asymmetrical and photographic, never frosted glass. */
