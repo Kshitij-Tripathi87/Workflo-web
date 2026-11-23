@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { WorkfloWebStack } from "../lib/workflo-web-stack.js";
+import { EdgeWafStack } from "../lib/edge-waf-stack.js";
 
 const app = new cdk.App();
 const environment = app.node.tryGetContext("environment") ?? "staging";
@@ -10,8 +11,16 @@ const account = process.env.CDK_DEFAULT_ACCOUNT;
 const region = process.env.CDK_DEFAULT_REGION ?? "ap-south-1";
 if (!account) throw new Error("CDK_DEFAULT_ACCOUNT is required; run aws sts get-caller-identity first");
 
+new EdgeWafStack(app, environment === "production" ? "WorkfloWebEdgeWafProduction" : "WorkfloWebEdgeWafStaging", {
+  env: { account, region: "us-east-1" },
+  environmentName: environment,
+  description: `Workflo CloudFront WAF (${environment}) — CloudFront-scoped WAF resources must live in us-east-1`,
+});
+
+const webAclArn = app.node.tryGetContext("webAclArn") ?? process.env.WORKFLO_CLOUDFRONT_WAF_ARN;
 new WorkfloWebStack(app, environment === "production" ? "WorkfloWebProduction" : "WorkfloWebStaging", {
   env: { account, region },
   environmentName: environment,
+  webAclArn,
   description: `Workflo public website and lead intake (${environment})`,
 });
