@@ -59,6 +59,24 @@ try {
   });
   assert.ok(gradientState.every((value) => value === "none" || value === "missing"), "no-gradient visual rule should be present");
 
+  const scrollStates = [];
+  for (const progress of [0.04, 0.26, 0.48, 0.65, 0.9]) {
+    await desktop.evaluate((value) => {
+      const story = document.querySelector("#story");
+      const range = Math.max(1, story.offsetHeight - window.innerHeight);
+      window.scrollTo(0, story.offsetTop + range * value);
+    }, progress);
+    await desktop.waitForTimeout(300);
+    const state = await desktop.locator(".cinematic-stage").evaluate((stage) => {
+      const keys = ["exterior", "portal", "hall", "path", "sealed"];
+      return Object.fromEntries(keys.map((key) => [key, Number.parseFloat(stage.style.getPropertyValue("--photo-" + key)) || 0]));
+    });
+    const active = Object.entries(state).filter(([, opacity]) => opacity > 0.7).map(([key]) => key);
+    assert.equal(active.length, 1, "scroll position should resolve to one dominant scene at " + progress);
+    scrollStates.push(active[0]);
+  }
+  assert.deepEqual(scrollStates, ["exterior", "portal", "hall", "path", "sealed"], "scroll choreography should reveal each scene in sequence");
+
   await desktop.locator("#early-access").scrollIntoViewIfNeeded();
   assert.equal(await desktop.locator("#early-access form input[type=email]").count(), 1, "early-access email field should render");
   await desktop.locator("#contact").scrollIntoViewIfNeeded();
@@ -80,6 +98,11 @@ try {
   });
   mobile.on("pageerror", (error) => failures.push("mobile page error: " + error.message));
   await mobile.goto(origin, { waitUntil: "networkidle" });
+  const mobileConsent = mobile.getByRole("dialog", { name: /choose what this site may remember/i });
+  if (await mobileConsent.count()) await mobile.getByRole("button", { name: "Reject optional" }).click();
+  await mobile.evaluate(() => window.scrollTo(0, 100));
+  await mobile.waitForTimeout(100);
+  await mobile.evaluate(() => window.scrollTo(0, 0));
   await mobile.locator(".mobile-nav-toggle").click();
   assert.equal(await mobile.getByRole("link", { name: /request early access/i }).count(), 1, "mobile drawer should include early access");
   await mobile.getByRole("link", { name: /request early access/i }).click();
