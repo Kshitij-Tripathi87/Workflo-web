@@ -60,19 +60,31 @@ try {
   assert.ok(gradientState.every((value) => value === "none" || value === "missing"), "no-gradient visual rule should be present");
 
   const scrollStates = [];
-  for (const progress of [0.04, 0.28, 0.47, 0.64, 0.95]) {
+  const sceneTargets = [
+    ["exterior", 0.05],
+    ["portal", 0.32],
+    ["hall", 0.49],
+    ["path", 0.65],
+    ["sealed", 0.95],
+  ];
+  for (const [expectedScene, progress] of sceneTargets) {
     await desktop.evaluate((value) => {
       const story = document.querySelector("#story");
       const range = Math.max(1, story.offsetHeight - window.innerHeight);
       window.scrollTo(0, story.offsetTop + range * value);
     }, progress);
-    await desktop.waitForTimeout(300);
+    await desktop.waitForFunction((scene) => {
+      const stage = document.querySelector(".cinematic-stage");
+      if (!stage) return false;
+      const opacity = Number.parseFloat(stage.style.getPropertyValue("--photo-" + scene)) || 0;
+      return opacity > 0.72;
+    }, expectedScene, { timeout: 4000 });
     const state = await desktop.locator(".cinematic-stage").evaluate((stage) => {
       const keys = ["exterior", "portal", "hall", "path", "sealed"];
       return Object.fromEntries(keys.map((key) => [key, Number.parseFloat(stage.style.getPropertyValue("--photo-" + key)) || 0]));
     });
-    const active = Object.entries(state).filter(([, opacity]) => opacity > 0.7).map(([key]) => key);
-    assert.equal(active.length, 1, "scroll position should resolve to one dominant scene at " + progress);
+    const active = Object.entries(state).filter(([, opacity]) => opacity > 0.72).map(([key]) => key);
+    assert.deepEqual(active, [expectedScene], "scroll should resolve to " + expectedScene);
     scrollStates.push(active[0]);
   }
   assert.deepEqual(scrollStates, ["exterior", "portal", "hall", "path", "sealed"], "scroll choreography should reveal each scene in sequence");
