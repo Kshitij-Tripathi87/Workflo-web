@@ -3,13 +3,23 @@
 ## Deployment
 
 Use the manual workflow `Deploy Workflo website to AWS`:
-1. Select staging or production.
-2. Confirm CI is green for the exact commit.
-3. Confirm the selected GitHub Environment contains the OIDC and SES configuration.
-4. Trigger the workflow.
-5. Review workflow output: edge WAF deployment, app stack deployment, S3 sync, CloudFront invalidation, homepage and health endpoint smoke tests.
 
-Production requires the GitHub environment approval gate.
+### Staging
+1. Select the exact release ref and choose `staging`.
+2. Confirm CI is green for that commit.
+3. Confirm the staging GitHub Environment has its OIDC role and SES configuration.
+4. Trigger the deployment and wait for the run to succeed.
+5. Review output: edge WAF deployment, app stack deployment, S3 sync, CloudFront invalidation, homepage and API health smoke tests.
+6. Record the staging workflow run ID and deployed commit SHA.
+
+### Production promotion
+1. Select the same exact ref/commit used by the successful staging run.
+2. Choose `production`.
+3. Supply the successful staging workflow run ID as `staging_run_id`.
+4. Confirm the production gate reports the exact same commit SHA.
+5. Complete the required production GitHub Environment approval.
+
+The workflow rejects an unsuccessful/non-staging run, a run from an unsupported branch, or a different commit SHA. It also blocks deployment while legal operator placeholders remain in the privacy and terms pages.
 
 ## Smoke checks
 
