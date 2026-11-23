@@ -96,7 +96,7 @@ jobs:
       - name: Block deployment with uncompleted legal operator fields
         run: |
           set -euo pipefail
-          if grep -nE '\[(Legal entity name|Registered business address|Privacy contact email|Name and contact details|Name, role and contact details|Approved governing law and jurisdiction|Business contact email)\]' public/privacy.html public/terms.html; then
+          if grep -nE '\[(Legal entity name, registered business address|Legal entity name|Registered business address|Privacy contact email|Name and contact details|Name, role and contact details|Approved governing law and jurisdiction|Business contact email)\]' public/privacy.html public/cookies.html public/terms.html; then
             echo "Replace legal placeholders and approve legal documents before deployment."
             exit 1
           fi
