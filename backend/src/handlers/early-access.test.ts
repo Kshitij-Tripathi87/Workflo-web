@@ -1,52 +1,80 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { z } from "zod";
+import { contactSchema, earlyAccessSchema } from "../validation/submissions.js";
 
-const schema = z.object({
-  name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(254),
-  company: z.string().trim().min(2).max(160),
-  role: z.string().trim().max(120).optional().default(""),
-  teamSize: z.enum(["1", "2-5", "6-20", "21-50", "51-200", "200+"]),
-  useCase: z.string().trim().min(20).max(3000),
-  workflow: z.string().trim().max(2000).optional().default(""),
-  consentToReply: z.literal(true),
-  website: z.string().max(0).optional().default("")
-}).strict();
+test("contact enquiry accepts supported categories and normalises optional fields", () => {
+  const parsed = contactSchema.safeParse({
+    name: "Ada Example",
+    email: "ada@example.com",
+    inquiryType: "privacy",
+    message: "Please explain how my submitted enquiry is stored.",
+    consentToReply: true,
+  });
+  assert.equal(parsed.success, true);
+  if (parsed.success) {
+    assert.equal(parsed.data.company, "");
+    assert.equal(parsed.data.role, "");
+    assert.equal(parsed.data.website, "");
+  }
+});
 
-test("accepts an explicit early-access application", () => {
-  const parsed = schema.safeParse({
+test("contact enquiry rejects invalid email, missing consent and unknown fields", () => {
+  const invalidEmail = contactSchema.safeParse({
+    name: "Ada Example",
+    email: "not-an-email",
+    inquiryType: "product",
+    message: "Please contact me about evaluation.",
+    consentToReply: true,
+  });
+  const missingConsent = contactSchema.safeParse({
+    name: "Ada Example",
+    email: "ada@example.com",
+    inquiryType: "product",
+    message: "Please contact me about evaluation.",
+  });
+  const unexpected = contactSchema.safeParse({
+    name: "Ada Example",
+    email: "ada@example.com",
+    inquiryType: "product",
+    message: "Please contact me about evaluation.",
+    consentToReply: true,
+    isAdmin: true,
+  });
+  assert.equal(invalidEmail.success, false);
+  assert.equal(missingConsent.success, false);
+  assert.equal(unexpected.success, false);
+});
+
+test("early-access application accepts a complete application", () => {
+  const parsed = earlyAccessSchema.safeParse({
     name: "Ada Example",
     email: "ada@example.com",
     company: "Example Engineering",
     teamSize: "6-20",
     useCase: "We need repeatable isolated verification for code changes.",
     consentToReply: true,
-    website: ""
   });
   assert.equal(parsed.success, true);
 });
 
-test("rejects malformed email and missing reply consent", () => {
-  const parsed = schema.safeParse({
+test("early-access application rejects malformed requests and unexpected properties", () => {
+  const malformed = earlyAccessSchema.safeParse({
     name: "Ada Example",
     email: "not-an-email",
     company: "Example Engineering",
     teamSize: "6-20",
-    useCase: "We need repeatable isolated verification for code changes."
+    useCase: "We need repeatable isolated verification for code changes.",
+    consentToReply: true,
   });
-  assert.equal(parsed.success, false);
-});
-
-test("rejects unexpected properties", () => {
-  const parsed = schema.safeParse({
+  const unexpected = earlyAccessSchema.safeParse({
     name: "Ada Example",
     email: "ada@example.com",
     company: "Example Engineering",
     teamSize: "6-20",
     useCase: "We need repeatable isolated verification for code changes.",
     consentToReply: true,
-    isAdmin: true
+    admin: true,
   });
-  assert.equal(parsed.success, false);
+  assert.equal(malformed.success, false);
+  assert.equal(unexpected.success, false);
 });
