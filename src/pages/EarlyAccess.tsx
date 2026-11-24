@@ -61,7 +61,7 @@ export function EarlyAccess() {
         
         <div className="relative z-10 mx-auto max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Private Beta · Early Access Intake
             </span>
@@ -80,8 +80,8 @@ export function EarlyAccess() {
 
           <div className="mt-12">
             {status === "success" ? (
-              <div className="rounded-3xl border border-[#C7F36B]/30 bg-[#C7F36B]/10 p-8 text-center backdrop-blur sm:p-12">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#C7F36B]/20 text-[#C7F36B]">
+              <div className="rounded-3xl border border-white/20 bg-white/10 p-8 text-center backdrop-blur sm:p-12">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-white">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
@@ -105,7 +105,7 @@ export function EarlyAccess() {
                 className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur sm:p-10 space-y-6"
               >
                 {errorMessage && (
-                  <div className="rounded-xl border border-red-500/40 bg-red-950/30 p-4 text-xs text-red-200 font-mono">
+                  <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-xs text-white font-mono">
                     {errorMessage}
                   </div>
                 )}
@@ -124,7 +124,7 @@ export function EarlyAccess() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block font-mono text-xs text-white/60 mb-2">
-                      FULL NAME <span className="text-[#C7F36B]">*</span>
+                      FULL NAME <span className="text-white">*</span>
                     </label>
                     <input
                       type="text"
@@ -138,7 +138,7 @@ export function EarlyAccess() {
 
                   <div>
                     <label className="block font-mono text-xs text-white/60 mb-2">
-                      WORK EMAIL <span className="text-[#C7F36B]">*</span>
+                      WORK EMAIL <span className="text-white">*</span>
                     </label>
                     <input
                       type="email"
@@ -154,7 +154,7 @@ export function EarlyAccess() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block font-mono text-xs text-white/60 mb-2">
-                      COMPANY / ORG <span className="text-[#C7F36B]">*</span>
+                      COMPANY / ORG <span className="text-white">*</span>
                     </label>
                     <input
                       type="text"
@@ -180,7 +180,7 @@ export function EarlyAccess() {
 
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    ENGINEERING TEAM SIZE <span className="text-[#C7F36B]">*</span>
+                    ENGINEERING TEAM SIZE <span className="text-white">*</span>
                   </label>
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {TEAM_SIZES.map((size) => (
@@ -190,7 +190,7 @@ export function EarlyAccess() {
                         onClick={() => setForm({ ...form, teamSize: size as any })}
                         className={`rounded-xl border py-2.5 font-mono text-xs transition-colors ${
                           form.teamSize === size
-                            ? "border-[#C7F36B]/40 bg-[#C7F36B]/15 text-[#C7F36B] font-semibold"
+                            ? "border-white/20 bg-white/15 text-white font-semibold"
                             : "border-white/[0.08] bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
                         }`}
                       >
@@ -202,7 +202,7 @@ export function EarlyAccess() {
 
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    PRIMARY USE CASE & PIPELINE CONTEXT <span className="text-[#C7F36B]">*</span>
+                    PRIMARY USE CASE & PIPELINE CONTEXT <span className="text-white">*</span>
                   </label>
                   <textarea
                     required
@@ -234,7 +234,7 @@ export function EarlyAccess() {
                     id="ea-consent"
                     checked={form.consentToReply}
                     onChange={(e) => setForm({ ...form, consentToReply: e.target.checked })}
-                    className="h-4 w-4 rounded border-white/[0.08] bg-black/50 text-[#C7F36B] focus:ring-0"
+                    className="h-4 w-4 rounded border-white/[0.08] bg-black/50 text-white focus:ring-0"
                   />
                   <label htmlFor="ea-consent" className="text-xs text-white/60">
                     I agree to be contacted by Workflo regarding sandbox access and onboarding.

@@ -270,11 +270,11 @@ function CodeSnippet({ code, title }: { code: string; title?: string }) {
     <div className="rounded-2xl border border-white/[0.08] bg-black/60 backdrop-blur-md overflow-hidden my-4">
       {title && (
         <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2 bg-white/[0.02]">
-          <span className="font-mono text-xs text-[#90969A]">{title}</span>
+          <span className="font-mono text-xs text-white/60">{title}</span>
           <button
             type="button"
             onClick={handleCopy}
-            className="font-mono text-[11px] text-[#C7F36B] hover:underline"
+            className="font-mono text-[11px] text-white hover:underline"
           >
             {copied ? "COPIED" : "COPY"}
           </button>
@@ -285,12 +285,12 @@ function CodeSnippet({ code, title }: { code: string; title?: string }) {
           <button
             type="button"
             onClick={handleCopy}
-            className="absolute top-3 right-3 font-mono text-[11px] text-[#90969A] hover:text-[#C7F36B]"
+            className="absolute top-3 right-3 font-mono text-[11px] text-white/60 hover:text-white"
           >
             {copied ? "COPIED" : "COPY"}
           </button>
         )}
-        <pre className="font-mono text-xs text-[#F1F2EE] leading-relaxed">
+        <pre className="font-mono text-xs text-white leading-relaxed">
           <code>{code}</code>
         </pre>
       </div>
@@ -326,7 +326,7 @@ export function Docs() {
   };
 
   return (
-    <div className="landing-root min-h-screen bg-[#090A0C] text-[#F1F2EE] selection:bg-[#C7F36B] selection:text-[#090A0C]">
+    <div className="landing-root min-h-screen bg-black text-white selection:bg-white selection:text-black">
       <Navbar />
 
       {/* ------------------------------------------------------------------ */}
@@ -338,15 +338,15 @@ export function Docs() {
         <div className="relative z-10 mx-auto max-w-6xl">
           {/* Breadcrumb + Status Badge */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2 font-mono text-sm text-[#90969A]">
+            <div className="flex items-center gap-2 font-mono text-sm text-white/60">
               <span>workflo</span>
               <span>/</span>
-              <span className="text-[#F1F2EE] font-medium">docs</span>
+              <span className="text-white font-medium">docs</span>
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#C7F36B]/30 bg-[#C7F36B]/10 px-3.5 py-1 backdrop-blur-md">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
-              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#C7F36B]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-white">
                 DEVELOPMENT PREVIEW
               </span>
             </div>
@@ -356,10 +356,10 @@ export function Docs() {
           <LetterReveal
             text="Understand every run."
             as="h1"
-            className="text-[10vw] font-medium leading-[1.05] tracking-tight text-[#F1F2EE] md:text-[5.5vw]"
+            className="text-[10vw] font-medium leading-[1.05] tracking-tight text-white md:text-[5.5vw]"
           />
 
-          <p className="mt-6 max-w-3xl text-lg text-[#90969A] md:text-xl font-light leading-relaxed">
+          <p className="mt-6 max-w-3xl text-lg text-white/60 md:text-xl font-light leading-relaxed">
             Everything you need to configure, execute, inspect and verify a Workflo run.
           </p>
 
@@ -383,30 +383,30 @@ export function Docs() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                   <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="4 17 10 11 4 5" />
                         <line x1="12" y1="19" x2="20" y2="19" />
                       </svg>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
                       GETTING STARTED
                     </span>
                   </div>
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
                     Quickstart
                   </h3>
-                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
                     Install and run your first verification.
                   </p>
                 </div>
               </div>
 
               <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
                   <span>Start reading</span>
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
@@ -429,30 +429,30 @@ export function Docs() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                   <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                       </svg>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
                       12 STAGES
                     </span>
                   </div>
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
                     Execution lifecycle
                   </h3>
-                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
                     Understand all 12 execution stages.
                   </p>
                 </div>
               </div>
 
               <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
                   <span>Explore stages</span>
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
@@ -475,31 +475,31 @@ export function Docs() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                   <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
                         <polyline points="9 15 11 17 15 13" />
                       </svg>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
                       ED25519 / MERKLE
                     </span>
                   </div>
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
                     Receipt verification
                   </h3>
-                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
                     Inspect signatures and evidence.
                   </p>
                 </div>
               </div>
 
               <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
                   <span>Open playground</span>
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
@@ -522,30 +522,30 @@ export function Docs() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                   <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="16 18 22 12 16 6" />
                         <polyline points="8 6 2 12 8 18" />
                       </svg>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
                       REST & SDK
                     </span>
                   </div>
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
                     API reference
                   </h3>
-                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
                     Integrate through the versioned API.
                   </p>
                 </div>
               </div>
 
               <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
                   <span>View schemas</span>
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M12 5l7 7-7 7" />
@@ -555,7 +555,7 @@ export function Docs() {
             </a>
           </div>
 
-          <p className="mt-4 font-mono text-[11px] text-[#90969A]/60">
+          <p className="mt-4 font-mono text-[11px] text-white/40">
             Workflo Documentation Specification · 1,390 lines · 7 parts · 20 major sections · reviewed 24 November 2026
           </p>
         </div>
@@ -566,15 +566,15 @@ export function Docs() {
       {/* ------------------------------------------------------------------ */}
       <section className="relative isolate border-t border-white/[0.08] px-6 py-8 md:px-10">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-2xl border border-amber-500/20 bg-black/40 p-6 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-400" />
-                <span className="font-mono text-xs uppercase tracking-wider text-amber-300 font-semibold">
+                <span className="h-2 w-2 rounded-full bg-white" />
+                <span className="font-mono text-xs uppercase tracking-wider text-white font-semibold">
                   Product Release Status and Security Boundary Disclosure
                 </span>
               </div>
-              <p className="text-xs text-[#F1F2EE]/80 leading-relaxed max-w-3xl font-light">
+              <p className="text-xs text-white/80 leading-relaxed max-w-3xl font-light">
                 Workflo is in <strong>development preview</strong>. Firecracker / KVM is the approved
                 production target for untrusted-code execution, but Gate B has not passed. Docker and
                 Linux namespace execution modes are development-only paths and must not be represented
@@ -583,7 +583,7 @@ export function Docs() {
             </div>
             <Link
               to="/early-access"
-              className="shrink-0 rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 font-mono text-xs text-amber-300 hover:bg-amber-400/20 transition-colors"
+              className="shrink-0 rounded-full border border-white/20 bg-white/5 px-5 py-2 font-mono text-xs text-white hover:bg-white/5 transition-colors"
             >
               Request Beta Access
             </Link>
@@ -601,7 +601,7 @@ export function Docs() {
           <aside className="lg:col-span-3">
             <div className="sticky top-24 space-y-6 rounded-2xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
               <div>
-                <p className="font-mono text-[11px] uppercase tracking-wider text-[#C7F36B] mb-2 px-2 font-medium">
+                <p className="font-mono text-[11px] uppercase tracking-wider text-white mb-2 px-2 font-medium">
                   Documentation Index
                 </p>
                 <nav className="space-y-1">
@@ -619,7 +619,7 @@ export function Docs() {
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="block rounded-lg px-2.5 py-1.5 text-xs font-mono text-[#90969A] hover:bg-white/[0.04] hover:text-[#F1F2EE] transition-colors"
+                      className="block rounded-lg px-2.5 py-1.5 text-xs font-mono text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors"
                     >
                       {item.label}
                     </a>
@@ -628,10 +628,10 @@ export function Docs() {
               </div>
 
               <div className="border-t border-white/[0.06] pt-4 px-2">
-                <span className="font-mono text-[10px] text-[#90969A] block mb-2">SERVICE ARCHITECTURE</span>
-                <p className="text-[11px] text-[#90969A] leading-relaxed">
-                  Website Intake API (<code className="text-[#C7F36B]">/api/v1/*</code>) is isolated from
-                  Execution API (<code className="text-[#C7F36B]">/v1/runs</code>).
+                <span className="font-mono text-[10px] text-white/60 block mb-2">SERVICE ARCHITECTURE</span>
+                <p className="text-[11px] text-white/60 leading-relaxed">
+                  Website Intake API (<code className="text-white">/api/v1/*</code>) is isolated from
+                  Execution API (<code className="text-white">/v1/runs</code>).
                 </p>
               </div>
             </div>
@@ -643,22 +643,22 @@ export function Docs() {
             {/* 1. Installation & Host Readiness */}
             <section id="installation" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 1 / SETUP</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Installation and Host Readiness</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 1 / SETUP</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Installation and Host Readiness</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Prerequisites, virtualization checks, and CLI distribution.
                 </p>
               </div>
 
-              <div className="space-y-4 text-sm text-[#F1F2EE]/80 leading-relaxed font-light">
+              <div className="space-y-4 text-sm text-white/80 leading-relaxed font-light">
                 <p>
                   Workflo executes software inside hardware-accelerated microVMs. Before running jobs
                   with production-grade containment, the host machine must support hardware virtualization
-                  via Linux KVM (<code className="font-mono text-xs text-[#F1F2EE]">/dev/kvm</code>).
+                  via Linux KVM (<code className="font-mono text-xs text-white">/dev/kvm</code>).
                 </p>
 
-                <h3 className="text-base font-medium text-[#F1F2EE] mt-6">1. Run Host Readiness Diagnostic</h3>
-                <p className="text-xs text-[#90969A]">
+                <h3 className="text-base font-medium text-white mt-6">1. Run Host Readiness Diagnostic</h3>
+                <p className="text-xs text-white/60">
                   Use the standalone diagnostic tool to verify KVM permissions, cgroups v2, and seccomp filters:
                 </p>
                 <CodeSnippet
@@ -666,8 +666,8 @@ export function Docs() {
                   code="curl -fsSL https://workflo.dev/doctor.sh | sh"
                 />
 
-                <h3 className="text-base font-medium text-[#F1F2EE] mt-6">2. Install the Workflo CLI</h3>
-                <p className="text-xs text-[#90969A]">
+                <h3 className="text-base font-medium text-white mt-6">2. Install the Workflo CLI</h3>
+                <p className="text-xs text-white/60">
                   Install via npm or direct standalone binary release:
                 </p>
                 <CodeSnippet
@@ -680,8 +680,8 @@ curl -fsSL https://releases.workflo.dev/workflo-linux-x86_64 -o /usr/local/bin/w
 chmod +x /usr/local/bin/workflo`}
                 />
 
-                <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs font-mono text-[#90969A] mt-4 backdrop-blur-md">
-                  <span className="text-[#C7F36B] font-semibold">Note on Licensing:</span> The CLI distribution
+                <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs font-mono text-white/60 mt-4 backdrop-blur-md">
+                  <span className="text-white font-semibold">Note on Licensing:</span> The CLI distribution
                   is currently undergoing licensing reconciliation between npm and Python packaging manifests.
                   Ensure you inspect the licence file included with your download.
                 </div>
@@ -691,9 +691,9 @@ chmod +x /usr/local/bin/workflo`}
             {/* 2. Developer Quickstart */}
             <section id="quickstart" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 2 / QUICKSTART</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Developer Quickstart</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 2 / QUICKSTART</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Developer Quickstart</h2>
+                <p className="mt-2 text-sm text-white/60">
                   The 6-step workflow from repository initialization to verified receipt.
                 </p>
               </div>
@@ -739,11 +739,11 @@ chmod +x /usr/local/bin/workflo`}
                 ].map((item) => (
                   <div key={item.step} className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs text-[#C7F36B] font-semibold">STEP {item.step}</span>
-                      <span className="font-mono text-[10px] text-[#90969A]">WORKFLOW</span>
+                      <span className="font-mono text-xs text-white font-semibold">STEP {item.step}</span>
+                      <span className="font-mono text-[10px] text-white/60">WORKFLOW</span>
                     </div>
-                    <h3 className="mt-2 text-lg font-medium text-[#F1F2EE]">{item.title}</h3>
-                    <p className="mt-1 text-xs text-[#90969A] leading-relaxed">{item.desc}</p>
+                    <h3 className="mt-2 text-lg font-medium text-white">{item.title}</h3>
+                    <p className="mt-1 text-xs text-white/60 leading-relaxed">{item.desc}</p>
                     <CodeSnippet code={item.cmd} />
                   </div>
                 ))}
@@ -753,9 +753,9 @@ chmod +x /usr/local/bin/workflo`}
             {/* 3. Execution Lifecycle */}
             <section id="lifecycle" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 3 / LIFECYCLE</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">12-Stage Execution Lifecycle</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 3 / LIFECYCLE</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">12-Stage Execution Lifecycle</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Every execution progresses through an immutable sequence. Order is the fundamental security guarantee.
                 </p>
               </div>
@@ -764,10 +764,10 @@ chmod +x /usr/local/bin/workflo`}
                 {LIFECYCLE_STAGES.map((s) => (
                   <div key={s.num} className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#C7F36B]">{s.num}</span>
-                      <h4 className="text-sm font-medium text-[#F1F2EE]">{s.name}</h4>
+                      <span className="font-mono text-xs font-bold text-white">{s.num}</span>
+                      <h4 className="text-sm font-medium text-white">{s.name}</h4>
                     </div>
-                    <p className="mt-2 text-xs text-[#90969A] leading-relaxed">{s.desc}</p>
+                    <p className="mt-2 text-xs text-white/60 leading-relaxed">{s.desc}</p>
                   </div>
                 ))}
               </div>
@@ -776,9 +776,9 @@ chmod +x /usr/local/bin/workflo`}
             {/* 4. Run Configuration */}
             <section id="config" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 4 / SPECIFICATION</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Run Configuration (.workflo/config.yaml)</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 4 / SPECIFICATION</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Run Configuration (.workflo/config.yaml)</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Declarative execution policies, runtime parameters, and isolation boundaries.
                 </p>
               </div>
@@ -823,9 +823,9 @@ receipt:
             {/* 5. CLI Reference */}
             <section id="cli" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 5 / CLI REFERENCE</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">CLI Command Reference</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 5 / CLI REFERENCE</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">CLI Command Reference</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Verified command signatures from the Workflo CLI source implementation.
                 </p>
               </div>
@@ -839,8 +839,8 @@ receipt:
                     onClick={() => setActiveCliCmd(idx)}
                     className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors ${
                       activeCliCmd === idx
-                        ? "bg-[#C7F36B] text-[#090A0C] font-semibold"
-                        : "border border-white/[0.08] bg-black/40 text-[#90969A] hover:text-[#F1F2EE] hover:border-white/20"
+                        ? "bg-white text-black font-semibold"
+                        : "border border-white/[0.08] bg-black/40 text-white/60 hover:text-white hover:border-white/20"
                     }`}
                   >
                     {cmd.name}
@@ -851,24 +851,24 @@ receipt:
               {/* Selected Command Card */}
               <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
                 <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                  <code className="font-mono text-sm font-semibold text-[#C7F36B]">
+                  <code className="font-mono text-sm font-semibold text-white">
                     {CLI_COMMANDS[activeCliCmd].syntax}
                   </code>
-                  <span className="font-mono text-[10px] text-[#90969A]">SOURCE SPEC</span>
+                  <span className="font-mono text-[10px] text-white/60">SOURCE SPEC</span>
                 </div>
 
-                <p className="mt-4 text-sm text-[#F1F2EE]/90 leading-relaxed font-light">
+                <p className="mt-4 text-sm text-white/90 leading-relaxed font-light">
                   {CLI_COMMANDS[activeCliCmd].summary}
                 </p>
 
-                <h4 className="mt-6 font-mono text-xs uppercase tracking-wider text-[#90969A]">
+                <h4 className="mt-6 font-mono text-xs uppercase tracking-wider text-white/60">
                   Command Flags and Options
                 </h4>
                 <div className="mt-3 space-y-2">
                   {CLI_COMMANDS[activeCliCmd].flags.map((f, fIdx) => (
                     <div key={fIdx} className="grid grid-cols-12 gap-2 text-xs font-mono">
-                      <span className="col-span-4 text-[#F1F2EE] font-medium">{f.flag}</span>
-                      <span className="col-span-8 text-[#90969A] font-light">{f.desc}</span>
+                      <span className="col-span-4 text-white font-medium">{f.flag}</span>
+                      <span className="col-span-8 text-white/60 font-light">{f.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -878,21 +878,21 @@ receipt:
             {/* 6. Evidence & Signed Receipts */}
             <section id="evidence" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 6 / VERIFICATION</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Evidence and Signed Receipts</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 6 / VERIFICATION</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Evidence and Signed Receipts</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Cryptographic non-repudiation, Merkle audit chains, and explicit receipt limitations.
                 </p>
               </div>
 
-              <div className="space-y-4 text-sm text-[#F1F2EE]/80 leading-relaxed font-light">
+              <div className="space-y-4 text-sm text-white/80 leading-relaxed font-light">
                 <p>
                   Workflo compiles an immutable receipt encapsulating the git commit, policy rules,
                   observed system calls, network sockets, teardown state, and Merkle root.
                 </p>
 
-                <div className="rounded-2xl border border-red-500/20 bg-black/40 p-5 text-xs text-[#F1F2EE]/90 backdrop-blur-md">
-                  <span className="text-red-400 font-semibold uppercase font-mono block mb-1">
+                <div className="rounded-2xl border border-white/20 bg-black/40 p-5 text-xs text-white/90 backdrop-blur-md">
+                  <span className="text-white font-semibold uppercase font-mono block mb-1">
                     Fundamental Receipt Boundary:
                   </span>
                   A signed receipt proves <em>what ran, what boundaries were enforced, and what was observed</em>.
@@ -906,11 +906,11 @@ receipt:
             <section id="receipt-inspector" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
                 <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
-                  <span className="font-mono text-xs text-[#C7F36B]">LIVE PLAYGROUND</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                  <span className="font-mono text-xs text-white">LIVE PLAYGROUND</span>
                 </div>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Interactive Receipt Inspector</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <h2 className="mt-2 text-3xl font-medium text-white">Interactive Receipt Inspector</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Test real receipt payloads, verify digital signatures, and audit Merkle digests.
                 </p>
               </div>
@@ -927,8 +927,8 @@ receipt:
                     }}
                     className={`rounded-full px-4 py-2 font-mono text-xs transition-colors ${
                       activeReceiptIdx === idx
-                        ? "bg-[#C7F36B] text-[#090A0C] font-semibold"
-                        : "border border-white/[0.08] bg-black/40 text-[#90969A] hover:text-[#F1F2EE] hover:border-white/20"
+                        ? "bg-white text-black font-semibold"
+                        : "border border-white/[0.08] bg-black/40 text-white/60 hover:text-white hover:border-white/20"
                     }`}
                   >
                     {s.name}
@@ -940,12 +940,12 @@ receipt:
               <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] bg-white/[0.02] p-4 md:px-6">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-[#90969A]">VERDICT:</span>
+                    <span className="font-mono text-xs text-white/60">VERDICT:</span>
                     <span
                       className={`font-mono text-xs px-3 py-1 rounded-full border ${
                         currentReceipt.verdict === "APPROVED_YES"
-                          ? "border-[#C7F36B]/30 bg-[#C7F36B]/10 text-[#C7F36B]"
-                          : "border-red-500/30 bg-red-950/40 text-red-400"
+                          ? "border-white/20 bg-white/10 text-white"
+                          : "border-white/20 bg-white/10 text-white"
                       }`}
                     >
                       {currentReceipt.verdict}
@@ -958,7 +958,7 @@ receipt:
                         type="button"
                         onClick={() => setReceiptView("visual")}
                         className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
-                          receiptView === "visual" ? "bg-white/10 text-[#F1F2EE]" : "text-[#90969A]"
+                          receiptView === "visual" ? "bg-white/10 text-white" : "text-white/60"
                         }`}
                       >
                         Structured Audit
@@ -967,7 +967,7 @@ receipt:
                         type="button"
                         onClick={() => setReceiptView("json")}
                         className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
-                          receiptView === "json" ? "bg-white/10 text-[#F1F2EE]" : "text-[#90969A]"
+                          receiptView === "json" ? "bg-white/10 text-white" : "text-white/60"
                         }`}
                       >
                         Canonical JSON
@@ -977,7 +977,7 @@ receipt:
                     <button
                       type="button"
                       onClick={handleCopyReceipt}
-                      className="rounded-lg border border-white/[0.08] bg-black/60 px-3 py-1.5 text-xs font-mono text-[#90969A] hover:text-[#F1F2EE]"
+                      className="rounded-lg border border-white/[0.08] bg-black/60 px-3 py-1.5 text-xs font-mono text-white/60 hover:text-white"
                     >
                       {copiedReceipt ? "COPIED" : "COPY JSON"}
                     </button>
@@ -989,26 +989,26 @@ receipt:
                     <div className="space-y-6">
                       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                         <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-[#90969A]">COMMIT SHA</span>
-                          <p className="mt-1 font-mono text-xs text-[#F1F2EE] truncate">
+                          <span className="font-mono text-[10px] text-white/60">COMMIT SHA</span>
+                          <p className="mt-1 font-mono text-xs text-white truncate">
                             {currentReceipt.json.commit?.sha || "sha256:unknown"}
                           </p>
                         </div>
                         <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-[#90969A]">MERKLE ROOT</span>
-                          <p className="mt-1 font-mono text-xs text-[#F1F2EE] truncate">
+                          <span className="font-mono text-[10px] text-white/60">MERKLE ROOT</span>
+                          <p className="mt-1 font-mono text-xs text-white truncate">
                             {currentReceipt.json.merkle_root}
                           </p>
                         </div>
                         <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-[#90969A]">SIGNATURE ALGORITHM</span>
-                          <p className="mt-1 font-mono text-xs text-[#F1F2EE]">
+                          <span className="font-mono text-[10px] text-white/60">SIGNATURE ALGORITHM</span>
+                          <p className="mt-1 font-mono text-xs text-white">
                             {currentReceipt.json.signature?.algorithm} (Verified)
                           </p>
                         </div>
                         <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-[#90969A]">TEARDOWN STATE</span>
-                          <p className="mt-1 font-mono text-xs text-[#F1F2EE]">
+                          <span className="font-mono text-[10px] text-white/60">TEARDOWN STATE</span>
+                          <p className="mt-1 font-mono text-xs text-white">
                             {currentReceipt.json.teardown?.zombie_processes === 0 ? "Clean (0 Zombies)" : "LEAK DETECTED"}
                           </p>
                         </div>
@@ -1016,8 +1016,8 @@ receipt:
 
                       <div className="rounded-2xl border border-white/[0.06] bg-black/30 p-5 flex flex-wrap items-center justify-between gap-4">
                         <div>
-                          <h4 className="text-sm font-medium text-[#F1F2EE]">Cryptographic Signature Verification</h4>
-                          <p className="text-xs text-[#90969A] mt-1 font-light">
+                          <h4 className="text-sm font-medium text-white">Cryptographic Signature Verification</h4>
+                          <p className="text-xs text-white/60 mt-1 font-light">
                             Verifies Ed25519 digital signature against Workflo authority public keys.
                           </p>
                         </div>
@@ -1028,8 +1028,8 @@ receipt:
                           disabled={verifiedState === "valid"}
                           className={`rounded-full px-5 py-2 font-mono text-xs transition-colors flex items-center gap-2 ${
                             verifiedState === "valid"
-                              ? "bg-[#C7F36B]/20 text-[#C7F36B] border border-[#C7F36B]/40"
-                              : "bg-[#C7F36B] text-[#090A0C] font-semibold hover:bg-[#b8e858]"
+                              ? "bg-white/20 text-white border border-white/20"
+                              : "bg-white text-black font-semibold hover:bg-neutral-200"
                           }`}
                         >
                           {verifiedState === "verifying" && <span>Recomputing Merkle root...</span>}
@@ -1046,7 +1046,7 @@ receipt:
                       </div>
                     </div>
                   ) : (
-                    <pre className="font-mono text-xs text-[#F1F2EE] overflow-x-auto leading-relaxed max-h-96">
+                    <pre className="font-mono text-xs text-white overflow-x-auto leading-relaxed max-h-96">
                       {JSON.stringify(currentReceipt.json, null, 2)}
                     </pre>
                   )}
@@ -1057,9 +1057,9 @@ receipt:
             {/* 8. API Reference */}
             <section id="api" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 7 / API REFERENCE</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">API Reference</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 7 / API REFERENCE</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">API Reference</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Workflo Product Execution API (/v1/runs) versus Website Intake API (/api/v1/*).
                 </p>
               </div>
@@ -1067,7 +1067,7 @@ receipt:
               {/* Product Execution API Header */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-[#F1F2EE]">1. Product Execution Service (/v1/runs)</h3>
+                  <h3 className="text-lg font-medium text-white">1. Product Execution Service (/v1/runs)</h3>
                   <div className="flex rounded-lg border border-white/[0.08] bg-black/60 p-1 font-mono text-xs">
                     {(["curl", "js", "python"] as const).map((tab) => (
                       <button
@@ -1075,7 +1075,7 @@ receipt:
                         type="button"
                         onClick={() => setApiTab(tab)}
                         className={`rounded px-2.5 py-1 uppercase ${
-                          apiTab === tab ? "bg-[#C7F36B] text-[#090A0C] font-semibold" : "text-[#90969A]"
+                          apiTab === tab ? "bg-white text-black font-semibold" : "text-white/60"
                         }`}
                       >
                         {tab}
@@ -1084,7 +1084,7 @@ receipt:
                   </div>
                 </div>
 
-                <p className="text-xs text-[#90969A]">
+                <p className="text-xs text-white/60">
                   Endpoint for programmatic CI/CD integration and autonomous agent execution triggers:
                 </p>
 
@@ -1143,23 +1143,23 @@ assert receipt.verdict == "APPROVED_YES"`}
                 )}
 
                 {/* Website Intake API Section */}
-                <h3 className="text-lg font-medium text-[#F1F2EE] pt-6">2. Website Public Intake APIs (/api/v1/*)</h3>
-                <p className="text-xs text-[#90969A]">
+                <h3 className="text-lg font-medium text-white pt-6">2. Website Public Intake APIs (/api/v1/*)</h3>
+                <p className="text-xs text-white/60">
                   CloudFront edge & regional API Gateway endpoints powering website intake workflows:
                 </p>
 
                 <div className="grid gap-3 sm:grid-cols-3 mt-3">
                   <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
-                    <span className="font-mono text-xs text-[#C7F36B]">GET /api/v1/health</span>
-                    <p className="mt-1 text-xs text-[#90969A]">Website API Gateway health check.</p>
+                    <span className="font-mono text-xs text-white">GET /api/v1/health</span>
+                    <p className="mt-1 text-xs text-white/60">Website API Gateway health check.</p>
                   </div>
                   <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
-                    <span className="font-mono text-xs text-[#C7F36B]">POST /api/v1/early-access</span>
-                    <p className="mt-1 text-xs text-[#90969A]">Early access cohort submission.</p>
+                    <span className="font-mono text-xs text-white">POST /api/v1/early-access</span>
+                    <p className="mt-1 text-xs text-white/60">Early access cohort submission.</p>
                   </div>
                   <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
-                    <span className="font-mono text-xs text-[#C7F36B]">POST /api/v1/contact</span>
-                    <p className="mt-1 text-xs text-[#90969A]">Enterprise & sales intake.</p>
+                    <span className="font-mono text-xs text-white">POST /api/v1/contact</span>
+                    <p className="mt-1 text-xs text-white/60">Enterprise & sales intake.</p>
                   </div>
                 </div>
               </div>
@@ -1168,9 +1168,9 @@ assert receipt.verdict == "APPROVED_YES"`}
             {/* 9. Troubleshooting */}
             <section id="troubleshooting" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-[#C7F36B]">PART 8 / DIAGNOSTICS</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Troubleshooting Guide</h2>
-                <p className="mt-2 text-sm text-[#90969A]">
+                <span className="font-mono text-xs text-white">PART 8 / DIAGNOSTICS</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Troubleshooting Guide</h2>
+                <p className="mt-2 text-sm text-white/60">
                   Common execution anomalies, isolation errors, and remediation steps.
                 </p>
               </div>
@@ -1199,10 +1199,10 @@ assert receipt.verdict == "APPROVED_YES"`}
                   },
                 ].map((item) => (
                   <div key={item.code} className="rounded-xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
-                    <span className="font-mono text-xs font-semibold text-red-400">{item.code}</span>
-                    <p className="mt-1 text-xs text-[#F1F2EE] font-medium">{item.cause}</p>
-                    <p className="mt-2 text-xs text-[#90969A] font-light">
-                      <strong className="text-[#C7F36B] font-mono">Remedy:</strong> {item.fix}
+                    <span className="font-mono text-xs font-semibold text-white">{item.code}</span>
+                    <p className="mt-1 text-xs text-white font-medium">{item.cause}</p>
+                    <p className="mt-2 text-xs text-white/60 font-light">
+                      <strong className="text-white font-mono">Remedy:</strong> {item.fix}
                     </p>
                   </div>
                 ))}

@@ -82,7 +82,7 @@ export function About() {
         
         <div className="relative z-10 mx-auto max-w-6xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Company Mission · Principles & Contact
             </span>
@@ -183,21 +183,21 @@ export function About() {
 
           <div className="grid gap-6 md:grid-cols-3">
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-[#C7F36B]">NON-CUSTODIAL EXECUTION</h4>
+              <h4 className="font-mono text-sm text-white">NON-CUSTODIAL EXECUTION</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
                 Your proprietary code runs inside RAM-backed ephemeral microVMs. We never store source
                 code on persistent disks.
               </p>
             </div>
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-[#C7F36B]">CRYPTOGRAPHIC INTEGRITY</h4>
+              <h4 className="font-mono text-sm text-white">CRYPTOGRAPHIC INTEGRITY</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
                 Receipts are sealed with Ed25519 digital signatures. Once generated, an execution record
                 is mathematically immutable.
               </p>
             </div>
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-[#C7F36B]">SOC2 & AUDIT READY</h4>
+              <h4 className="font-mono text-sm text-white">SOC2 & AUDIT READY</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
                 Provides the exact attestation evidence required by security and compliance officers for
                 automated software delivery pipelines.
@@ -225,8 +225,8 @@ export function About() {
           </div>
 
           {status === "success" ? (
-            <div className="rounded-3xl border border-[#C7F36B]/30 bg-[#C7F36B]/10 p-8 text-center backdrop-blur">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#C7F36B]/20 text-[#C7F36B]">
+            <div className="rounded-3xl border border-white/20 bg-white/10 p-8 text-center backdrop-blur">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
@@ -249,7 +249,7 @@ export function About() {
               className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur sm:p-10 space-y-6"
             >
               {errorMessage && (
-                <div className="rounded-xl border border-red-500/40 bg-red-950/30 p-4 text-xs text-red-200 font-mono">
+                <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-xs text-white font-mono">
                   {errorMessage}
                 </div>
               )}
@@ -268,7 +268,7 @@ export function About() {
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    NAME <span className="text-[#C7F36B]">*</span>
+                    NAME <span className="text-white">*</span>
                   </label>
                   <input
                     type="text"
@@ -282,7 +282,7 @@ export function About() {
 
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    WORK EMAIL <span className="text-[#C7F36B]">*</span>
+                    WORK EMAIL <span className="text-white">*</span>
                   </label>
                   <input
                     type="email"
@@ -336,7 +336,7 @@ export function About() {
 
               <div>
                 <label className="block font-mono text-xs text-white/60 mb-2">
-                  MESSAGE <span className="text-[#C7F36B]">*</span>
+                  MESSAGE <span className="text-white">*</span>
                 </label>
                 <textarea
                   required
@@ -354,7 +354,7 @@ export function About() {
                   id="consent"
                   checked={form.consentToReply}
                   onChange={(e) => setForm({ ...form, consentToReply: e.target.checked })}
-                  className="h-4 w-4 rounded border-white/[0.08] bg-black/50 text-[#C7F36B] focus:ring-0"
+                  className="h-4 w-4 rounded border-white/[0.08] bg-black/50 text-white focus:ring-0"
                 />
                 <label htmlFor="consent" className="text-xs text-white/60">
                   I consent to Workflo contacting me regarding this inquiry.

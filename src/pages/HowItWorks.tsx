@@ -127,7 +127,7 @@ export function HowItWorks() {
         
         <div className="relative z-10 mx-auto max-w-6xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Execution Lifecycle · Step-by-Step
             </span>
@@ -175,7 +175,7 @@ export function HowItWorks() {
                   onClick={() => setActiveStageIdx(idx)}
                   className={`flex flex-col items-center justify-center rounded-xl border p-3 font-mono transition-all ${
                     isSelected
-                      ? "border-[#C7F36B]/40 bg-[#C7F36B]/10 text-[#C7F36B] "
+                      ? "border-white/20 bg-white/10 text-white "
                       : "border-white/[0.06] bg-black/40 text-white/50 hover:border-white/30 hover:text-white"
                   }`}
                 >
@@ -195,7 +195,7 @@ export function HowItWorks() {
               <div className="lg:col-span-7 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-[#C7F36B]/10 px-3 py-1 font-mono text-xs tracking-wider text-[#C7F36B] border border-[#C7F36B]/20">
+                    <span className="rounded-full bg-white/10 px-3 py-1 font-mono text-xs tracking-wider text-white border border-white/20">
                       {activeStage.phase} PHASE
                     </span>
                     <span className="font-mono text-xs text-white/40">
@@ -213,7 +213,7 @@ export function HowItWorks() {
                     <p className="font-mono text-xs uppercase tracking-wider text-white/50">
                       Security Guarantee
                     </p>
-                    <p className="mt-2 text-sm text-[#C7F36B] font-light">
+                    <p className="mt-2 text-sm text-white font-light">
                       {activeStage.securityGuarantee}
                     </p>
                   </div>
@@ -232,7 +232,7 @@ export function HowItWorks() {
                     type="button"
                     disabled={activeStageIdx === STAGES.length - 1}
                     onClick={() => setActiveStageIdx((i) => Math.min(STAGES.length - 1, i + 1))}
-                    className="font-mono text-xs text-white hover:text-[#C7F36B] disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="font-mono text-xs text-white hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     NEXT STAGE
                   </button>
@@ -243,17 +243,17 @@ export function HowItWorks() {
               <div className="flex flex-col rounded-2xl border border-white/[0.08] bg-black/90 p-5 font-mono lg:col-span-5 shadow-2xl">
                 <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 text-xs text-white/40">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500/60" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/60" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/5" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
                     <span className="ml-2">workflo-supervisor.log</span>
                   </div>
-                  <span className="text-[#C7F36B]">ONLINE</span>
+                  <span className="text-white">ONLINE</span>
                 </div>
 
                 <div className="mt-4 flex-1 space-y-3 text-xs leading-relaxed text-white/80">
                   <p className="text-white/40">$ workflo run --stage={activeStage.number}</p>
-                  <p className="text-[#C7F36B]">{activeStage.terminalLog}</p>
+                  <p className="text-white">{activeStage.terminalLog}</p>
                   <div className="mt-6 border-t border-white/5 pt-4 text-[11px] text-white/40">
                     <div>CPU: 0.8% | MEM: 142MB | THREADS: 4</div>
                     <div>SELINUX: ENFORCING | EBPF: ACTIVE</div>

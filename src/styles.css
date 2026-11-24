@@ -3,9 +3,9 @@
 @theme {
   --color-bg: #090a0c;
   --color-surface: #121518;
-  --color-fg: #f1f2ee;
-  --color-muted: #90969a;
-  --color-accent: #c7f36b;
+  --color-fg: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.65);
+  --color-accent: #ffffff;
   --color-line: #292e31;
   --font-sans: "Archivo Variable", "Archivo", system-ui, -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
@@ -143,11 +143,11 @@
 
   .btn-primary {
     background-color: var(--color-accent);
-    color: #0a0c07;
+    color: #000000;
   }
 
   .btn-primary:hover {
-    background-color: #d4fa8c;
+    background-color: #e5e5e5;
   }
 
   .btn-ghost {

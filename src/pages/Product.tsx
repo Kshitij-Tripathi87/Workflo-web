@@ -114,7 +114,7 @@ export function Product() {
         
         <div className="relative z-10 mx-auto max-w-6xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Product Overview · Verification Layer
             </span>
@@ -180,7 +180,7 @@ export function Product() {
                     onClick={() => setActivePillar(idx)}
                     className={`group flex items-start gap-4 rounded-2xl border p-5 text-left transition-all ${
                       isActive
-                        ? "border-[#C7F36B]/30 bg-[#C7F36B]/10 backdrop-blur"
+                        ? "border-white/20 bg-white/10 backdrop-blur"
                         : "border-white/[0.06] bg-black/40 hover:border-white/[0.08] hover:bg-white/[0.02]"
                     }`}
                   >
@@ -202,7 +202,7 @@ export function Product() {
             <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur lg:col-span-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between border-b border-white/[0.06] pb-5">
-                  <span className="font-mono text-xs tracking-widest text-[#C7F36B]">
+                  <span className="font-mono text-xs tracking-widest text-white">
                     {PILLARS[activePillar].tag}
                   </span>
                   <span className="font-mono text-xs text-white/40">
@@ -234,7 +234,7 @@ export function Product() {
                 <span className="font-mono text-xs text-white/40">DETERMINISTIC ASSURANCE</span>
                 <Link
                   to="/how-it-works"
-                  className="font-mono text-xs text-white hover:text-[#C7F36B] transition-colors"
+                  className="font-mono text-xs text-white hover:text-white transition-colors"
                 >
                   See lifecycle execution sequence 
                 </Link>
@@ -266,7 +266,7 @@ export function Product() {
             <div className="grid grid-cols-12 border-b border-white/[0.06] bg-white/[0.02] p-4 text-xs font-mono tracking-wider text-white/50 md:p-6">
               <div className="col-span-3">VERIFICATION DIMENSION</div>
               <div className="col-span-4 text-neutral-400">TRADITIONAL CI RUNNER</div>
-              <div className="col-span-5 text-[#C7F36B]">WORKFLO VERIFICATION LAYER</div>
+              <div className="col-span-5 text-white">WORKFLO VERIFICATION LAYER</div>
             </div>
 
             <div className="divide-y divide-white/10">
@@ -330,8 +330,8 @@ export function Product() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur border-[#C7F36B]/30">
-              <span className="font-mono text-xs text-[#C7F36B]">STEP 04</span>
+            <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur border-white/20">
+              <span className="font-mono text-xs text-white">STEP 04</span>
               <h4 className="mt-3 text-lg font-medium text-white">Sign Receipt</h4>
               <p className="mt-2 text-xs leading-relaxed text-white/60">
                 Compiles the Merkle root and signs the immutable release receipt with Ed25519 keys.
