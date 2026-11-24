@@ -1,26 +1,37 @@
-import { lazy, Suspense } from "react";
+import { useEffect } from "react";
 import { RouterProvider, useRouter } from "./lib/router";
 import { Landing } from "./pages/Landing";
+import { Product } from "./pages/Product";
+import { HowItWorks } from "./pages/HowItWorks";
+import { About } from "./pages/About";
+import { Docs } from "./pages/Docs";
+import { EarlyAccess } from "./pages/EarlyAccess";
+import { Changelog } from "./pages/Changelog";
 
-const LegacyApp = lazy(() => import("./LegacyApp").then((module) => ({ default: module.LegacyApp })));
-
-function Shell() {
+function RouteView() {
   const { path } = useRouter();
 
-  // "/" is the one-page launch site; it carries its own navbar and footer.
-  if (path === "/") return <Landing />;
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [path]);
 
-  return (
-    <Suspense fallback={null}>
-      <LegacyApp />
-    </Suspense>
-  );
+  const cleanPath = path === "/" ? "/" : path.replace(/\/+$/, "");
+
+  if (cleanPath === "/") return <Landing />;
+  if (cleanPath === "/product") return <Product />;
+  if (cleanPath === "/how-it-works") return <HowItWorks />;
+  if (cleanPath === "/about" || cleanPath === "/company") return <About />;
+  if (cleanPath === "/docs" || cleanPath.startsWith("/docs")) return <Docs />;
+  if (cleanPath === "/early-access") return <EarlyAccess />;
+  if (cleanPath === "/changelog") return <Changelog />;
+
+  return <Product />;
 }
 
 export function App() {
   return (
     <RouterProvider>
-      <Shell />
+      <RouteView />
     </RouterProvider>
   );
 }
