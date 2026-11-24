@@ -3,15 +3,10 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "../lib/hooks";
 import { plateSrcSet } from "../scene/plates";
-import { heroStat } from "../content/landing";
 import { CINEMATIC_PHASES, PHASE_STARTS, plateCutAt } from "./motion/phases";
 import { Navbar } from "./Navbar";
-import { StatBlock } from "./StatBlock";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const DESCRIPTION =
-  "workflo writes and runs tests for your app on its own, then tells you whether it is safe to ship";
 
 const WORD_CLASS =
   "hero-title absolute whitespace-nowrap text-[14vw] font-medium text-white md:text-[13vw]";
@@ -25,6 +20,22 @@ const PLATES = [
   { id: "trust", position: "66% 50%", drift: 1 },
 ];
 
+function SplitLetters({ word }: { word: string }) {
+  return (
+    <>
+      {word.split("").map((char, index) => (
+        <span
+          key={index}
+          data-hero-char
+          className="inline-block will-change-transform"
+        >
+          {char}
+        </span>
+      ))}
+    </>
+  );
+}
+
 export function Hero() {
   const reduced = useReducedMotion();
 
@@ -34,7 +45,6 @@ export function Hero() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const wipeRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
-  const descRef = useRef<HTMLParagraphElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
   const a1Ref = useRef<HTMLSpanElement>(null);
   const a2Ref = useRef<HTMLSpanElement>(null);
@@ -42,9 +52,6 @@ export function Hero() {
   const b1Ref = useRef<HTMLSpanElement>(null);
   const b2Ref = useRef<HTMLSpanElement>(null);
   const b3Ref = useRef<HTMLSpanElement>(null);
-  const statTopRef = useRef<HTMLDivElement>(null);
-  const statLeftRef = useRef<HTMLDivElement>(null);
-  const statRightRef = useRef<HTMLDivElement>(null);
   const plateRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   useEffect(() => {
@@ -56,7 +63,6 @@ export function Hero() {
     const overlay = overlayRef.current;
     const wipe = wipeRef.current;
     const nav = navRef.current;
-    const desc = descRef.current;
     const cue = cueRef.current;
     const a1 = a1Ref.current;
     const a2 = a2Ref.current;
@@ -64,14 +70,26 @@ export function Hero() {
     const b1 = b1Ref.current;
     const b2 = b2Ref.current;
     const b3 = b3Ref.current;
-    const statTop = statTopRef.current;
-    const statLeft = statLeftRef.current;
-    const statRight = statRightRef.current;
     if (!screen || !media) return;
 
     const ctx = gsap.context(() => {
-      // One master timeline. Beat boundaries are the named phases below, and the
-      // hero's single ScrollTrigger is the only thing driving them.
+      // 1. Initial Entrance: Animate "release with proof" letter-by-letter
+      const aLetters = el.querySelectorAll("[data-hero-a] [data-hero-char]");
+      gsap.fromTo(
+        aLetters,
+        { opacity: 0, y: 36, scale: 0.9 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.04,
+          ease: "power3.out",
+          delay: 0.1,
+        }
+      );
+
+      // 2. Master timeline driven by hero scroll
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
@@ -85,8 +103,7 @@ export function Hero() {
         },
       });
 
-      // Photographic drift: every plate moves inside its own frame for the whole
-      // pinned track, so an image is never sitting still while it is on screen.
+      // Photographic drift across all 5 plates
       plateRefs.current.forEach((plate, index) => {
         if (!plate) return;
         const drift = PLATES[index]?.drift ?? 1;
@@ -116,6 +133,12 @@ export function Hero() {
 
       const { execute, observe, verify, prove, trust } = PHASE_STARTS;
 
+      const b1Letters = b1 ? b1.querySelectorAll("[data-hero-char]") : [];
+      const b2Letters = b2 ? b2.querySelectorAll("[data-hero-char]") : [];
+      const b3Letters = b3 ? b3.querySelectorAll("[data-hero-char]") : [];
+
+      gsap.set([b1Letters, b2Letters, b3Letters], { opacity: 0, y: 40 });
+
       tl.addLabel("execute", execute)
         .to(cue, { opacity: 0, duration: 0.08 }, execute)
         .addLabel("observe", observe)
@@ -128,23 +151,31 @@ export function Hero() {
         .to(a1, { x: "-60vw", opacity: 0, duration: 0.15 }, verify)
         .to(a2, { x: "60vw", opacity: 0, duration: 0.15 }, verify)
         .to(a3, { y: "26vh", opacity: 0, duration: 0.15 }, verify)
-        .to(desc, { opacity: 0, duration: 0.15 }, verify)
         .to(overlay, { opacity: 0.4, duration: 0.15 }, verify)
-        .to(statTop, { x: "10vw", y: "-6vh", opacity: 0, duration: 0.15 }, verify)
-        .to(statLeft, { x: "-10vw", y: "6vh", opacity: 0, duration: 0.15 }, verify)
-        .to(statRight, { x: "10vw", y: "6vh", opacity: 0, duration: 0.15 }, verify)
         .addLabel("prove", prove)
         .to(media, { scale: 1.5, rotate: 3, duration: 0.2 }, prove)
-        .to(b1, { x: 0, y: 0, opacity: 1, duration: 0.13 }, prove)
-        .to(b2, { x: 0, y: 0, opacity: 1, duration: 0.13 }, prove + 0.03)
-        .to(b3, { x: 0, y: 0, opacity: 1, duration: 0.13 }, prove + 0.06)
+        .to(
+          b1Letters,
+          { opacity: 1, y: 0, duration: 0.08, stagger: 0.02, ease: "power2.out" },
+          prove
+        )
+        .to(
+          b2Letters,
+          { opacity: 1, y: 0, duration: 0.08, stagger: 0.02, ease: "power2.out" },
+          prove + 0.05
+        )
+        .to(
+          b3Letters,
+          { opacity: 1, y: 0, duration: 0.08, stagger: 0.02, ease: "power2.out" },
+          prove + 0.10
+        )
         .addLabel("trust", trust)
         .to(overlay, { opacity: 0.85, duration: 0.2 }, trust)
         .to(wipe, { opacity: 1, duration: 0.01 }, trust)
         .to(wipe, { scaleY: 1, duration: 0.2 }, trust)
         .to(nav, { scale: 0.9, duration: 0.2 }, trust)
         .to(media, { opacity: 0, duration: 0.15 }, 0.85)
-        .to([b1, b2, b3], { y: "-10vh", opacity: 0, duration: 0.15 }, 0.85);
+        .to([b1Letters, b2Letters, b3Letters], { y: "-10vh", opacity: 0, duration: 0.15, stagger: 0.01 }, 0.85);
 
       return tl;
     }, el);
@@ -198,7 +229,7 @@ export function Hero() {
         />
 
         <div className="pointer-events-none relative z-20 h-full w-full">
-          <h1 className="sr-only">release with proof</h1>
+          <h1 className="sr-only">release</h1>
 
           <header
             ref={navRef}
@@ -207,80 +238,69 @@ export function Hero() {
             <Navbar />
           </header>
 
-          <span ref={a1Ref} aria-hidden="true" className={`${WORD_CLASS} left-4 top-[18%] md:left-10`}>
-            release
+          {/* Letter-by-letter entrance words */}
+          <span
+            ref={a1Ref}
+            data-hero-a
+            aria-hidden="true"
+            className={`${WORD_CLASS} left-4 top-[18%] md:left-10`}
+          >
+            <SplitLetters word="release" />
           </span>
           <span
             ref={a2Ref}
+            data-hero-a
             aria-hidden="true"
             className={`${WORD_CLASS} right-4 top-[38%] md:right-10`}
           >
-            with
+            <SplitLetters word="with" />
           </span>
           <span
             ref={a3Ref}
+            data-hero-a
             aria-hidden="true"
             className={`${WORD_CLASS} left-[18%] top-[58%] md:left-[28%]`}
           >
-            proof
+            <SplitLetters word="proof" />
           </span>
 
-          <p
-            ref={descRef}
-            className="absolute left-6 top-[46%] max-w-[240px] text-[15px] leading-snug text-white/90 md:left-10"
-          >
-            {DESCRIPTION}
-          </p>
-
+          {/* Scroll-revealed letter-by-letter proof words (NO side clutter) */}
           {reduced ? null : (
             <>
               <span
                 ref={b1Ref}
+                data-hero-b
                 aria-hidden="true"
-                className={`${WORD_CLASS} right-4 top-[18%] opacity-0 md:right-10`}
-                style={{ transform: "translate3d(40vw, 30vh, 0)" }}
+                className={`${WORD_CLASS} right-4 top-[18%] md:right-10`}
               >
-                know
+                <SplitLetters word="know" />
               </span>
               <span
                 ref={b2Ref}
+                data-hero-b
                 aria-hidden="true"
-                className={`${WORD_CLASS} left-4 top-[38%] opacity-0 md:left-10`}
-                style={{ transform: "translate3d(40vw, 30vh, 0)" }}
+                className={`${WORD_CLASS} left-4 top-[38%] md:left-10`}
               >
-                it's
+                <SplitLetters word="it's" />
               </span>
               <span
                 ref={b3Ref}
+                data-hero-b
                 aria-hidden="true"
-                className={`${WORD_CLASS} right-[18%] top-[58%] opacity-0 md:right-[28%]`}
-                style={{ transform: "translate3d(40vw, 30vh, 0)" }}
+                className={`${WORD_CLASS} right-[18%] top-[58%] md:right-[28%]`}
               >
-                safe
+                <SplitLetters word="safe" />
               </span>
             </>
           )}
 
-          <div ref={statTopRef} className="absolute right-6 top-[14%] md:right-24">
-            <StatBlock {...heroStat("tests")} align="right" divider="before" rotate={20} />
-          </div>
-
-          <div ref={statLeftRef} className="absolute bottom-20 left-6 md:bottom-24 md:left-20">
-            <StatBlock {...heroStat("checks")} divider="after" rotate={-20} />
-          </div>
-
-          <div ref={statRightRef} className="absolute bottom-16 right-6 md:bottom-20 md:right-20">
-            <StatBlock {...heroStat("bugs")} align="right" divider="before" rotate={-20} />
-          </div>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-30 h-48 bg-gradient-to-b from-transparent to-black" />
+          {reduced ? null : (
+            <div ref={cueRef} aria-hidden="true" className="scroll-cue z-30">
+              <span />
+            </div>
+          )}
         </div>
-
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-30 h-48 bg-gradient-to-b from-transparent to-black" />
-
-        {reduced ? null : (
-          <div ref={cueRef} aria-hidden="true" className="scroll-cue z-30">
-            <span />
-          </div>
-        )}
       </div>
     </section>
   );

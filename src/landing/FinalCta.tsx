@@ -15,13 +15,16 @@ export function FinalCta() {
     const el = headingRef.current;
     if (!el || reduced) return;
 
+    const chars = el.querySelectorAll<HTMLElement>("[data-cta-char]");
     const tween = gsap.fromTo(
-      el,
-      { scale: 0.9, opacity: 0 },
+      chars,
+      { opacity: 0, y: 28, scale: 0.9 },
       {
-        scale: 1,
         opacity: 1,
-        duration: 0.8,
+        y: 0,
+        scale: 1,
+        duration: 0.5,
+        stagger: 0.03,
         ease: "power3.out",
         scrollTrigger: { trigger: el, start: "top 82%", once: true },
       },
@@ -33,6 +36,8 @@ export function FinalCta() {
     };
   }, [reduced]);
 
+  const words = "ship with proof".split(" ");
+
   return (
     <section id="book" className="relative isolate overflow-hidden px-6 py-32 md:px-10">
       <SectionBackdrop id="trust" position="66% 50%" />
@@ -41,7 +46,20 @@ export function FinalCta() {
           ref={headingRef}
           className="hero-title text-[14vw] font-medium text-white md:text-[13vw]"
         >
-          ship with proof
+          {words.map((word, wIdx) => (
+            <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.25em]">
+              {word.split("").map((char, cIdx) => (
+                <span
+                  key={cIdx}
+                  data-cta-char
+                  className="inline-block will-change-transform"
+                  style={reduced ? undefined : { opacity: 0 }}
+                >
+                  {char}
+                </span>
+              ))}
+            </span>
+          ))}
         </h2>
 
         <a

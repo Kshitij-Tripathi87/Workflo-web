@@ -6,7 +6,8 @@ import { SectionBackdrop } from "./SectionBackdrop";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SENTENCE = "every release gets a clear yes or no.".split(" ");
+const SENTENCE = "every release gets a clear yes or no.";
+const WORDS = SENTENCE.split(" ");
 const EXPLAINS = ["what failed", "how risky it is", "what to fix first"];
 
 export function Decision() {
@@ -17,13 +18,14 @@ export function Decision() {
     const el = sectionRef.current;
     if (!el || reduced) return;
 
-    const words = el.querySelectorAll<HTMLElement>("[data-word]");
+    const chars = el.querySelectorAll<HTMLElement>("[data-char]");
     const tween = gsap.fromTo(
-      words,
-      { opacity: 0.2 },
+      chars,
+      { opacity: 0.15, y: 3 },
       {
         opacity: 1,
-        stagger: 0.12,
+        y: 0,
+        stagger: 0.025,
         ease: "none",
         scrollTrigger: {
           trigger: el,
@@ -48,15 +50,19 @@ export function Decision() {
     >
       <SectionBackdrop id="prove" position="70% 50%" />
       <div className="relative z-10 mx-auto max-w-6xl">
-        <h2 className="hero-title flex flex-wrap gap-x-[0.22em] text-[8vw] font-medium text-white">
-          {SENTENCE.map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              data-word
-              className="inline-block"
-              style={reduced ? undefined : { opacity: 0.2 }}
-            >
-              {word}
+        <h2 className="hero-title flex flex-wrap gap-x-[0.25em] text-[8vw] font-medium text-white">
+          {WORDS.map((word, wIdx) => (
+            <span key={wIdx} className="inline-block whitespace-nowrap">
+              {word.split("").map((char, cIdx) => (
+                <span
+                  key={cIdx}
+                  data-char
+                  className="inline-block will-change-transform"
+                  style={reduced ? undefined : { opacity: 0.15 }}
+                >
+                  {char}
+                </span>
+              ))}
             </span>
           ))}
         </h2>

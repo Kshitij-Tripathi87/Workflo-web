@@ -1,5 +1,11 @@
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Reveal } from "./Reveal";
 import { SectionBackdrop } from "./SectionBackdrop";
+import { useReducedMotion } from "../lib/hooks";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const ROWS = [
   {
@@ -20,6 +26,63 @@ const ROWS = [
   },
 ];
 
+function CapabilityTitle({ text, delay }: { text: string; delay: number }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduced) return;
+
+    const chars = el.querySelectorAll<HTMLElement>("[data-cap-char]");
+    const tween = gsap.fromTo(
+      chars,
+      { opacity: 0, y: 8 },
+      {
+        opacity: 1,
+        y: 0,
+        stagger: 0.02,
+        duration: 0.35,
+        delay,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: el,
+          start: "top 85%",
+          once: true,
+        },
+      }
+    );
+
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+    };
+  }, [reduced, delay]);
+
+  const words = text.split(" ");
+  return (
+    <h2
+      ref={ref}
+      className="text-2xl font-normal leading-snug text-white/70 transition-colors group-hover:text-white"
+    >
+      {words.map((word, wIdx) => (
+        <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.25em]">
+          {word.split("").map((char, cIdx) => (
+            <span
+              key={cIdx}
+              data-cap-char
+              className="inline-block will-change-transform"
+              style={reduced ? undefined : { opacity: 0 }}
+            >
+              {char}
+            </span>
+          ))}
+        </span>
+      ))}
+    </h2>
+  );
+}
+
 export function Capabilities() {
   return (
     <section
@@ -37,9 +100,7 @@ export function Capabilities() {
             <li key={row.title} className="border-b border-white/20 last:border-b-0">
               <Reveal delay={index * 0.05}>
                 <div className="group flex flex-col gap-2 py-7 md:flex-row md:items-baseline md:justify-between md:gap-10">
-                  <h2 className="text-2xl font-normal leading-snug text-white/70 transition-colors group-hover:text-white">
-                    {row.title}
-                  </h2>
+                  <CapabilityTitle text={row.title} delay={index * 0.06} />
                   <p className="max-w-md text-sm leading-relaxed text-white/60 md:text-right">
                     {row.body}
                   </p>
