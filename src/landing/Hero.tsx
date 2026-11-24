@@ -3,7 +3,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "../lib/hooks";
 import { plateSrcSet } from "../scene/plates";
-import { CINEMATIC_PHASES, PHASE_STARTS, plateCutAt } from "./motion/phases";
 import { Navbar } from "./Navbar";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -28,6 +27,7 @@ function SplitLetters({ word }: { word: string }) {
           key={index}
           data-hero-char
           className="inline-block will-change-transform"
+          style={{ opacity: 0, transform: "translate3d(0, 24px, 0)" }}
         >
           {char}
         </span>
@@ -73,37 +73,34 @@ export function Hero() {
     if (!screen || !media) return;
 
     const ctx = gsap.context(() => {
-      // 1. Initial Entrance: Animate "release with proof" letter-by-letter
-      const aLetters = el.querySelectorAll("[data-hero-a] [data-hero-char]");
-      gsap.fromTo(
-        aLetters,
-        { opacity: 0, y: 36, scale: 0.9 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.04,
-          ease: "power3.out",
-          delay: 0.1,
-        }
-      );
+      const a1Letters = a1 ? Array.from(a1.querySelectorAll<HTMLElement>("[data-hero-char]")) : [];
+      const a2Letters = a2 ? Array.from(a2.querySelectorAll<HTMLElement>("[data-hero-char]")) : [];
+      const a3Letters = a3 ? Array.from(a3.querySelectorAll<HTMLElement>("[data-hero-char]")) : [];
+      const b1Letters = b1 ? Array.from(b1.querySelectorAll<HTMLElement>("[data-hero-char]")) : [];
+      const b2Letters = b2 ? Array.from(b2.querySelectorAll<HTMLElement>("[data-hero-char]")) : [];
+      const b3Letters = b3 ? Array.from(b3.querySelectorAll<HTMLElement>("[data-hero-char]")) : [];
 
-      // 2. Master timeline driven by hero scroll
+      // Initial state of letter spans: hidden
+      gsap.set([...a1Letters, ...a2Letters, ...a3Letters, ...b1Letters, ...b2Letters, ...b3Letters], {
+        opacity: 0,
+        y: 24,
+      });
+
+      // Master timeline driven directly by scroll scrub
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: el,
           start: "top top",
-          end: "+=400%",
+          end: "+=450%",
           pin: screen,
-          scrub: true,
+          scrub: 0.35,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });
 
-      // Photographic drift across all 5 plates
+      // 1. Photographic drift across all 5 plates
       plateRefs.current.forEach((plate, index) => {
         if (!plate) return;
         const drift = PLATES[index]?.drift ?? 1;
@@ -121,61 +118,112 @@ export function Hero() {
         );
       });
 
-      CINEMATIC_PHASES.slice(1).forEach((_, offset) => {
-        const index = offset + 1;
-        const incoming = plateRefs.current[index];
-        const outgoing = plateRefs.current[index - 1];
-        if (!incoming) return;
-        const at = plateCutAt(index);
-        tl.to(incoming, { opacity: 1, duration: 0.035 }, at);
-        if (outgoing) tl.set(outgoing, { opacity: 0 }, at + 0.035);
-      });
+      // Scroll cue fades out immediately on initial scroll
+      tl.to(cue, { opacity: 0, duration: 0.03 }, 0.0);
 
-      const { execute, observe, verify, prove, trust } = PHASE_STARTS;
+      // --- SCROLL-DRIVEN LETTER-BY-LETTER REVEAL ---
+      // 1. "release" (r, e, l, e, a, s, e) - reveals letter by letter as user scrolls down
+      tl.to(
+        a1Letters,
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.018,
+          duration: 0.02,
+          ease: "none",
+        },
+        0.01
+      );
 
-      const b1Letters = b1 ? b1.querySelectorAll("[data-hero-char]") : [];
-      const b2Letters = b2 ? b2.querySelectorAll("[data-hero-char]") : [];
-      const b3Letters = b3 ? b3.querySelectorAll("[data-hero-char]") : [];
+      // 2. "with" (w, i, t, h) - reveals letter by letter at the side as user continues scrolling
+      tl.to(
+        a2Letters,
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.018,
+          duration: 0.02,
+          ease: "none",
+        },
+        0.15
+      );
 
-      gsap.set([b1Letters, b2Letters, b3Letters], { opacity: 0, y: 40 });
+      // 3. "proof" (p, r, o, o, f) - reveals letter by letter as user scrolls further
+      tl.to(
+        a3Letters,
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.018,
+          duration: 0.02,
+          ease: "none",
+        },
+        0.24
+      );
 
-      tl.addLabel("execute", execute)
-        .to(cue, { opacity: 0, duration: 0.08 }, execute)
-        .addLabel("observe", observe)
-        .to(media, { scale: 1.15, duration: 0.22 }, observe)
-        .to(a1, { y: "-12vh", duration: 0.08 }, observe)
-        .to(a2, { y: "-8vh", duration: 0.08 }, observe)
-        .to(a3, { y: "-4vh", duration: 0.08 }, observe)
-        .addLabel("verify", verify)
-        .to(media, { scale: 1.3, duration: 0.15 }, verify)
-        .to(a1, { x: "-60vw", opacity: 0, duration: 0.15 }, verify)
-        .to(a2, { x: "60vw", opacity: 0, duration: 0.15 }, verify)
-        .to(a3, { y: "26vh", opacity: 0, duration: 0.15 }, verify)
-        .to(overlay, { opacity: 0.4, duration: 0.15 }, verify)
-        .addLabel("prove", prove)
-        .to(media, { scale: 1.5, rotate: 3, duration: 0.2 }, prove)
+      // --- OBSERVE PHASE ---
+      const atObserve = 0.38;
+      tl.addLabel("observe", atObserve);
+      const p1 = plateRefs.current[1];
+      const p0 = plateRefs.current[0];
+      if (p1) tl.to(p1, { opacity: 1, duration: 0.035 }, atObserve);
+      if (p0) tl.set(p0, { opacity: 0 }, atObserve + 0.035);
+
+      tl.to(media, { scale: 1.15, duration: 0.12 }, atObserve)
+        .to(a1, { y: "-12vh", duration: 0.08 }, atObserve)
+        .to(a2, { y: "-8vh", duration: 0.08 }, atObserve)
+        .to(a3, { y: "-4vh", duration: 0.08 }, atObserve);
+
+      // --- VERIFY PHASE ---
+      const atVerify = 0.50;
+      tl.addLabel("verify", atVerify);
+      const p2 = plateRefs.current[2];
+      if (p2) tl.to(p2, { opacity: 1, duration: 0.035 }, atVerify);
+      if (p1) tl.set(p1, { opacity: 0 }, atVerify + 0.035);
+
+      tl.to(media, { scale: 1.3, duration: 0.12 }, atVerify)
+        .to(a1, { x: "-60vw", opacity: 0, duration: 0.12 }, atVerify)
+        .to(a2, { x: "60vw", opacity: 0, duration: 0.12 }, atVerify)
+        .to(a3, { y: "26vh", opacity: 0, duration: 0.12 }, atVerify)
+        .to(overlay, { opacity: 0.4, duration: 0.12 }, atVerify);
+
+      // --- PROVE PHASE ("know it's safe" reveals letter by letter on scroll) ---
+      const atProve = 0.65;
+      tl.addLabel("prove", atProve);
+      const p3 = plateRefs.current[3];
+      if (p3) tl.to(p3, { opacity: 1, duration: 0.035 }, atProve);
+      if (p2) tl.set(p2, { opacity: 0 }, atProve + 0.035);
+
+      tl.to(media, { scale: 1.5, rotate: 3, duration: 0.15 }, atProve)
         .to(
           b1Letters,
-          { opacity: 1, y: 0, duration: 0.08, stagger: 0.02, ease: "power2.out" },
-          prove
+          { opacity: 1, y: 0, stagger: 0.015, duration: 0.02, ease: "none" },
+          atProve + 0.02
         )
         .to(
           b2Letters,
-          { opacity: 1, y: 0, duration: 0.08, stagger: 0.02, ease: "power2.out" },
-          prove + 0.05
+          { opacity: 1, y: 0, stagger: 0.015, duration: 0.02, ease: "none" },
+          atProve + 0.08
         )
         .to(
           b3Letters,
-          { opacity: 1, y: 0, duration: 0.08, stagger: 0.02, ease: "power2.out" },
-          prove + 0.10
-        )
-        .addLabel("trust", trust)
-        .to(overlay, { opacity: 0.85, duration: 0.2 }, trust)
-        .to(wipe, { opacity: 1, duration: 0.01 }, trust)
-        .to(wipe, { scaleY: 1, duration: 0.2 }, trust)
-        .to(nav, { scale: 0.9, duration: 0.2 }, trust)
-        .to(media, { opacity: 0, duration: 0.15 }, 0.85)
-        .to([b1Letters, b2Letters, b3Letters], { y: "-10vh", opacity: 0, duration: 0.15, stagger: 0.01 }, 0.85);
+          { opacity: 1, y: 0, stagger: 0.015, duration: 0.02, ease: "none" },
+          atProve + 0.14
+        );
+
+      // --- TRUST PHASE ---
+      const atTrust = 0.85;
+      tl.addLabel("trust", atTrust);
+      const p4 = plateRefs.current[4];
+      if (p4) tl.to(p4, { opacity: 1, duration: 0.035 }, atTrust);
+      if (p3) tl.set(p3, { opacity: 0 }, atTrust + 0.035);
+
+      tl.to(overlay, { opacity: 0.85, duration: 0.12 }, atTrust)
+        .to(wipe, { opacity: 1, duration: 0.01 }, atTrust)
+        .to(wipe, { scaleY: 1, duration: 0.12 }, atTrust)
+        .to(nav, { scale: 0.9, duration: 0.12 }, atTrust)
+        .to(media, { opacity: 0, duration: 0.12 }, atTrust)
+        .to([b1Letters, b2Letters, b3Letters], { y: "-10vh", opacity: 0, duration: 0.12, stagger: 0.01 }, atTrust);
 
       return tl;
     }, el);
@@ -238,7 +286,7 @@ export function Hero() {
             <Navbar />
           </header>
 
-          {/* Letter-by-letter entrance words */}
+          {/* Letter-by-letter scroll-scrubbed entrance words */}
           <span
             ref={a1Ref}
             data-hero-a
@@ -264,7 +312,7 @@ export function Hero() {
             <SplitLetters word="proof" />
           </span>
 
-          {/* Scroll-revealed letter-by-letter proof words (NO side clutter) */}
+          {/* Letter-by-letter scroll-scrubbed proof words */}
           {reduced ? null : (
             <>
               <span
