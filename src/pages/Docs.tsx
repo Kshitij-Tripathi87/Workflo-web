@@ -5,6 +5,10 @@ import { SectionBackdrop } from "../landing/SectionBackdrop";
 import { LetterReveal } from "../landing/LetterReveal";
 import { Link } from "../lib/router";
 
+/* -------------------------------------------------------------------------- */
+/*                               RECEIPT SAMPLES                              */
+/* -------------------------------------------------------------------------- */
+
 interface ReceiptSample {
   id: string;
   name: string;
@@ -81,7 +85,7 @@ const SAMPLE_RECEIPTS: ReceiptSample[] = [
         egress_mode: "default_deny",
         outbound_connections_attempted: 2,
         outbound_connections_authorized: 0,
-        violation: "UNAUTHORIZED_EGRESS to 198.51.100.44:443 blocked by eBPF",
+        violation: "UNAUTHORIZED_EGRESS to 198.51.100.44:443 blocked by eBPF filter",
       },
       audit: {
         total_syscalls: 1892,
@@ -136,27 +140,182 @@ const SAMPLE_RECEIPTS: ReceiptSample[] = [
   },
 ];
 
-const SECTIONS = [
-  { id: "quickstart", label: "Quickstart" },
-  { id: "cli", label: "CLI Reference" },
-  { id: "config", label: "Configuration" },
-  { id: "receipt-inspector", label: "Receipt Inspector (Live)" },
-  { id: "api", label: "REST API" },
-  { id: "security", label: "Security Model" },
+/* -------------------------------------------------------------------------- */
+/*                               CLI COMMANDS                                 */
+/* -------------------------------------------------------------------------- */
+
+interface CliCmd {
+  name: string;
+  syntax: string;
+  summary: string;
+  flags: { flag: string; desc: string }[];
+}
+
+const CLI_COMMANDS: CliCmd[] = [
+  {
+    name: "workflo init",
+    syntax: "workflo init [--template=<preset>]",
+    summary: "Scans repository, detects test runner & dependencies, and creates .workflo/config.yaml.",
+    flags: [
+      { flag: "--template", desc: "Configuration preset (node, python, go, rust, monorepo)" },
+      { flag: "--force", desc: "Overwrite existing .workflo configuration" },
+    ],
+  },
+  {
+    name: "workflo doctor",
+    syntax: "workflo doctor [--verbose]",
+    summary: "Audits host readiness: KVM access (/dev/kvm), seccomp support, memory cgroups v2, and hypervisor daemon.",
+    flags: [
+      { flag: "--fix", desc: "Attempt automatic group/permission remediation for /dev/kvm" },
+      { flag: "--json", desc: "Output machine-readable diagnosis payload" },
+    ],
+  },
+  {
+    name: "workflo run",
+    syntax: "workflo run [options] [-- <command>]",
+    summary: "Boots isolated microVM, compiles policy filters, streams audit ledger, and outputs signed receipt.",
+    flags: [
+      { flag: "--tier", desc: "Execution tier: microvm (default), sandbox-strict, or dev-namespace" },
+      { flag: "--dry-run", desc: "Simulate policy compilation & isolation without command execution" },
+      { flag: "--output", desc: "Destination path for generated signed receipt JSON (default: receipt.json)" },
+      { flag: "--timeout", desc: "Maximum execution lifespan before hard teardown (default: 600s)" },
+    ],
+  },
+  {
+    name: "workflo status",
+    syntax: "workflo status [<execution-id>]",
+    summary: "Queries real-time telemetry, active microVM PID, streamed syscall count, and memory allocation.",
+    flags: [
+      { flag: "--follow", desc: "Tail real-time supervisor logs during an active run" },
+    ],
+  },
+  {
+    name: "workflo verify",
+    syntax: "workflo verify <receipt.json>",
+    summary: "Cryptographically recomputes Merkle digest and verifies Ed25519 signature offline against public keys.",
+    flags: [
+      { flag: "--key-file", desc: "Custom Ed25519 public key file for offline air-gapped verification" },
+      { flag: "--strict", desc: "Fail if any teardown anomalies or unverified flags are present" },
+    ],
+  },
+  {
+    name: "workflo inspect",
+    syntax: "workflo inspect <receipt.json | execution-id>",
+    summary: "Interactive TUI/terminal explorer to navigate the full syscall ledger, socket log, and diff trees.",
+    flags: [
+      { flag: "--filter-network", desc: "Filter view to only outbound socket attempts and DNS resolutions" },
+      { flag: "--filter-teardown", desc: "Inspect post-flight process sweep and filesystem diffs" },
+    ],
+  },
+  {
+    name: "workflo explain",
+    syntax: "workflo explain <receipt.json>",
+    summary: "Translates policy rejections and teardown anomalies into actionable diagnostic explanations.",
+    flags: [
+      { flag: "--format", desc: "Output format: text, markdown, or json" },
+    ],
+  },
+  {
+    name: "workflo keygen",
+    syntax: "workflo keygen [--out-dir=<path>]",
+    summary: "Generates Ed25519 cryptographic keypairs for self-hosted or air-gapped receipt signing.",
+    flags: [
+      { flag: "--curve", desc: "Cryptographic curve (ed25519, ecdsa-p256)" },
+    ],
+  },
+  {
+    name: "workflo security-gate",
+    syntax: "workflo security-gate --receipt=<file> [--allow-warnings]",
+    summary: "CI/CD integration command that exits 0 only if receipt verdict is APPROVED_YES with clean teardown.",
+    flags: [
+      { flag: "--max-syscalls", desc: "Threshold to reject runs exhibiting syscall anomalies" },
+      { flag: "--require-clean-tree", desc: "Fail if git working tree had uncommitted modifications" },
+    ],
+  },
 ];
+
+/* -------------------------------------------------------------------------- */
+/*                                12 STAGES                                   */
+/* -------------------------------------------------------------------------- */
+
+const LIFECYCLE_STAGES = [
+  { num: "01", name: "Context Ingestion", desc: "Seals git commit sha, tree cleanliness, and pipeline invocation context." },
+  { num: "02", name: "Dependency Seal", desc: "Validates lockfile digests to prevent supply-chain package substitution." },
+  { num: "03", name: "Policy Compilation", desc: "Translates declarative rules into in-kernel seccomp filters and network gates." },
+  { num: "04", name: "MicroVM Provisioning", desc: "Boots an ephemeral Firecracker instance with unshared memory & read-only base rootfs." },
+  { num: "05", name: "Pre-Flight Attestation", desc: "Checks host kernel integrity, seccomp enablement, and clock synchronization." },
+  { num: "06", name: "Controlled Execution", desc: "Executes test/build command under strict supervisor monitoring." },
+  { num: "07", name: "Syscall & Network Audit", desc: "eBPF monitors every outbound socket connection, DNS lookup, and file access." },
+  { num: "08", name: "Output Artifact Digest", desc: "Calculates SHA-256 binary digests of created artifacts and coverage reports." },
+  { num: "09", name: "Teardown Enforcement", desc: "Issues SIGKILL to background daemons and wipes scratch storage." },
+  { num: "10", name: "Post-Flight Verification", desc: "Audits host diff to mathematically prove zero leftover state or leaked processes." },
+  { num: "11", name: "Merkle Tree Generation", desc: "Hashes all ledger chunks and execution traces into a single cryptographic root." },
+  { num: "12", name: "Receipt Signing", desc: "Signs the canonical receipt with Ed25519 private key, outputting verified verdict." },
+];
+
+/* -------------------------------------------------------------------------- */
+/*                            CODE BLOCK COMPONENT                            */
+/* -------------------------------------------------------------------------- */
+
+function CodeSnippet({ code, title }: { code: string; lang?: string; title?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-2xl border border-[#292E31] bg-[#0E1114] overflow-hidden my-4">
+      {title && (
+        <div className="flex items-center justify-between border-b border-[#292E31] px-4 py-2.5 bg-[#121518]">
+          <span className="font-mono text-xs text-[#90969A]">{title}</span>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="font-mono text-[11px] text-[#C7F36B] hover:underline"
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+      )}
+      <div className="relative p-4 overflow-x-auto">
+        {!title && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="absolute top-3 right-3 font-mono text-[11px] text-[#90969A] hover:text-[#C7F36B]"
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        )}
+        <pre className="font-mono text-xs text-[#F1F2EE] leading-relaxed">
+          <code>{code}</code>
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              MAIN DOCS PAGE                                */
+/* -------------------------------------------------------------------------- */
 
 export function Docs() {
   const [activeReceiptIdx, setActiveReceiptIdx] = useState(0);
   const [receiptView, setReceiptView] = useState<"visual" | "json">("visual");
-  const [copied, setCopied] = useState(false);
+  const [copiedReceipt, setCopiedReceipt] = useState(false);
   const [verifiedState, setVerifiedState] = useState<"idle" | "verifying" | "valid">("idle");
+  const [apiTab, setApiTab] = useState<"curl" | "js" | "python">("curl");
+  const [activeCliCmd, setActiveCliCmd] = useState(2); // default: workflo run
 
   const currentReceipt = SAMPLE_RECEIPTS[activeReceiptIdx];
 
-  const handleCopy = () => {
+  const handleCopyReceipt = () => {
     navigator.clipboard.writeText(JSON.stringify(currentReceipt.json, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedReceipt(true);
+    setTimeout(() => setCopiedReceipt(false), 2000);
   };
 
   const handleVerify = () => {
@@ -167,161 +326,391 @@ export function Docs() {
   };
 
   return (
-    <div className="landing-root min-h-screen bg-black text-white selection:bg-white selection:text-black">
+    <div className="landing-root min-h-screen bg-[#090A0C] text-[#F1F2EE] selection:bg-[#C7F36B] selection:text-[#090A0C]">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative isolate overflow-hidden px-6 pt-24 pb-20 md:px-10 md:pt-32">
+      {/* ------------------------------------------------------------------ */}
+      {/*                       CONCEPTUAL DOCS HERO                         */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="relative isolate px-6 pt-24 pb-16 md:px-10 md:pt-32">
         <SectionBackdrop id="prove" position="70% 50%" />
-        
+
         <div className="relative z-10 mx-auto max-w-6xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
-              Developer Documentation · v1.0
-            </span>
+          {/* Breadcrumb + Status Badge */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-2 font-mono text-sm text-[#90969A]">
+              <span>workflo</span>
+              <span>/</span>
+              <span className="text-[#F1F2EE] font-medium">docs</span>
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#C7F36B]/40 bg-[#C7F36B]/15 px-3.5 py-1 backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-[#C7F36B] animate-pulse" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#C7F36B]">
+                DEVELOPMENT PREVIEW
+              </span>
+            </div>
           </div>
 
+          {/* Headline & Lede */}
           <LetterReveal
-            text="workflo developer documentation."
+            text="Understand every run."
             as="h1"
-            className="text-[10vw] font-medium leading-[1.05] tracking-tight text-white md:text-[6.5vw]"
+            className="text-[10vw] font-medium leading-[1.05] tracking-tight text-[#F1F2EE] md:text-[5.5vw]"
           />
 
-          <p className="mt-8 max-w-3xl text-lg text-white/70 md:text-xl font-light leading-relaxed">
-            Everything you need to install the Workflo CLI, configure execution boundary policies,
-            integrate with existing pipelines, and inspect cryptographic release receipts.
+          <p className="mt-6 max-w-3xl text-lg text-[#90969A] md:text-xl font-light leading-relaxed">
+            Everything you need to configure, execute, inspect and verify a Workflo run.
+          </p>
+
+          {/* Four Featured Category Cards (Direct conceptual direction from brief) */}
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Card 1: Quickstart */}
+            <a
+              href="#quickstart"
+              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+            >
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="4 17 10 11 4 5" />
+                    <line x1="12" y1="19" x2="20" y2="19" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  Quickstart
+                </h3>
+                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  Install and run your first verification.
+                </p>
+              </div>
+              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                Start reading →
+              </span>
+            </a>
+
+            {/* Card 2: Execution lifecycle */}
+            <a
+              href="#lifecycle"
+              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+            >
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  Execution lifecycle
+                </h3>
+                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  Understand all 12 execution stages.
+                </p>
+              </div>
+              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                Explore stages →
+              </span>
+            </a>
+
+            {/* Card 3: Receipt verification */}
+            <a
+              href="#receipt-inspector"
+              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+            >
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <polyline points="9 15 11 17 15 13" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  Receipt verification
+                </h3>
+                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  Inspect signatures and evidence.
+                </p>
+              </div>
+              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                Open playground →
+              </span>
+            </a>
+
+            {/* Card 4: API reference */}
+            <a
+              href="#api"
+              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+            >
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                  API reference
+                </h3>
+                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                  Integrate through the versioned API.
+                </p>
+              </div>
+              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                View schemas →
+              </span>
+            </a>
+          </div>
+
+          <p className="mt-4 font-mono text-[11px] text-[#90969A]/60">
+            Workflo Documentation Specification · 1,390 lines · 7 parts · 20 major sections · reviewed 24 November 2026
           </p>
         </div>
       </section>
 
-      {/* Main Documentation Shell */}
-      <div className="relative isolate border-t border-white/10 px-6 py-16 md:px-10">
+      {/* ------------------------------------------------------------------ */}
+      {/*               RELEASE STATUS & ISOLATION BOUNDARY CAVEAT           */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="relative isolate border-t border-[#292E31] px-6 py-8 md:px-10 bg-[#121518]/40">
+        <div className="mx-auto max-w-6xl">
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-6 backdrop-blur flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                <span className="font-mono text-xs uppercase tracking-wider text-amber-300 font-semibold">
+                  Product Release Status & Security Boundary Disclosure
+                </span>
+              </div>
+              <p className="text-xs text-[#F1F2EE]/80 leading-relaxed max-w-3xl font-light">
+                Workflo is in <strong>development preview</strong>. Firecracker / KVM is the approved
+                production target for untrusted-code execution, but Gate B has not passed. Docker and
+                Linux namespace execution modes are development-only paths and must not be represented
+                as production-accepted isolation.
+              </p>
+            </div>
+            <Link
+              to="/early-access"
+              className="shrink-0 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 font-mono text-xs text-amber-300 hover:bg-amber-400/20 transition-colors"
+            >
+              Request Beta Access →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/*                     MAIN DOCUMENTATION BODY                        */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="relative isolate border-t border-[#292E31] px-6 py-16 md:px-10">
         <div className="mx-auto max-w-6xl grid gap-12 lg:grid-cols-12">
           
-          {/* Sticky Sidebar Navigation */}
+          {/* Left Sticky Navigation */}
           <aside className="lg:col-span-3">
-            <div className="sticky top-28 space-y-1 rounded-2xl border border-white/10 bg-neutral-950/60 p-4 backdrop-blur">
-              <p className="font-mono text-[11px] uppercase tracking-wider text-white/40 mb-3 px-3">
-                Documentation Index
-              </p>
-              {SECTIONS.map((sec) => (
-                <a
-                  key={sec.id}
-                  href={`#${sec.id}`}
-                  className="block rounded-lg px-3 py-2 text-xs font-mono text-white/60 hover:bg-white/5 hover:text-white transition-colors"
-                >
-                  {sec.label}
-                </a>
-              ))}
+            <div className="sticky top-24 space-y-6 rounded-2xl border border-[#292E31] bg-[#121518]/80 p-5 backdrop-blur">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-wider text-[#C7F36B] mb-2 px-2 font-medium">
+                  Documentation Index
+                </p>
+                <nav className="space-y-1">
+                  {[
+                    { id: "installation", label: "Installation & Host Readiness" },
+                    { id: "quickstart", label: "Developer Quickstart" },
+                    { id: "lifecycle", label: "12-Stage Execution Lifecycle" },
+                    { id: "config", label: "Run Configuration (YAML)" },
+                    { id: "cli", label: "CLI Command Reference" },
+                    { id: "evidence", label: "Evidence & Signed Receipts" },
+                    { id: "receipt-inspector", label: "Receipt Playground (Interactive)" },
+                    { id: "api", label: "API Reference (Execution vs Intake)" },
+                    { id: "troubleshooting", label: "Troubleshooting Guide" },
+                  ].map((item) => (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      className="block rounded-lg px-2.5 py-1.5 text-xs font-mono text-[#90969A] hover:bg-white/5 hover:text-[#F1F2EE] transition-colors"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </nav>
+              </div>
 
-              <div className="mt-6 border-t border-white/10 pt-4 px-3">
-                <Link
-                  to="/early-access"
-                  className="block text-center rounded-full bg-white/10 py-2 text-xs font-mono text-emerald-300 hover:bg-white/20 transition-colors"
-                >
-                  Request Early Access →
-                </Link>
+              <div className="border-t border-[#292E31] pt-4 px-2">
+                <span className="font-mono text-[10px] text-[#90969A] block mb-2">SERVICE ARCHITECTURE</span>
+                <p className="text-[11px] text-[#90969A] leading-relaxed">
+                  Website Intake API (<code className="text-[#C7F36B]">/api/v1/*</code>) is isolated from
+                  Execution API (<code className="text-[#C7F36B]">/v1/runs</code>).
+                </p>
               </div>
             </div>
           </aside>
 
-          {/* Main Docs Content */}
+          {/* Right Main Article Stream */}
           <main className="lg:col-span-9 space-y-24">
 
-            {/* Quickstart Section */}
-            <section id="quickstart" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/10 pb-4">
-                <span className="font-mono text-xs text-emerald-400">01 / GET STARTED</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">Quickstart</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Run your first verified execution in under two minutes.
+            {/* 1. Installation & Host Readiness */}
+            <section id="installation" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 1 / SETUP</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Installation & Host Readiness</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Prerequisites, virtualization checks, and CLI distribution.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="text-base font-medium text-white">Step 1: Install the Workflo CLI</h3>
-                <div className="rounded-xl border border-white/15 bg-black/80 p-4 font-mono text-xs text-emerald-300 flex items-center justify-between">
-                  <code>curl -fsSL https://workflo.dev/install.sh | sh</code>
-                  <span className="text-white/40 text-[10px]">LINUX / MACOS</span>
-                </div>
+              <div className="space-y-4 text-sm text-[#F1F2EE]/80 leading-relaxed font-light">
+                <p>
+                  Workflo executes software inside hardware-accelerated microVMs. Before running jobs
+                  with production-grade containment, the host machine must support hardware virtualization
+                  via Linux KVM (<code className="font-mono text-xs text-[#F1F2EE]">/dev/kvm</code>).
+                </p>
 
-                <h3 className="text-base font-medium text-white mt-6">Step 2: Initialize configuration</h3>
-                <div className="rounded-xl border border-white/15 bg-black/80 p-4 font-mono text-xs text-white/80">
-                  <p className="text-white/40"># Run in the root of your git repository</p>
-                  <p className="text-emerald-300">workflo init</p>
-                </div>
+                <h3 className="text-base font-medium text-[#F1F2EE] mt-6">1. Run Host Readiness Diagnostic</h3>
+                <p className="text-xs text-[#90969A]">
+                  Use the standalone diagnostic tool to verify KVM permissions, cgroups v2, and seccomp filters:
+                </p>
+                <CodeSnippet
+                  title="Terminal"
+                  code="curl -fsSL https://workflo.dev/doctor.sh | sh"
+                />
 
-                <h3 className="text-base font-medium text-white mt-6">Step 3: Run with deterministic verification</h3>
-                <div className="rounded-xl border border-white/15 bg-black/80 p-4 font-mono text-xs text-white/80">
-                  <p className="text-white/40"># Boots microVM, captures audit trail, signs receipt</p>
-                  <p className="text-emerald-300">workflo run --command="bun test"</p>
+                <h3 className="text-base font-medium text-[#F1F2EE] mt-6">2. Install the Workflo CLI</h3>
+                <p className="text-xs text-[#90969A]">
+                  Install via npm or direct standalone binary release:
+                </p>
+                <CodeSnippet
+                  title="Terminal"
+                  code={`# Global npm package (Node 20+ required)
+npm install -g @workflo/cli
+
+# Alternatively, download direct Linux binary
+curl -fsSL https://releases.workflo.dev/workflo-linux-x86_64 -o /usr/local/bin/workflo
+chmod +x /usr/local/bin/workflo`}
+                />
+
+                <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4 text-xs font-mono text-[#90969A] mt-4">
+                  <span className="text-[#C7F36B] font-semibold">Note on Licensing:</span> The CLI distribution
+                  is currently undergoing licensing reconciliation between npm and Python packaging manifests.
+                  Ensure you inspect the licence file included with your download.
                 </div>
               </div>
             </section>
 
-            {/* CLI Reference Section */}
-            <section id="cli" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/10 pb-4">
-                <span className="font-mono text-xs text-emerald-400">02 / COMMAND LINE</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">CLI Reference</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Core commands provided by the `workflo` binary.
+            {/* 2. Developer Quickstart */}
+            <section id="quickstart" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 2 / QUICKSTART</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Developer Quickstart</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  The 6-step workflow from repository initialization to verified receipt.
                 </p>
               </div>
 
               <div className="space-y-6">
-                <div className="rounded-2xl border border-white/10 bg-neutral-950/60 p-6 backdrop-blur">
-                  <div className="flex items-center justify-between">
-                    <code className="font-mono text-sm font-semibold text-emerald-300">workflo run [options]</code>
-                    <span className="font-mono text-[10px] text-white/40">PRIMARY</span>
+                {[
+                  {
+                    step: "01",
+                    title: "Initialize Repository",
+                    cmd: "workflo init",
+                    desc: "Inspects your repository, detects your package manager & test scripts, and writes a default .workflo/config.yaml.",
+                  },
+                  {
+                    step: "02",
+                    title: "Diagnose Virtualization & Isolation",
+                    cmd: "workflo doctor",
+                    desc: "Checks /dev/kvm availability, memory limits, and warns if falling back to development namespace isolation.",
+                  },
+                  {
+                    step: "03",
+                    title: "Dry-Run Policy Compilation",
+                    cmd: "workflo run --dry-run",
+                    desc: "Compiles seccomp rules and network egress allowlists without executing tests to verify boundary syntax.",
+                  },
+                  {
+                    step: "04",
+                    title: "Execute Sandboxed Run",
+                    cmd: "workflo run --command='npm test'",
+                    desc: "Boots isolated microVM, executes tests, records every syscall to the Merkle buffer, and sweeps teardown.",
+                  },
+                  {
+                    step: "05",
+                    title: "Verify Cryptographic Receipt",
+                    cmd: "workflo verify ./receipt.json",
+                    desc: "Recomputes Merkle digest and verifies the Ed25519 signature offline, confirming non-repudiation.",
+                  },
+                  {
+                    step: "06",
+                    title: "Inspect Telemetry & Audit Ledger",
+                    cmd: "workflo inspect ./receipt.json",
+                    desc: "Launches terminal inspector to review exact network packets, file descriptor diffs, and teardown proof.",
+                  },
+                ].map((item) => (
+                  <div key={item.step} className="rounded-2xl border border-[#292E31] bg-[#121518]/60 p-6 backdrop-blur">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-[#C7F36B] font-semibold">STEP {item.step}</span>
+                      <span className="font-mono text-[10px] text-[#90969A]">WORKFLOW</span>
+                    </div>
+                    <h3 className="mt-2 text-lg font-medium text-[#F1F2EE]">{item.title}</h3>
+                    <p className="mt-1 text-xs text-[#90969A] leading-relaxed">{item.desc}</p>
+                    <CodeSnippet code={item.cmd} />
                   </div>
-                  <p className="mt-2 text-xs text-white/70">
-                    Spawns the isolated microVM sandbox, executes the declared commands, and generates a signed receipt.
-                  </p>
-                  <div className="mt-4 space-y-2 font-mono text-xs text-white/60">
-                    <div><span className="text-white">--config=&lt;path&gt;</span> : Path to workflo.yaml (default: ./workflo.yaml)</div>
-                    <div><span className="text-white">--dry-run</span> : Validate policy filters without executing commands</div>
-                    <div><span className="text-white">--output=&lt;file&gt;</span> : Destination for generated receipt JSON</div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-neutral-950/60 p-6 backdrop-blur">
-                  <div className="flex items-center justify-between">
-                    <code className="font-mono text-sm font-semibold text-emerald-300">workflo verify &lt;receipt.json&gt;</code>
-                    <span className="font-mono text-[10px] text-white/40">AUDIT</span>
-                  </div>
-                  <p className="mt-2 text-xs text-white/70">
-                    Cryptographically checks the Ed25519 signature and recomputes the Merkle tree digest offline.
-                  </p>
-                </div>
+                ))}
               </div>
             </section>
 
-            {/* Configuration Section */}
-            <section id="config" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/10 pb-4">
-                <span className="font-mono text-xs text-emerald-400">03 / CONFIGURATION</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">workflo.yaml Schema</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Declare environmental constraints, resource limits, and network permissions.
+            {/* 3. Execution Lifecycle */}
+            <section id="lifecycle" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 3 / LIFECYCLE</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">12-Stage Execution Lifecycle</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Every execution progresses through an immutable sequence. Order is the fundamental security guarantee.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-white/15 bg-black/90 p-6 font-mono text-xs leading-relaxed text-white/80 overflow-x-auto">
-                <pre>{`version: 1
+              <div className="grid gap-3 sm:grid-cols-2">
+                {LIFECYCLE_STAGES.map((s) => (
+                  <div key={s.num} className="rounded-xl border border-[#292E31] bg-[#121518]/70 p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-[#C7F36B]">{s.num}</span>
+                      <h4 className="text-sm font-medium text-[#F1F2EE]">{s.name}</h4>
+                    </div>
+                    <p className="mt-2 text-xs text-[#90969A] leading-relaxed">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 4. Run Configuration */}
+            <section id="config" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 4 / SPECIFICATION</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Run Configuration (.workflo/config.yaml)</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Declarative execution policies, runtime parameters, and isolation boundaries.
+                </p>
+              </div>
+
+              <CodeSnippet
+                lang="yaml"
+                title=".workflo/config.yaml"
+                code={`version: 1
+
 runtime:
-  hypervisor: firecracker
-  memory_mb: 4096
+  tier: microvm                  # microvm | sandbox-strict | dev-namespace
+  hypervisor: firecracker        # Firecracker KVM execution target
   vcpu: 4
+  memory_mb: 4096
   timeout_seconds: 600
 
 boundaries:
   network:
-    egress: default_deny
+    egress: default_deny         # Block all outbound traffic by default
     allowed_cidrs:
-      - 10.0.0.0/16       # Internal database VPC
-      - 169.254.169.254/32 # Blocked explicitly
+      - 10.0.0.0/16              # Internal database subnet
+      - 172.16.0.0/12
+    blocked_endpoints:
+      - 169.254.169.254/32       # AWS IMDS metadata service blocked
     log_dns: true
 
   filesystem:
@@ -330,31 +719,112 @@ boundaries:
     tmpfs_mb: 512
 
 teardown:
-  enforce_clean_state: true
-  max_zombie_allowance: 0
+  enforce_clean_state: true      # Sweep for background zombies
+  max_zombie_allowance: 0        # Zero tolerance for orphaned daemons
 
 receipt:
   sign: true
   key_id: "workflo-signer-2026-a"
-  format: "canonical-json"`}</pre>
-              </div>
+  format: "canonical-json"`}
+              />
             </section>
 
-            {/* Interactive Receipt Inspector (Moved from Proof) */}
-            <section id="receipt-inspector" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="font-mono text-xs text-emerald-400">04 / INTERACTIVE PLAYGROUND</span>
-                </div>
-                <h2 className="mt-2 text-3xl font-medium text-white">Cryptographic Receipt Inspector</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Every run outputs an immutable receipt. Toggle between test cases below to inspect real
-                  verdicts, verify cryptographic signatures, and examine the Merkle audit trail.
+            {/* 5. CLI Reference */}
+            <section id="cli" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 5 / CLI REFERENCE</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">CLI Command Reference</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Verified command signatures from the Workflo CLI source implementation.
                 </p>
               </div>
 
-              {/* Sample Selector Tabs */}
+              {/* Command Tabs */}
+              <div className="flex flex-wrap gap-2">
+                {CLI_COMMANDS.map((cmd, idx) => (
+                  <button
+                    key={cmd.name}
+                    type="button"
+                    onClick={() => setActiveCliCmd(idx)}
+                    className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors ${
+                      activeCliCmd === idx
+                        ? "bg-[#C7F36B] text-[#090A0C] font-semibold"
+                        : "border border-[#292E31] bg-[#121518] text-[#90969A] hover:text-[#F1F2EE]"
+                    }`}
+                  >
+                    {cmd.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Selected Command Card */}
+              <div className="rounded-2xl border border-[#292E31] bg-[#121518] p-6">
+                <div className="flex items-center justify-between border-b border-[#292E31] pb-3">
+                  <code className="font-mono text-sm font-semibold text-[#C7F36B]">
+                    {CLI_COMMANDS[activeCliCmd].syntax}
+                  </code>
+                  <span className="font-mono text-[10px] text-[#90969A]">SOURCE SPEC</span>
+                </div>
+
+                <p className="mt-4 text-sm text-[#F1F2EE]/90 leading-relaxed font-light">
+                  {CLI_COMMANDS[activeCliCmd].summary}
+                </p>
+
+                <h4 className="mt-6 font-mono text-xs uppercase tracking-wider text-[#90969A]">
+                  Command Flags & Options
+                </h4>
+                <div className="mt-3 space-y-2">
+                  {CLI_COMMANDS[activeCliCmd].flags.map((f, fIdx) => (
+                    <div key={fIdx} className="grid grid-cols-12 gap-2 text-xs font-mono">
+                      <span className="col-span-4 text-[#F1F2EE] font-medium">{f.flag}</span>
+                      <span className="col-span-8 text-[#90969A] font-light">{f.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* 6. Evidence & Signed Receipts */}
+            <section id="evidence" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 6 / VERIFICATION</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Evidence & Signed Receipts</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Cryptographic non-repudiation, Merkle audit chains, and explicit receipt limitations.
+                </p>
+              </div>
+
+              <div className="space-y-4 text-sm text-[#F1F2EE]/80 leading-relaxed font-light">
+                <p>
+                  Workflo compiles an immutable receipt encapsulating the git commit, policy rules,
+                  observed system calls, network sockets, teardown state, and Merkle root.
+                </p>
+
+                <div className="rounded-2xl border border-red-500/30 bg-red-950/20 p-5 text-xs text-[#F1F2EE]/90">
+                  <strong className="text-red-400 font-semibold uppercase font-mono block mb-1">
+                    Fundamental Receipt Boundary:
+                  </strong>
+                  A signed receipt proves <em>what ran, what boundaries were enforced, and what was observed</em>.
+                  It <strong>does not prove</strong> that the software is bug-free, safe, or correct.
+                  Humans remain responsible for interpreting the evidence and authorizing deployment.
+                </div>
+              </div>
+            </section>
+
+            {/* 7. Interactive Receipt Inspector (Playground) */}
+            <section id="receipt-inspector" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[#C7F36B] animate-pulse" />
+                  <span className="font-mono text-xs text-[#C7F36B]">LIVE PLAYGROUND</span>
+                </div>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Interactive Receipt Inspector</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Test real receipt payloads, verify digital signatures, and audit Merkle digests.
+                </p>
+              </div>
+
+              {/* Scenario Selector */}
               <div className="flex flex-wrap gap-2">
                 {SAMPLE_RECEIPTS.map((s, idx) => (
                   <button
@@ -366,8 +836,8 @@ receipt:
                     }}
                     className={`rounded-full px-4 py-2 font-mono text-xs transition-colors ${
                       activeReceiptIdx === idx
-                        ? "bg-white text-black font-semibold"
-                        : "border border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                        ? "bg-[#C7F36B] text-[#090A0C] font-semibold"
+                        : "border border-[#292E31] bg-[#121518] text-[#90969A] hover:text-[#F1F2EE]"
                     }`}
                   >
                     {s.name}
@@ -375,16 +845,15 @@ receipt:
                 ))}
               </div>
 
-              {/* Receipt View Box */}
-              <div className="rounded-3xl border border-white/20 bg-neutral-950/80 backdrop-blur overflow-hidden">
-                {/* Header Toolbar */}
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-white/5 p-4 md:px-6">
+              {/* Inspector Card */}
+              <div className="rounded-3xl border border-[#292E31] bg-[#121518]/90 backdrop-blur overflow-hidden">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#292E31] bg-[#0E1114] p-4 md:px-6">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-white/40">VERDICT:</span>
+                    <span className="font-mono text-xs text-[#90969A]">VERDICT:</span>
                     <span
                       className={`font-mono text-xs px-3 py-1 rounded-full border ${
                         currentReceipt.verdict === "APPROVED_YES"
-                          ? "border-emerald-500/40 bg-emerald-950/60 text-emerald-400"
+                          ? "border-[#C7F36B]/40 bg-[#C7F36B]/15 text-[#C7F36B]"
                           : "border-red-500/40 bg-red-950/60 text-red-400"
                       }`}
                     >
@@ -393,12 +862,12 @@ receipt:
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg border border-white/15 bg-black/60 p-1 flex">
+                    <div className="rounded-lg border border-[#292E31] bg-[#090A0C] p-1 flex">
                       <button
                         type="button"
                         onClick={() => setReceiptView("visual")}
                         className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
-                          receiptView === "visual" ? "bg-white/20 text-white" : "text-white/50 hover:text-white"
+                          receiptView === "visual" ? "bg-white/10 text-[#F1F2EE]" : "text-[#90969A]"
                         }`}
                       >
                         Structured Audit
@@ -407,7 +876,7 @@ receipt:
                         type="button"
                         onClick={() => setReceiptView("json")}
                         className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
-                          receiptView === "json" ? "bg-white/20 text-white" : "text-white/50 hover:text-white"
+                          receiptView === "json" ? "bg-white/10 text-[#F1F2EE]" : "text-[#90969A]"
                         }`}
                       >
                         Canonical JSON
@@ -416,51 +885,49 @@ receipt:
 
                     <button
                       type="button"
-                      onClick={handleCopy}
-                      className="rounded-lg border border-white/15 bg-black/60 px-3 py-1.5 text-xs font-mono text-white/80 hover:bg-white/10"
+                      onClick={handleCopyReceipt}
+                      className="rounded-lg border border-[#292E31] bg-[#090A0C] px-3 py-1.5 text-xs font-mono text-[#90969A] hover:text-[#F1F2EE]"
                     >
-                      {copied ? "Copied!" : "Copy JSON"}
+                      {copiedReceipt ? "Copied" : "Copy JSON"}
                     </button>
                   </div>
                 </div>
 
-                {/* Content Body */}
                 <div className="p-6 md:p-8">
                   {receiptView === "visual" ? (
                     <div className="space-y-6">
                       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                        <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/40">COMMIT DIGEST</span>
-                          <p className="mt-1 font-mono text-xs text-white truncate">
+                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                          <span className="font-mono text-[10px] text-[#90969A]">COMMIT SHA</span>
+                          <p className="mt-1 font-mono text-xs text-[#F1F2EE] truncate">
                             {currentReceipt.json.commit?.sha || "sha256:unknown"}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/40">MERKLE ROOT</span>
-                          <p className="mt-1 font-mono text-xs text-white truncate">
+                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                          <span className="font-mono text-[10px] text-[#90969A]">MERKLE ROOT</span>
+                          <p className="mt-1 font-mono text-xs text-[#F1F2EE] truncate">
                             {currentReceipt.json.merkle_root}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/40">SIGNATURE ALGORITHM</span>
-                          <p className="mt-1 font-mono text-xs text-white">
+                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                          <span className="font-mono text-[10px] text-[#90969A]">SIGNATURE ALGORITHM</span>
+                          <p className="mt-1 font-mono text-xs text-[#F1F2EE]">
                             {currentReceipt.json.signature?.algorithm} (Verified)
                           </p>
                         </div>
-                        <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/40">TEARDOWN STATE</span>
-                          <p className="mt-1 font-mono text-xs text-white">
+                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                          <span className="font-mono text-[10px] text-[#90969A]">TEARDOWN STATE</span>
+                          <p className="mt-1 font-mono text-xs text-[#F1F2EE]">
                             {currentReceipt.json.teardown?.zombie_processes === 0 ? "Clean (0 Zombies)" : "LEAK DETECTED"}
                           </p>
                         </div>
                       </div>
 
-                      {/* Interactive Signature Verification Button */}
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 flex flex-wrap items-center justify-between gap-4">
+                      <div className="rounded-2xl border border-[#292E31] bg-[#090A0C]/50 p-5 flex flex-wrap items-center justify-between gap-4">
                         <div>
-                          <h4 className="text-sm font-medium text-white">Cryptographic Signature Verification</h4>
-                          <p className="text-xs text-white/60 mt-1">
-                            Verify this receipt against the Workflo public key to prove mathematical integrity.
+                          <h4 className="text-sm font-medium text-[#F1F2EE]">Cryptographic Signature Verification</h4>
+                          <p className="text-xs text-[#90969A] mt-1 font-light">
+                            Verifies Ed25519 digital signature against Workflo authority public keys.
                           </p>
                         </div>
 
@@ -470,8 +937,8 @@ receipt:
                           disabled={verifiedState === "valid"}
                           className={`rounded-full px-5 py-2 font-mono text-xs transition-colors ${
                             verifiedState === "valid"
-                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                              : "bg-white text-black hover:bg-neutral-200"
+                              ? "bg-[#C7F36B]/20 text-[#C7F36B] border border-[#C7F36B]/40"
+                              : "bg-[#C7F36B] text-[#090A0C] font-semibold hover:bg-[#b8e858]"
                           }`}
                         >
                           {verifiedState === "verifying"
@@ -483,7 +950,7 @@ receipt:
                       </div>
                     </div>
                   ) : (
-                    <pre className="font-mono text-xs text-white/90 overflow-x-auto leading-relaxed max-h-96">
+                    <pre className="font-mono text-xs text-[#F1F2EE] overflow-x-auto leading-relaxed max-h-96">
                       {JSON.stringify(currentReceipt.json, null, 2)}
                     </pre>
                   )}
@@ -491,46 +958,158 @@ receipt:
               </div>
             </section>
 
-            {/* REST API Reference */}
+            {/* 8. API Reference */}
             <section id="api" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/10 pb-4">
-                <span className="font-mono text-xs text-emerald-400">05 / REST API</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">REST API Endpoints</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  CloudFront and API Gateway backed intake services.
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 7 / API REFERENCE</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">API Reference</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Workflo Product Execution API (/v1/runs) versus Website Intake API (/api/v1/*).
+                </p>
+              </div>
+
+              {/* Product Execution API Header */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-[#F1F2EE]">1. Product Execution Service (/v1/runs)</h3>
+                  <div className="flex rounded-lg border border-[#292E31] bg-[#0E1114] p-1 font-mono text-xs">
+                    {(["curl", "js", "python"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setApiTab(tab)}
+                        className={`rounded px-2.5 py-1 uppercase ${
+                          apiTab === tab ? "bg-[#C7F36B] text-[#090A0C] font-semibold" : "text-[#90969A]"
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#90969A]">
+                  Endpoint for programmatic CI/CD integration and autonomous agent execution triggers:
+                </p>
+
+                {apiTab === "curl" && (
+                  <CodeSnippet
+                    title="cURL"
+                    code={`curl -X POST https://api.workflo.dev/v1/runs \
+  -H "Authorization: Bearer $WORKFLO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repository": "https://github.com/acme/service",
+    "commit": "9f2a71d803be81b67f13904a1168194e432c6b41",
+    "tier": "microvm",
+    "command": "npm test"
+  }'`}
+                  />
+                )}
+
+                {apiTab === "js" && (
+                  <CodeSnippet
+                    title="TypeScript / Node.js"
+                    code={`import { WorkfloClient } from "@workflo/sdk";
+
+const client = new WorkfloClient({ apiKey: process.env.WORKFLO_API_KEY });
+
+const run = await client.runs.create({
+  repository: "https://github.com/acme/service",
+  commit: "9f2a71d803be81b67f13904a1168194e432c6b41",
+  tier: "microvm",
+  command: "npm test",
+});
+
+const receipt = await run.waitForReceipt();
+console.log("Verdict:", receipt.verdict);`}
+                  />
+                )}
+
+                {apiTab === "python" && (
+                  <CodeSnippet
+                    title="Python"
+                    code={`from workflo import WorkfloClient
+import os
+
+client = WorkfloClient(api_key=os.environ["WORKFLO_API_KEY"])
+
+run = client.runs.create(
+    repository="https://github.com/acme/service",
+    commit="9f2a71d803be81b67f13904a1168194e432c6b41",
+    tier="microvm",
+    command="pytest",
+)
+
+receipt = run.wait_for_receipt()
+assert receipt.verdict == "APPROVED_YES"`}
+                  />
+                )}
+
+                {/* Website Intake API Section */}
+                <h3 className="text-lg font-medium text-[#F1F2EE] pt-6">2. Website Public Intake APIs (/api/v1/*)</h3>
+                <p className="text-xs text-[#90969A]">
+                  CloudFront edge & regional API Gateway endpoints powering website intake workflows:
+                </p>
+
+                <div className="grid gap-3 sm:grid-cols-3 mt-3">
+                  <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4">
+                    <span className="font-mono text-xs text-[#C7F36B]">GET /api/v1/health</span>
+                    <p className="mt-1 text-xs text-[#90969A]">Website API Gateway health check.</p>
+                  </div>
+                  <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4">
+                    <span className="font-mono text-xs text-[#C7F36B]">POST /api/v1/early-access</span>
+                    <p className="mt-1 text-xs text-[#90969A]">Early access cohort submission.</p>
+                  </div>
+                  <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4">
+                    <span className="font-mono text-xs text-[#C7F36B]">POST /api/v1/contact</span>
+                    <p className="mt-1 text-xs text-[#90969A]">Enterprise & sales intake.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 9. Troubleshooting */}
+            <section id="troubleshooting" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-[#292E31] pb-4">
+                <span className="font-mono text-xs text-[#C7F36B]">PART 8 / DIAGNOSTICS</span>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Troubleshooting Guide</h2>
+                <p className="mt-2 text-sm text-[#90969A]">
+                  Common execution anomalies, isolation errors, and remediation steps.
                 </p>
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-xl border border-white/10 bg-neutral-950/60 p-5">
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-blue-500/20 px-2 py-0.5 font-mono text-xs text-blue-400">GET</span>
-                    <code className="font-mono text-xs text-white">/api/v1/health</code>
+                {[
+                  {
+                    code: "ERR_KVM_PERMISSION_DENIED",
+                    cause: "Host user does not have read/write access to /dev/kvm.",
+                    fix: "Run `sudo usermod -aG kvm $USER` and reload session, or run `workflo doctor --fix`.",
+                  },
+                  {
+                    code: "ERR_POLICY_EGRESS_VIOLATION",
+                    cause: "The sandboxed process attempted unauthorized outbound network connection.",
+                    fix: "Add the required CIDR or domain to `.workflo/config.yaml` under `boundaries.network.allowed_cidrs`.",
+                  },
+                  {
+                    code: "ERR_TEARDOWN_ZOMBIE_DETECTED",
+                    cause: "A background process spawned during tests did not terminate upon job completion.",
+                    fix: "Ensure test scripts invoke proper cleanup handlers, or pass `--timeout` to force SIGKILL.",
+                  },
+                  {
+                    code: "ERR_RECEIPT_SIGNATURE_MISMATCH",
+                    cause: "The receipt payload was altered after signature generation, or incorrect public key used.",
+                    fix: "Re-run `workflo verify` with canonical keyfile or check if JSON was reformatted without preserving canonical ordering.",
+                  },
+                ].map((item) => (
+                  <div key={item.code} className="rounded-xl border border-[#292E31] bg-[#121518] p-5">
+                    <span className="font-mono text-xs font-semibold text-red-400">{item.code}</span>
+                    <p className="mt-1 text-xs text-[#F1F2EE] font-medium">{item.cause}</p>
+                    <p className="mt-2 text-xs text-[#90969A] font-light">
+                      <strong className="text-[#C7F36B] font-mono">Remedy:</strong> {item.fix}
+                    </p>
                   </div>
-                  <p className="mt-2 text-xs text-white/60">
-                    Returns API Gateway and Lambda health status.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 bg-neutral-950/60 p-5">
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 font-mono text-xs text-emerald-400">POST</span>
-                    <code className="font-mono text-xs text-white">/api/v1/early-access</code>
-                  </div>
-                  <p className="mt-2 text-xs text-white/60">
-                    Submits developer early-access application to DynamoDB via SQS FIFO queue.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 bg-neutral-950/60 p-5">
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-emerald-500/20 px-2 py-0.5 font-mono text-xs text-emerald-400">POST</span>
-                    <code className="font-mono text-xs text-white">/api/v1/contact</code>
-                  </div>
-                  <p className="mt-2 text-xs text-white/60">
-                    Submits enterprise and technical inquiries to SES notification pipeline.
-                  </p>
-                </div>
+                ))}
               </div>
             </section>
 
