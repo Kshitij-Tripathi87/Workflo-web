@@ -60,8 +60,8 @@ export function EarlyAccess() {
         <SectionBackdrop id="trust" position="66% 50%" />
         
         <div className="relative z-10 mx-auto max-w-3xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Private Beta · Early Access Intake
             </span>
@@ -80,8 +80,8 @@ export function EarlyAccess() {
 
           <div className="mt-12">
             {status === "success" ? (
-              <div className="rounded-3xl border border-emerald-500/30 bg-emerald-950/40 p-8 text-center backdrop-blur sm:p-12">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+              <div className="rounded-3xl border border-[#C7F36B]/30 bg-[#C7F36B]/10 p-8 text-center backdrop-blur sm:p-12">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#C7F36B]/20 text-[#C7F36B]">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
@@ -94,7 +94,7 @@ export function EarlyAccess() {
                 <button
                   type="button"
                   onClick={() => setStatus("idle")}
-                  className="mt-8 rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-xs font-mono text-white hover:bg-white/10"
+                  className="mt-8 rounded-full border border-white/[0.08] bg-white/[0.02] px-6 py-2.5 text-xs font-mono text-white hover:bg-white/10"
                 >
                   Submit another application
                 </button>
@@ -102,7 +102,7 @@ export function EarlyAccess() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="rounded-3xl border border-white/20 bg-neutral-950/80 p-8 backdrop-blur sm:p-10 space-y-6"
+                className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur sm:p-10 space-y-6"
               >
                 {errorMessage && (
                   <div className="rounded-xl border border-red-500/40 bg-red-950/30 p-4 text-xs text-red-200 font-mono">
@@ -124,7 +124,7 @@ export function EarlyAccess() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block font-mono text-xs text-white/60 mb-2">
-                      FULL NAME <span className="text-emerald-400">*</span>
+                      FULL NAME <span className="text-[#C7F36B]">*</span>
                     </label>
                     <input
                       type="text"
@@ -132,13 +132,13 @@ export function EarlyAccess() {
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="Linus Torvalds"
-                      className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                     />
                   </div>
 
                   <div>
                     <label className="block font-mono text-xs text-white/60 mb-2">
-                      WORK EMAIL <span className="text-emerald-400">*</span>
+                      WORK EMAIL <span className="text-[#C7F36B]">*</span>
                     </label>
                     <input
                       type="email"
@@ -146,7 +146,7 @@ export function EarlyAccess() {
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       placeholder="linus@kernel.org"
-                      className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                     />
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export function EarlyAccess() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block font-mono text-xs text-white/60 mb-2">
-                      COMPANY / ORG <span className="text-emerald-400">*</span>
+                      COMPANY / ORG <span className="text-[#C7F36B]">*</span>
                     </label>
                     <input
                       type="text"
@@ -162,7 +162,7 @@ export function EarlyAccess() {
                       value={form.company}
                       onChange={(e) => setForm({ ...form, company: e.target.value })}
                       placeholder="Linux Foundation"
-                      className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                     />
                   </div>
 
@@ -173,14 +173,14 @@ export function EarlyAccess() {
                       value={form.role}
                       onChange={(e) => setForm({ ...form, role: e.target.value })}
                       placeholder="VP of Engineering / Lead Architect"
-                      className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    ENGINEERING TEAM SIZE <span className="text-emerald-400">*</span>
+                    ENGINEERING TEAM SIZE <span className="text-[#C7F36B]">*</span>
                   </label>
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {TEAM_SIZES.map((size) => (
@@ -190,8 +190,8 @@ export function EarlyAccess() {
                         onClick={() => setForm({ ...form, teamSize: size as any })}
                         className={`rounded-xl border py-2.5 font-mono text-xs transition-colors ${
                           form.teamSize === size
-                            ? "border-emerald-400 bg-emerald-950/60 text-white font-semibold"
-                            : "border-white/15 bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
+                            ? "border-[#C7F36B]/40 bg-[#C7F36B]/15 text-[#C7F36B] font-semibold"
+                            : "border-white/[0.08] bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
                         }`}
                       >
                         {size}
@@ -202,7 +202,7 @@ export function EarlyAccess() {
 
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    PRIMARY USE CASE & PIPELINE CONTEXT <span className="text-emerald-400">*</span>
+                    PRIMARY USE CASE & PIPELINE CONTEXT <span className="text-[#C7F36B]">*</span>
                   </label>
                   <textarea
                     required
@@ -210,7 +210,7 @@ export function EarlyAccess() {
                     value={form.useCase}
                     onChange={(e) => setForm({ ...form, useCase: e.target.value })}
                     placeholder="We run 80+ microservices in Kubernetes and need cryptographic proof for release sign-offs..."
-                    className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                   />
                   <p className="mt-1 font-mono text-[10px] text-white/40">Minimum 20 characters.</p>
                 </div>
@@ -224,7 +224,7 @@ export function EarlyAccess() {
                     value={form.workflow}
                     onChange={(e) => setForm({ ...form, workflow: e.target.value })}
                     placeholder="GitHub Actions, GitLab CI, Buildkite, Jenkins..."
-                    className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                   />
                 </div>
 
@@ -234,7 +234,7 @@ export function EarlyAccess() {
                     id="ea-consent"
                     checked={form.consentToReply}
                     onChange={(e) => setForm({ ...form, consentToReply: e.target.checked })}
-                    className="h-4 w-4 rounded border-white/20 bg-black/50 text-emerald-500 focus:ring-0"
+                    className="h-4 w-4 rounded border-white/[0.08] bg-black/50 text-[#C7F36B] focus:ring-0"
                   />
                   <label htmlFor="ea-consent" className="text-xs text-white/60">
                     I agree to be contacted by Workflo regarding sandbox access and onboarding.

@@ -113,8 +113,8 @@ export function Product() {
         <SectionBackdrop id="trust" position="66% 50%" />
         
         <div className="relative z-10 mx-auto max-w-6xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Product Overview · Verification Layer
             </span>
@@ -141,16 +141,16 @@ export function Product() {
             </Link>
             <Link
               to="/docs"
-              className="rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10"
+              className="rounded-full border border-white/[0.08] bg-white/[0.02] px-8 py-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10"
             >
-              Read technical docs →
+              Read technical docs 
             </Link>
           </div>
         </div>
       </section>
 
       {/* Core Architecture Pillars Section */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="execute" position="68% 50%" />
         
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -180,8 +180,8 @@ export function Product() {
                     onClick={() => setActivePillar(idx)}
                     className={`group flex items-start gap-4 rounded-2xl border p-5 text-left transition-all ${
                       isActive
-                        ? "border-white/40 bg-white/10 backdrop-blur"
-                        : "border-white/10 bg-black/40 hover:border-white/20 hover:bg-white/5"
+                        ? "border-[#C7F36B]/30 bg-[#C7F36B]/10 backdrop-blur"
+                        : "border-white/[0.06] bg-black/40 hover:border-white/[0.08] hover:bg-white/[0.02]"
                     }`}
                   >
                     <span className="font-mono text-xs text-white/40 group-hover:text-white/70">
@@ -199,10 +199,10 @@ export function Product() {
             </div>
 
             {/* Right Display Panel */}
-            <div className="rounded-3xl border border-white/20 bg-neutral-950/80 p-8 backdrop-blur lg:col-span-7 flex flex-col justify-between">
+            <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur lg:col-span-7 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between border-b border-white/10 pb-5">
-                  <span className="font-mono text-xs tracking-widest text-emerald-400">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-5">
+                  <span className="font-mono text-xs tracking-widest text-[#C7F36B]">
                     {PILLARS[activePillar].tag}
                   </span>
                   <span className="font-mono text-xs text-white/40">
@@ -230,13 +230,13 @@ export function Product() {
                 </div>
               </div>
 
-              <div className="mt-10 border-t border-white/10 pt-6 flex items-center justify-between">
+              <div className="mt-10 border-t border-white/[0.06] pt-6 flex items-center justify-between">
                 <span className="font-mono text-xs text-white/40">DETERMINISTIC ASSURANCE</span>
                 <Link
                   to="/how-it-works"
-                  className="font-mono text-xs text-white hover:text-emerald-300 transition-colors"
+                  className="font-mono text-xs text-white hover:text-[#C7F36B] transition-colors"
                 >
-                  See lifecycle execution sequence →
+                  See lifecycle execution sequence 
                 </Link>
               </div>
             </div>
@@ -245,7 +245,7 @@ export function Product() {
       </section>
 
       {/* Comparison Section: Traditional CI vs Workflo */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="observe" position="56% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -262,11 +262,11 @@ export function Product() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-white/20 bg-neutral-950/80 backdrop-blur">
-            <div className="grid grid-cols-12 border-b border-white/10 bg-white/5 p-4 text-xs font-mono tracking-wider text-white/50 md:p-6">
+          <div className="overflow-hidden rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md backdrop-blur">
+            <div className="grid grid-cols-12 border-b border-white/[0.06] bg-white/[0.02] p-4 text-xs font-mono tracking-wider text-white/50 md:p-6">
               <div className="col-span-3">VERIFICATION DIMENSION</div>
               <div className="col-span-4 text-neutral-400">TRADITIONAL CI RUNNER</div>
-              <div className="col-span-5 text-emerald-400">WORKFLO VERIFICATION LAYER</div>
+              <div className="col-span-5 text-[#C7F36B]">WORKFLO VERIFICATION LAYER</div>
             </div>
 
             <div className="divide-y divide-white/10">
@@ -292,7 +292,7 @@ export function Product() {
       </section>
 
       {/* Architecture Flow Diagram */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="verify" position="58% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -306,7 +306,7 @@ export function Product() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-2xl border border-white/15 bg-black/60 p-6 backdrop-blur">
+            <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur">
               <span className="font-mono text-xs text-white/40">STEP 01</span>
               <h4 className="mt-3 text-lg font-medium text-white">Capture & Seal</h4>
               <p className="mt-2 text-xs leading-relaxed text-white/60">
@@ -314,7 +314,7 @@ export function Product() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/15 bg-black/60 p-6 backdrop-blur">
+            <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur">
               <span className="font-mono text-xs text-white/40">STEP 02</span>
               <h4 className="mt-3 text-lg font-medium text-white">Boot & Isolate</h4>
               <p className="mt-2 text-xs leading-relaxed text-white/60">
@@ -322,7 +322,7 @@ export function Product() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/15 bg-black/60 p-6 backdrop-blur">
+            <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur">
               <span className="font-mono text-xs text-white/40">STEP 03</span>
               <h4 className="mt-3 text-lg font-medium text-white">Audit & Teardown</h4>
               <p className="mt-2 text-xs leading-relaxed text-white/60">
@@ -330,8 +330,8 @@ export function Product() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/15 bg-black/60 p-6 backdrop-blur border-emerald-500/30">
-              <span className="font-mono text-xs text-emerald-400">STEP 04</span>
+            <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur border-[#C7F36B]/30">
+              <span className="font-mono text-xs text-[#C7F36B]">STEP 04</span>
               <h4 className="mt-3 text-lg font-medium text-white">Sign Receipt</h4>
               <p className="mt-2 text-xs leading-relaxed text-white/60">
                 Compiles the Merkle root and signs the immutable release receipt with Ed25519 keys.
@@ -342,7 +342,7 @@ export function Product() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 text-center md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 text-center md:px-10">
         <SectionBackdrop id="prove" position="70% 50%" />
         <div className="relative z-10 mx-auto max-w-4xl">
           <LetterReveal
@@ -362,7 +362,7 @@ export function Product() {
             </Link>
             <Link
               to="/docs"
-              className="rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10"
+              className="rounded-full border border-white/[0.08] bg-white/[0.02] px-8 py-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10"
             >
               Explore docs
             </Link>

@@ -50,14 +50,16 @@ export function Proof() {
           </div>
           <Link
             to="/docs"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-xs font-mono text-white backdrop-blur transition-colors hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-6 py-3 text-xs font-mono text-white backdrop-blur transition-colors hover:bg-white/10"
           >
             <span>Interactive Receipt Inspector</span>
-            <span>→</span>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/20 bg-white/20 sm:grid-cols-3">
+        <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.02] sm:grid-cols-3">
           {PROOF_METRICS.map((stat) => (
             <div key={stat.id} className="h-full bg-black p-8">
               <p className="text-4xl font-medium tracking-tight md:text-5xl">

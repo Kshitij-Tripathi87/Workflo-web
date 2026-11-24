@@ -201,7 +201,7 @@ const CLI_COMMANDS: CliCmd[] = [
   {
     name: "workflo inspect",
     syntax: "workflo inspect <receipt.json | execution-id>",
-    summary: "Interactive TUI/terminal explorer to navigate the full syscall ledger, socket log, and diff trees.",
+    summary: "Interactive terminal explorer to navigate the full syscall ledger, socket log, and diff trees.",
     flags: [
       { flag: "--filter-network", desc: "Filter view to only outbound socket attempts and DNS resolutions" },
       { flag: "--filter-teardown", desc: "Inspect post-flight process sweep and filesystem diffs" },
@@ -257,7 +257,7 @@ const LIFECYCLE_STAGES = [
 /*                            CODE BLOCK COMPONENT                            */
 /* -------------------------------------------------------------------------- */
 
-function CodeSnippet({ code, title }: { code: string; lang?: string; title?: string }) {
+function CodeSnippet({ code, title }: { code: string; title?: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -267,16 +267,16 @@ function CodeSnippet({ code, title }: { code: string; lang?: string; title?: str
   };
 
   return (
-    <div className="rounded-2xl border border-[#292E31] bg-[#0E1114] overflow-hidden my-4">
+    <div className="rounded-2xl border border-white/[0.08] bg-black/60 backdrop-blur-md overflow-hidden my-4">
       {title && (
-        <div className="flex items-center justify-between border-b border-[#292E31] px-4 py-2.5 bg-[#121518]">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2 bg-white/[0.02]">
           <span className="font-mono text-xs text-[#90969A]">{title}</span>
           <button
             type="button"
             onClick={handleCopy}
             className="font-mono text-[11px] text-[#C7F36B] hover:underline"
           >
-            {copied ? "Copied" : "Copy"}
+            {copied ? "COPIED" : "COPY"}
           </button>
         </div>
       )}
@@ -287,7 +287,7 @@ function CodeSnippet({ code, title }: { code: string; lang?: string; title?: str
             onClick={handleCopy}
             className="absolute top-3 right-3 font-mono text-[11px] text-[#90969A] hover:text-[#C7F36B]"
           >
-            {copied ? "Copied" : "Copy"}
+            {copied ? "COPIED" : "COPY"}
           </button>
         )}
         <pre className="font-mono text-xs text-[#F1F2EE] leading-relaxed">
@@ -344,8 +344,8 @@ export function Docs() {
               <span className="text-[#F1F2EE] font-medium">docs</span>
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#C7F36B]/40 bg-[#C7F36B]/15 px-3.5 py-1 backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-[#C7F36B] animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#C7F36B]/30 bg-[#C7F36B]/10 px-3.5 py-1 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
               <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#C7F36B]">
                 DEVELOPMENT PREVIEW
               </span>
@@ -363,103 +363,195 @@ export function Docs() {
             Everything you need to configure, execute, inspect and verify a Workflo run.
           </p>
 
-          {/* Four Featured Category Cards (Direct conceptual direction from brief) */}
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Card 1: Quickstart */}
+          {/* 
+            FOUR CATEGORY CARDS 
+            Camouflaged into background with proper photographic image headers 
+          */}
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            
+            {/* Card 1: Quickstart (Denoted with plate-execute.webp) */}
             <a
               href="#quickstart"
-              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
             >
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="4 17 10 11 4 5" />
-                    <line x1="12" y1="19" x2="20" y2="19" />
-                  </svg>
+                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
+                  <img
+                    src="/images/plate-execute.webp"
+                    alt="Execution runtime plate"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="4 17 10 11 4 5" />
+                        <line x1="12" y1="19" x2="20" y2="19" />
+                      </svg>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                      GETTING STARTED
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
-                  Quickstart
-                </h3>
-                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
-                  Install and run your first verification.
-                </p>
+
+                <div className="p-5">
+                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                    Quickstart
+                  </h3>
+                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                    Install and run your first verification.
+                  </p>
+                </div>
               </div>
-              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
-                Start reading →
-              </span>
+
+              <div className="px-5 pb-5 pt-0">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>Start reading</span>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
             </a>
 
-            {/* Card 2: Execution lifecycle */}
+            {/* Card 2: Execution lifecycle (Denoted with plate-verify.webp) */}
             <a
               href="#lifecycle"
-              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
             >
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                  </svg>
+                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
+                  <img
+                    src="/images/plate-verify.webp"
+                    alt="Verification lifecycle plate"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </svg>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                      12 STAGES
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
-                  Execution lifecycle
-                </h3>
-                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
-                  Understand all 12 execution stages.
-                </p>
+
+                <div className="p-5">
+                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                    Execution lifecycle
+                  </h3>
+                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                    Understand all 12 execution stages.
+                  </p>
+                </div>
               </div>
-              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
-                Explore stages →
-              </span>
+
+              <div className="px-5 pb-5 pt-0">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>Explore stages</span>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
             </a>
 
-            {/* Card 3: Receipt verification */}
+            {/* Card 3: Receipt verification (Denoted with plate-prove.webp) */}
             <a
               href="#receipt-inspector"
-              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
             >
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <polyline points="9 15 11 17 15 13" />
-                  </svg>
+                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
+                  <img
+                    src="/images/plate-prove.webp"
+                    alt="Cryptographic proof plate"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <polyline points="9 15 11 17 15 13" />
+                      </svg>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                      ED25519 / MERKLE
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
-                  Receipt verification
-                </h3>
-                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
-                  Inspect signatures and evidence.
-                </p>
+
+                <div className="p-5">
+                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                    Receipt verification
+                  </h3>
+                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                    Inspect signatures and evidence.
+                  </p>
+                </div>
               </div>
-              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
-                Open playground →
-              </span>
+
+              <div className="px-5 pb-5 pt-0">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>Open playground</span>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
             </a>
 
-            {/* Card 4: API reference */}
+            {/* Card 4: API reference (Denoted with plate-observe.webp) */}
             <a
               href="#api"
-              className="group flex flex-col justify-between rounded-2xl border border-[#292E31] bg-[#121518]/90 p-6 backdrop-blur transition-all hover:border-[#C7F36B]/50 hover:bg-[#121518]"
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
             >
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#292E31] bg-[#090A0C] text-[#C7F36B] mb-4 group-hover:border-[#C7F36B]/40">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="16 18 22 12 16 6" />
-                    <polyline points="8 6 2 12 8 18" />
-                  </svg>
+                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
+                  <img
+                    src="/images/plate-observe.webp"
+                    alt="Observation and API plate"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-[#C7F36B]">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                      </svg>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#C7F36B] font-medium">
+                      REST & SDK
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
-                  API reference
-                </h3>
-                <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
-                  Integrate through the versioned API.
-                </p>
+
+                <div className="p-5">
+                  <h3 className="text-base font-medium text-[#F1F2EE] group-hover:text-[#C7F36B] transition-colors">
+                    API reference
+                  </h3>
+                  <p className="mt-2 text-xs text-[#90969A] leading-relaxed">
+                    Integrate through the versioned API.
+                  </p>
+                </div>
               </div>
-              <span className="mt-6 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
-                View schemas →
-              </span>
+
+              <div className="px-5 pb-5 pt-0">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#C7F36B] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>View schemas</span>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
             </a>
           </div>
 
@@ -472,14 +564,14 @@ export function Docs() {
       {/* ------------------------------------------------------------------ */}
       {/*               RELEASE STATUS & ISOLATION BOUNDARY CAVEAT           */}
       {/* ------------------------------------------------------------------ */}
-      <section className="relative isolate border-t border-[#292E31] px-6 py-8 md:px-10 bg-[#121518]/40">
+      <section className="relative isolate border-t border-white/[0.08] px-6 py-8 md:px-10">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-6 backdrop-blur flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="rounded-2xl border border-amber-500/20 bg-black/40 p-6 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-amber-400" />
                 <span className="font-mono text-xs uppercase tracking-wider text-amber-300 font-semibold">
-                  Product Release Status & Security Boundary Disclosure
+                  Product Release Status and Security Boundary Disclosure
                 </span>
               </div>
               <p className="text-xs text-[#F1F2EE]/80 leading-relaxed max-w-3xl font-light">
@@ -491,9 +583,9 @@ export function Docs() {
             </div>
             <Link
               to="/early-access"
-              className="shrink-0 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 font-mono text-xs text-amber-300 hover:bg-amber-400/20 transition-colors"
+              className="shrink-0 rounded-full border border-amber-400/30 bg-amber-400/10 px-5 py-2 font-mono text-xs text-amber-300 hover:bg-amber-400/20 transition-colors"
             >
-              Request Beta Access →
+              Request Beta Access
             </Link>
           </div>
         </div>
@@ -502,12 +594,12 @@ export function Docs() {
       {/* ------------------------------------------------------------------ */}
       {/*                     MAIN DOCUMENTATION BODY                        */}
       {/* ------------------------------------------------------------------ */}
-      <div className="relative isolate border-t border-[#292E31] px-6 py-16 md:px-10">
+      <div className="relative isolate border-t border-white/[0.08] px-6 py-16 md:px-10">
         <div className="mx-auto max-w-6xl grid gap-12 lg:grid-cols-12">
           
           {/* Left Sticky Navigation */}
           <aside className="lg:col-span-3">
-            <div className="sticky top-24 space-y-6 rounded-2xl border border-[#292E31] bg-[#121518]/80 p-5 backdrop-blur">
+            <div className="sticky top-24 space-y-6 rounded-2xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-wider text-[#C7F36B] mb-2 px-2 font-medium">
                   Documentation Index
@@ -527,7 +619,7 @@ export function Docs() {
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="block rounded-lg px-2.5 py-1.5 text-xs font-mono text-[#90969A] hover:bg-white/5 hover:text-[#F1F2EE] transition-colors"
+                      className="block rounded-lg px-2.5 py-1.5 text-xs font-mono text-[#90969A] hover:bg-white/[0.04] hover:text-[#F1F2EE] transition-colors"
                     >
                       {item.label}
                     </a>
@@ -535,7 +627,7 @@ export function Docs() {
                 </nav>
               </div>
 
-              <div className="border-t border-[#292E31] pt-4 px-2">
+              <div className="border-t border-white/[0.06] pt-4 px-2">
                 <span className="font-mono text-[10px] text-[#90969A] block mb-2">SERVICE ARCHITECTURE</span>
                 <p className="text-[11px] text-[#90969A] leading-relaxed">
                   Website Intake API (<code className="text-[#C7F36B]">/api/v1/*</code>) is isolated from
@@ -550,9 +642,9 @@ export function Docs() {
 
             {/* 1. Installation & Host Readiness */}
             <section id="installation" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 1 / SETUP</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Installation & Host Readiness</h2>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Installation and Host Readiness</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
                   Prerequisites, virtualization checks, and CLI distribution.
                 </p>
@@ -588,7 +680,7 @@ curl -fsSL https://releases.workflo.dev/workflo-linux-x86_64 -o /usr/local/bin/w
 chmod +x /usr/local/bin/workflo`}
                 />
 
-                <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4 text-xs font-mono text-[#90969A] mt-4">
+                <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs font-mono text-[#90969A] mt-4 backdrop-blur-md">
                   <span className="text-[#C7F36B] font-semibold">Note on Licensing:</span> The CLI distribution
                   is currently undergoing licensing reconciliation between npm and Python packaging manifests.
                   Ensure you inspect the licence file included with your download.
@@ -598,7 +690,7 @@ chmod +x /usr/local/bin/workflo`}
 
             {/* 2. Developer Quickstart */}
             <section id="quickstart" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 2 / QUICKSTART</span>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Developer Quickstart</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
@@ -645,7 +737,7 @@ chmod +x /usr/local/bin/workflo`}
                     desc: "Launches terminal inspector to review exact network packets, file descriptor diffs, and teardown proof.",
                   },
                 ].map((item) => (
-                  <div key={item.step} className="rounded-2xl border border-[#292E31] bg-[#121518]/60 p-6 backdrop-blur">
+                  <div key={item.step} className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs text-[#C7F36B] font-semibold">STEP {item.step}</span>
                       <span className="font-mono text-[10px] text-[#90969A]">WORKFLOW</span>
@@ -660,7 +752,7 @@ chmod +x /usr/local/bin/workflo`}
 
             {/* 3. Execution Lifecycle */}
             <section id="lifecycle" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 3 / LIFECYCLE</span>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">12-Stage Execution Lifecycle</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
@@ -670,7 +762,7 @@ chmod +x /usr/local/bin/workflo`}
 
               <div className="grid gap-3 sm:grid-cols-2">
                 {LIFECYCLE_STAGES.map((s) => (
-                  <div key={s.num} className="rounded-xl border border-[#292E31] bg-[#121518]/70 p-4">
+                  <div key={s.num} className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-bold text-[#C7F36B]">{s.num}</span>
                       <h4 className="text-sm font-medium text-[#F1F2EE]">{s.name}</h4>
@@ -683,7 +775,7 @@ chmod +x /usr/local/bin/workflo`}
 
             {/* 4. Run Configuration */}
             <section id="config" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 4 / SPECIFICATION</span>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Run Configuration (.workflo/config.yaml)</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
@@ -692,7 +784,6 @@ chmod +x /usr/local/bin/workflo`}
               </div>
 
               <CodeSnippet
-                lang="yaml"
                 title=".workflo/config.yaml"
                 code={`version: 1
 
@@ -731,7 +822,7 @@ receipt:
 
             {/* 5. CLI Reference */}
             <section id="cli" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 5 / CLI REFERENCE</span>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">CLI Command Reference</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
@@ -749,7 +840,7 @@ receipt:
                     className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors ${
                       activeCliCmd === idx
                         ? "bg-[#C7F36B] text-[#090A0C] font-semibold"
-                        : "border border-[#292E31] bg-[#121518] text-[#90969A] hover:text-[#F1F2EE]"
+                        : "border border-white/[0.08] bg-black/40 text-[#90969A] hover:text-[#F1F2EE] hover:border-white/20"
                     }`}
                   >
                     {cmd.name}
@@ -758,8 +849,8 @@ receipt:
               </div>
 
               {/* Selected Command Card */}
-              <div className="rounded-2xl border border-[#292E31] bg-[#121518] p-6">
-                <div className="flex items-center justify-between border-b border-[#292E31] pb-3">
+              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
                   <code className="font-mono text-sm font-semibold text-[#C7F36B]">
                     {CLI_COMMANDS[activeCliCmd].syntax}
                   </code>
@@ -771,7 +862,7 @@ receipt:
                 </p>
 
                 <h4 className="mt-6 font-mono text-xs uppercase tracking-wider text-[#90969A]">
-                  Command Flags & Options
+                  Command Flags and Options
                 </h4>
                 <div className="mt-3 space-y-2">
                   {CLI_COMMANDS[activeCliCmd].flags.map((f, fIdx) => (
@@ -786,9 +877,9 @@ receipt:
 
             {/* 6. Evidence & Signed Receipts */}
             <section id="evidence" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 6 / VERIFICATION</span>
-                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Evidence & Signed Receipts</h2>
+                <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Evidence and Signed Receipts</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
                   Cryptographic non-repudiation, Merkle audit chains, and explicit receipt limitations.
                 </p>
@@ -800,10 +891,10 @@ receipt:
                   observed system calls, network sockets, teardown state, and Merkle root.
                 </p>
 
-                <div className="rounded-2xl border border-red-500/30 bg-red-950/20 p-5 text-xs text-[#F1F2EE]/90">
-                  <strong className="text-red-400 font-semibold uppercase font-mono block mb-1">
+                <div className="rounded-2xl border border-red-500/20 bg-black/40 p-5 text-xs text-[#F1F2EE]/90 backdrop-blur-md">
+                  <span className="text-red-400 font-semibold uppercase font-mono block mb-1">
                     Fundamental Receipt Boundary:
-                  </strong>
+                  </span>
                   A signed receipt proves <em>what ran, what boundaries were enforced, and what was observed</em>.
                   It <strong>does not prove</strong> that the software is bug-free, safe, or correct.
                   Humans remain responsible for interpreting the evidence and authorizing deployment.
@@ -813,9 +904,9 @@ receipt:
 
             {/* 7. Interactive Receipt Inspector (Playground) */}
             <section id="receipt-inspector" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#C7F36B] animate-pulse" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
                   <span className="font-mono text-xs text-[#C7F36B]">LIVE PLAYGROUND</span>
                 </div>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Interactive Receipt Inspector</h2>
@@ -837,7 +928,7 @@ receipt:
                     className={`rounded-full px-4 py-2 font-mono text-xs transition-colors ${
                       activeReceiptIdx === idx
                         ? "bg-[#C7F36B] text-[#090A0C] font-semibold"
-                        : "border border-[#292E31] bg-[#121518] text-[#90969A] hover:text-[#F1F2EE]"
+                        : "border border-white/[0.08] bg-black/40 text-[#90969A] hover:text-[#F1F2EE] hover:border-white/20"
                     }`}
                   >
                     {s.name}
@@ -846,15 +937,15 @@ receipt:
               </div>
 
               {/* Inspector Card */}
-              <div className="rounded-3xl border border-[#292E31] bg-[#121518]/90 backdrop-blur overflow-hidden">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#292E31] bg-[#0E1114] p-4 md:px-6">
+              <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md overflow-hidden">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] bg-white/[0.02] p-4 md:px-6">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs text-[#90969A]">VERDICT:</span>
                     <span
                       className={`font-mono text-xs px-3 py-1 rounded-full border ${
                         currentReceipt.verdict === "APPROVED_YES"
-                          ? "border-[#C7F36B]/40 bg-[#C7F36B]/15 text-[#C7F36B]"
-                          : "border-red-500/40 bg-red-950/60 text-red-400"
+                          ? "border-[#C7F36B]/30 bg-[#C7F36B]/10 text-[#C7F36B]"
+                          : "border-red-500/30 bg-red-950/40 text-red-400"
                       }`}
                     >
                       {currentReceipt.verdict}
@@ -862,7 +953,7 @@ receipt:
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg border border-[#292E31] bg-[#090A0C] p-1 flex">
+                    <div className="rounded-lg border border-white/[0.08] bg-black/60 p-1 flex">
                       <button
                         type="button"
                         onClick={() => setReceiptView("visual")}
@@ -886,9 +977,9 @@ receipt:
                     <button
                       type="button"
                       onClick={handleCopyReceipt}
-                      className="rounded-lg border border-[#292E31] bg-[#090A0C] px-3 py-1.5 text-xs font-mono text-[#90969A] hover:text-[#F1F2EE]"
+                      className="rounded-lg border border-white/[0.08] bg-black/60 px-3 py-1.5 text-xs font-mono text-[#90969A] hover:text-[#F1F2EE]"
                     >
-                      {copiedReceipt ? "Copied" : "Copy JSON"}
+                      {copiedReceipt ? "COPIED" : "COPY JSON"}
                     </button>
                   </div>
                 </div>
@@ -897,25 +988,25 @@ receipt:
                   {receiptView === "visual" ? (
                     <div className="space-y-6">
                       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
                           <span className="font-mono text-[10px] text-[#90969A]">COMMIT SHA</span>
                           <p className="mt-1 font-mono text-xs text-[#F1F2EE] truncate">
                             {currentReceipt.json.commit?.sha || "sha256:unknown"}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
                           <span className="font-mono text-[10px] text-[#90969A]">MERKLE ROOT</span>
                           <p className="mt-1 font-mono text-xs text-[#F1F2EE] truncate">
                             {currentReceipt.json.merkle_root}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
                           <span className="font-mono text-[10px] text-[#90969A]">SIGNATURE ALGORITHM</span>
                           <p className="mt-1 font-mono text-xs text-[#F1F2EE]">
                             {currentReceipt.json.signature?.algorithm} (Verified)
                           </p>
                         </div>
-                        <div className="rounded-xl border border-[#292E31] bg-[#090A0C] p-4">
+                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
                           <span className="font-mono text-[10px] text-[#90969A]">TEARDOWN STATE</span>
                           <p className="mt-1 font-mono text-xs text-[#F1F2EE]">
                             {currentReceipt.json.teardown?.zombie_processes === 0 ? "Clean (0 Zombies)" : "LEAK DETECTED"}
@@ -923,7 +1014,7 @@ receipt:
                         </div>
                       </div>
 
-                      <div className="rounded-2xl border border-[#292E31] bg-[#090A0C]/50 p-5 flex flex-wrap items-center justify-between gap-4">
+                      <div className="rounded-2xl border border-white/[0.06] bg-black/30 p-5 flex flex-wrap items-center justify-between gap-4">
                         <div>
                           <h4 className="text-sm font-medium text-[#F1F2EE]">Cryptographic Signature Verification</h4>
                           <p className="text-xs text-[#90969A] mt-1 font-light">
@@ -935,17 +1026,22 @@ receipt:
                           type="button"
                           onClick={handleVerify}
                           disabled={verifiedState === "valid"}
-                          className={`rounded-full px-5 py-2 font-mono text-xs transition-colors ${
+                          className={`rounded-full px-5 py-2 font-mono text-xs transition-colors flex items-center gap-2 ${
                             verifiedState === "valid"
                               ? "bg-[#C7F36B]/20 text-[#C7F36B] border border-[#C7F36B]/40"
                               : "bg-[#C7F36B] text-[#090A0C] font-semibold hover:bg-[#b8e858]"
                           }`}
                         >
-                          {verifiedState === "verifying"
-                            ? "Recomputing Merkle root..."
-                            : verifiedState === "valid"
-                            ? "✓ Signature Valid & Authentic"
-                            : "Verify Cryptographic Proof"}
+                          {verifiedState === "verifying" && <span>Recomputing Merkle root...</span>}
+                          {verifiedState === "valid" && (
+                            <>
+                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              <span>SIGNATURE VERIFIED AUTHENTIC</span>
+                            </>
+                          )}
+                          {verifiedState === "idle" && <span>Verify Cryptographic Proof</span>}
                         </button>
                       </div>
                     </div>
@@ -960,7 +1056,7 @@ receipt:
 
             {/* 8. API Reference */}
             <section id="api" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 7 / API REFERENCE</span>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">API Reference</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
@@ -972,7 +1068,7 @@ receipt:
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-[#F1F2EE]">1. Product Execution Service (/v1/runs)</h3>
-                  <div className="flex rounded-lg border border-[#292E31] bg-[#0E1114] p-1 font-mono text-xs">
+                  <div className="flex rounded-lg border border-white/[0.08] bg-black/60 p-1 font-mono text-xs">
                     {(["curl", "js", "python"] as const).map((tab) => (
                       <button
                         key={tab}
@@ -1053,15 +1149,15 @@ assert receipt.verdict == "APPROVED_YES"`}
                 </p>
 
                 <div className="grid gap-3 sm:grid-cols-3 mt-3">
-                  <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4">
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
                     <span className="font-mono text-xs text-[#C7F36B]">GET /api/v1/health</span>
                     <p className="mt-1 text-xs text-[#90969A]">Website API Gateway health check.</p>
                   </div>
-                  <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4">
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
                     <span className="font-mono text-xs text-[#C7F36B]">POST /api/v1/early-access</span>
                     <p className="mt-1 text-xs text-[#90969A]">Early access cohort submission.</p>
                   </div>
-                  <div className="rounded-xl border border-[#292E31] bg-[#121518] p-4">
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
                     <span className="font-mono text-xs text-[#C7F36B]">POST /api/v1/contact</span>
                     <p className="mt-1 text-xs text-[#90969A]">Enterprise & sales intake.</p>
                   </div>
@@ -1071,7 +1167,7 @@ assert receipt.verdict == "APPROVED_YES"`}
 
             {/* 9. Troubleshooting */}
             <section id="troubleshooting" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-[#292E31] pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <span className="font-mono text-xs text-[#C7F36B]">PART 8 / DIAGNOSTICS</span>
                 <h2 className="mt-2 text-3xl font-medium text-[#F1F2EE]">Troubleshooting Guide</h2>
                 <p className="mt-2 text-sm text-[#90969A]">
@@ -1102,7 +1198,7 @@ assert receipt.verdict == "APPROVED_YES"`}
                     fix: "Re-run `workflo verify` with canonical keyfile or check if JSON was reformatted without preserving canonical ordering.",
                   },
                 ].map((item) => (
-                  <div key={item.code} className="rounded-xl border border-[#292E31] bg-[#121518] p-5">
+                  <div key={item.code} className="rounded-xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
                     <span className="font-mono text-xs font-semibold text-red-400">{item.code}</span>
                     <p className="mt-1 text-xs text-[#F1F2EE] font-medium">{item.cause}</p>
                     <p className="mt-2 text-xs text-[#90969A] font-light">

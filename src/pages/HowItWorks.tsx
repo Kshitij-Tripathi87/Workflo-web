@@ -126,8 +126,8 @@ export function HowItWorks() {
         <SectionBackdrop id="verify" position="58% 50%" />
         
         <div className="relative z-10 mx-auto max-w-6xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/5 px-4 py-1.5 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Execution Lifecycle · Step-by-Step
             </span>
@@ -147,7 +147,7 @@ export function HowItWorks() {
       </section>
 
       {/* 12-Stage Lifecycle Explorer */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="execute" position="68% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -175,8 +175,8 @@ export function HowItWorks() {
                   onClick={() => setActiveStageIdx(idx)}
                   className={`flex flex-col items-center justify-center rounded-xl border p-3 font-mono transition-all ${
                     isSelected
-                      ? "border-emerald-400 bg-emerald-950/40 text-white shadow-[0_0_15px_rgba(52,211,153,0.25)]"
-                      : "border-white/10 bg-neutral-950/60 text-white/50 hover:border-white/30 hover:text-white"
+                      ? "border-[#C7F36B]/40 bg-[#C7F36B]/10 text-[#C7F36B] "
+                      : "border-white/[0.06] bg-black/40 text-white/50 hover:border-white/30 hover:text-white"
                   }`}
                 >
                   <span className="text-sm font-bold">{s.number}</span>
@@ -189,13 +189,13 @@ export function HowItWorks() {
           </div>
 
           {/* Active Stage Detailed Panel */}
-          <div className="overflow-hidden rounded-3xl border border-white/20 bg-neutral-950/80 backdrop-blur">
+          <div className="overflow-hidden rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md backdrop-blur">
             <div className="grid gap-8 p-8 lg:grid-cols-12 lg:p-10">
               {/* Left Column: Details */}
               <div className="lg:col-span-7 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-emerald-500/10 px-3 py-1 font-mono text-xs tracking-wider text-emerald-400 border border-emerald-500/20">
+                    <span className="rounded-full bg-[#C7F36B]/10 px-3 py-1 font-mono text-xs tracking-wider text-[#C7F36B] border border-[#C7F36B]/20">
                       {activeStage.phase} PHASE
                     </span>
                     <span className="font-mono text-xs text-white/40">
@@ -209,51 +209,51 @@ export function HowItWorks() {
                     {activeStage.description}
                   </p>
 
-                  <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="mt-8 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5">
                     <p className="font-mono text-xs uppercase tracking-wider text-white/50">
                       Security Guarantee
                     </p>
-                    <p className="mt-2 text-sm text-emerald-300 font-light">
+                    <p className="mt-2 text-sm text-[#C7F36B] font-light">
                       {activeStage.securityGuarantee}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-5">
+                <div className="mt-8 flex items-center justify-between border-t border-white/[0.06] pt-5">
                   <button
                     type="button"
                     disabled={activeStageIdx === 0}
                     onClick={() => setActiveStageIdx((i) => Math.max(0, i - 1))}
                     className="font-mono text-xs text-white/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    ← PREVIOUS STAGE
+                    PREVIOUS STAGE
                   </button>
                   <button
                     type="button"
                     disabled={activeStageIdx === STAGES.length - 1}
                     onClick={() => setActiveStageIdx((i) => Math.min(STAGES.length - 1, i + 1))}
-                    className="font-mono text-xs text-white hover:text-emerald-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="font-mono text-xs text-white hover:text-[#C7F36B] disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    NEXT STAGE →
+                    NEXT STAGE
                   </button>
                 </div>
               </div>
 
               {/* Right Column: Live Terminal Telemetry Output */}
-              <div className="flex flex-col rounded-2xl border border-white/15 bg-black/90 p-5 font-mono lg:col-span-5 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3 text-xs text-white/40">
+              <div className="flex flex-col rounded-2xl border border-white/[0.08] bg-black/90 p-5 font-mono lg:col-span-5 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 text-xs text-white/40">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-500/60" />
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/60" />
                     <span className="ml-2">workflo-supervisor.log</span>
                   </div>
-                  <span className="text-emerald-400">ONLINE</span>
+                  <span className="text-[#C7F36B]">ONLINE</span>
                 </div>
 
                 <div className="mt-4 flex-1 space-y-3 text-xs leading-relaxed text-white/80">
                   <p className="text-white/40">$ workflo run --stage={activeStage.number}</p>
-                  <p className="text-emerald-300">{activeStage.terminalLog}</p>
+                  <p className="text-[#C7F36B]">{activeStage.terminalLog}</p>
                   <div className="mt-6 border-t border-white/5 pt-4 text-[11px] text-white/40">
                     <div>CPU: 0.8% | MEM: 142MB | THREADS: 4</div>
                     <div>SELINUX: ENFORCING | EBPF: ACTIVE</div>
@@ -270,7 +270,7 @@ export function HowItWorks() {
       </section>
 
       {/* Specifications & Performance Metrics */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="prove" position="70% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -288,7 +288,7 @@ export function HowItWorks() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl border border-white/20 bg-neutral-950/80 p-8 backdrop-blur">
+            <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur">
               <span className="font-mono text-3xl font-light text-white md:text-4xl">&lt; 120ms</span>
               <h4 className="mt-3 text-lg font-medium text-white">MicroVM Boot Time</h4>
               <p className="mt-2 text-xs text-white/60 leading-relaxed">
@@ -297,7 +297,7 @@ export function HowItWorks() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-white/20 bg-neutral-950/80 p-8 backdrop-blur">
+            <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur">
               <span className="font-mono text-3xl font-light text-white md:text-4xl">&lt; 1.2%</span>
               <h4 className="mt-3 text-lg font-medium text-white">eBPF Audit Overhead</h4>
               <p className="mt-2 text-xs text-white/60 leading-relaxed">
@@ -306,7 +306,7 @@ export function HowItWorks() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-white/20 bg-neutral-950/80 p-8 backdrop-blur">
+            <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur">
               <span className="font-mono text-3xl font-light text-white md:text-4xl">0.4ms</span>
               <h4 className="mt-3 text-lg font-medium text-white">Receipt Verification</h4>
               <p className="mt-2 text-xs text-white/60 leading-relaxed">
@@ -319,7 +319,7 @@ export function HowItWorks() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 text-center md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 text-center md:px-10">
         <SectionBackdrop id="trust" position="66% 50%" />
         <div className="relative z-10 mx-auto max-w-4xl">
           <LetterReveal
@@ -335,11 +335,11 @@ export function HowItWorks() {
               to="/docs"
               className="rounded-full bg-white px-8 py-4 text-sm font-medium text-black transition-colors hover:bg-neutral-200"
             >
-              Open Interactive Docs & Receipts →
+              Open Interactive Docs & Receipts
             </Link>
             <Link
               to="/early-access"
-              className="rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10"
+              className="rounded-full border border-white/[0.08] bg-white/5 px-8 py-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10"
             >
               Request early access
             </Link>

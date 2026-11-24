@@ -81,8 +81,8 @@ export function About() {
         <SectionBackdrop id="observe" position="56% 50%" />
         
         <div className="relative z-10 mx-auto max-w-6xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C7F36B] animate-pulse" />
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
               Company Mission · Principles & Contact
             </span>
@@ -103,7 +103,7 @@ export function About() {
       </section>
 
       {/* The Thesis */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="execute" position="68% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -139,7 +139,7 @@ export function About() {
       </section>
 
       {/* Core Principles */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="verify" position="58% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -156,7 +156,7 @@ export function About() {
             {PRINCIPLES.map((p) => (
               <div
                 key={p.index}
-                className="rounded-3xl border border-white/15 bg-neutral-950/80 p-8 backdrop-blur"
+                className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur"
               >
                 <span className="font-mono text-xs text-white/40">{p.index} / PRINCIPLE</span>
                 <h3 className="mt-4 text-2xl font-medium text-white">{p.title}</h3>
@@ -168,7 +168,7 @@ export function About() {
       </section>
 
       {/* Security & Governance Trust */}
-      <section className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="prove" position="70% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -182,22 +182,22 @@ export function About() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-emerald-400">NON-CUSTODIAL EXECUTION</h4>
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
+              <h4 className="font-mono text-sm text-[#C7F36B]">NON-CUSTODIAL EXECUTION</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
                 Your proprietary code runs inside RAM-backed ephemeral microVMs. We never store source
                 code on persistent disks.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-emerald-400">CRYPTOGRAPHIC INTEGRITY</h4>
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
+              <h4 className="font-mono text-sm text-[#C7F36B]">CRYPTOGRAPHIC INTEGRITY</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
                 Receipts are sealed with Ed25519 digital signatures. Once generated, an execution record
                 is mathematically immutable.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-emerald-400">SOC2 & AUDIT READY</h4>
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
+              <h4 className="font-mono text-sm text-[#C7F36B]">SOC2 & AUDIT READY</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
                 Provides the exact attestation evidence required by security and compliance officers for
                 automated software delivery pipelines.
@@ -208,7 +208,7 @@ export function About() {
       </section>
 
       {/* Contact & Partnership Form */}
-      <section id="contact" className="relative isolate border-t border-white/10 px-6 py-28 md:px-10">
+      <section id="contact" className="relative isolate border-t border-white/[0.06] px-6 py-28 md:px-10">
         <SectionBackdrop id="trust" position="66% 50%" />
 
         <div className="relative z-10 mx-auto max-w-3xl">
@@ -225,8 +225,8 @@ export function About() {
           </div>
 
           {status === "success" ? (
-            <div className="rounded-3xl border border-emerald-500/30 bg-emerald-950/40 p-8 text-center backdrop-blur">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+            <div className="rounded-3xl border border-[#C7F36B]/30 bg-[#C7F36B]/10 p-8 text-center backdrop-blur">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#C7F36B]/20 text-[#C7F36B]">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
@@ -238,7 +238,7 @@ export function About() {
               <button
                 type="button"
                 onClick={() => setStatus("idle")}
-                className="mt-6 rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-xs font-mono text-white hover:bg-white/10"
+                className="mt-6 rounded-full border border-white/[0.08] bg-white/[0.02] px-6 py-2.5 text-xs font-mono text-white hover:bg-white/10"
               >
                 Send another inquiry
               </button>
@@ -246,7 +246,7 @@ export function About() {
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="rounded-3xl border border-white/20 bg-neutral-950/80 p-8 backdrop-blur sm:p-10 space-y-6"
+              className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur sm:p-10 space-y-6"
             >
               {errorMessage && (
                 <div className="rounded-xl border border-red-500/40 bg-red-950/30 p-4 text-xs text-red-200 font-mono">
@@ -268,7 +268,7 @@ export function About() {
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    NAME <span className="text-emerald-400">*</span>
+                    NAME <span className="text-[#C7F36B]">*</span>
                   </label>
                   <input
                     type="text"
@@ -276,13 +276,13 @@ export function About() {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Ada Lovelace"
-                    className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                   />
                 </div>
 
                 <div>
                   <label className="block font-mono text-xs text-white/60 mb-2">
-                    WORK EMAIL <span className="text-emerald-400">*</span>
+                    WORK EMAIL <span className="text-[#C7F36B]">*</span>
                   </label>
                   <input
                     type="email"
@@ -290,7 +290,7 @@ export function About() {
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="ada@company.com"
-                    className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -303,7 +303,7 @@ export function About() {
                     value={form.company}
                     onChange={(e) => setForm({ ...form, company: e.target.value })}
                     placeholder="Acme Engineering"
-                    className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                   />
                 </div>
 
@@ -314,7 +314,7 @@ export function About() {
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
                     placeholder="Staff Security Engineer"
-                    className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -324,7 +324,7 @@ export function About() {
                 <select
                   value={form.inquiryType}
                   onChange={(e) => setForm({ ...form, inquiryType: e.target.value as any })}
-                  className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
                 >
                   <option value="product" className="bg-neutral-900">Product & Enterprise Pilot</option>
                   <option value="security" className="bg-neutral-900">Security & Isolation Boundaries</option>
@@ -336,7 +336,7 @@ export function About() {
 
               <div>
                 <label className="block font-mono text-xs text-white/60 mb-2">
-                  MESSAGE <span className="text-emerald-400">*</span>
+                  MESSAGE <span className="text-[#C7F36B]">*</span>
                 </label>
                 <textarea
                   required
@@ -344,7 +344,7 @@ export function About() {
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   placeholder="Tell us about your verification needs, infrastructure, or questions..."
-                  className="w-full rounded-xl border border-white/15 bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-black/50 px-4 py-3 text-sm text-white placeholder-white/25 focus:border-white focus:outline-none"
                 />
               </div>
 
@@ -354,7 +354,7 @@ export function About() {
                   id="consent"
                   checked={form.consentToReply}
                   onChange={(e) => setForm({ ...form, consentToReply: e.target.checked })}
-                  className="h-4 w-4 rounded border-white/20 bg-black/50 text-emerald-500 focus:ring-0"
+                  className="h-4 w-4 rounded border-white/[0.08] bg-black/50 text-[#C7F36B] focus:ring-0"
                 />
                 <label htmlFor="consent" className="text-xs text-white/60">
                   I consent to Workflo contacting me regarding this inquiry.
