@@ -1,0 +1,97 @@
+/* Scoped to the one-page landing. The rest of the site keeps styles.css. */
+
+.landing {
+  background: #000;
+  color: #fff;
+  font-family: "Readex Pro", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.landing .hero-title {
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+/* Keyboard users land here first and skip the pinned hero entirely. */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 60;
+  border-radius: 999px;
+  background: #fff;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.8rem;
+  color: #000;
+  transform: translateY(-200%);
+  transition: transform 150ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.landing ::selection {
+  background: #fff;
+  color: #000;
+}
+
+.landing :focus-visible {
+  outline-color: #fff;
+}
+
+/* Scroll cue: the pulse lives on the inner bar so scroll opacity stays free. */
+.landing .scroll-cue {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  width: 1px;
+  height: 40px;
+  translate: -50% 0;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.landing .scroll-cue span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: inherit;
+  transform-origin: top;
+  animation: cue-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cue-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.7);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing .scroll-cue span {
+    animation: none;
+  }
+
+  .skip-link {
+    transition: none;
+  }
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
