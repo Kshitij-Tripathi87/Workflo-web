@@ -360,43 +360,43 @@ const LIFECYCLE_STAGES: StageItem[] = [
   },
   {
     num: "07",
-    name: "Test Execution",
+    name: "Application Test Execution",
     phase: "EXECUTION",
-    duration: "1420ms",
-    desc: "Executes test commands inside guest microVM, streaming stdout/stderr to Merkle buffer.",
-    telemetry: "cmd: npm test | exit_code: 0 | stdout_bytes: 18402 | syscall_count: 4119",
-    securityGuarantee: "Isolated run; process crashes cannot affect host or neighboring jobs.",
+    duration: "1,420ms",
+    desc: "Executes configured test suite inside microVM while logging all stdout, stderr, and exit codes.",
+    telemetry: "command: npm test | exit_code: 0 | tests_run: 14 | duration: 1.42s",
+    securityGuarantee: "Contained execution; runner cannot affect parent CI host environment.",
   },
   {
     num: "08",
-    name: "Agent Runtime Probing",
+    name: "AI Agent Behavioral Probing",
     phase: "EXECUTION",
-    duration: "340ms",
-    desc: "AI testing agents inspect running processes, open ports, and live application behavior.",
-    telemetry: "routes_probed: 14 | status_codes: [200, 204] | anomalies_detected: 0",
-    securityGuarantee: "Safe synthetic traffic; probe agent runs strictly outside the guest vm.",
+    duration: "310ms",
+    desc: "Autonomous probes inspect live application runtime, verifying endpoints, logs, and state.",
+    telemetry: "probes_dispatched: 3 | api_health_checks: 12 | anomaly_score: 0.00",
+    securityGuarantee: "Runtime behavior verified before merge; anomalous network attempts trapped.",
   },
   {
     num: "09",
-    name: "Audit Ledger Recording",
-    phase: "EXECUTION",
-    duration: "8ms",
-    desc: "Captures system call logs, file access patterns, and network traffic into an audit ledger.",
-    telemetry: "merkle_leaves: 4119 | tree_depth: 13 | hash_algorithm: sha256",
-    securityGuarantee: "Immutable tamper-evident trace of all code runtime operations.",
+    name: "Kernel Syscall Ledgering",
+    phase: "VERIFICATION",
+    duration: "9ms",
+    desc: "eBPF event stream serializes all invoked system calls into a cryptographically ordered log.",
+    telemetry: "syscall_count: 4,119 | unique_opcodes: 34 | unexpected_opcodes: 0",
+    securityGuarantee: "Immutable audit ledger; hidden file accesses or spawned forks are exposed.",
   },
   {
     num: "10",
-    name: "Teardown Sweep",
+    name: "Deterministic Teardown Sweep",
     phase: "VERIFICATION",
     duration: "16ms",
-    desc: "Terminates microVM, checks for orphaned zombie processes, and resets host state.",
-    telemetry: "zombie_pids: 0 | open_handles: 0 | fs_diff: clean | tamper_detected: false",
-    securityGuarantee: "Zero host persistence or lingering background processes.",
+    desc: "Scans guest process tree for orphaned daemons, uncommitted disk diffs, and lingering locks.",
+    telemetry: "active_pids: 0 | orphaned_daemons: 0 | dirty_pages: discarded",
+    securityGuarantee: "Zero state persistence; verified absence of lingering zombie background processes.",
   },
   {
     num: "11",
-    name: "Merkle Digest Computation",
+    name: "SHA-256 Merkle Ledgering",
     phase: "VERIFICATION",
     duration: "5ms",
     desc: "Computes SHA-256 Merkle root over all recorded execution evidence blocks.",
@@ -418,7 +418,19 @@ const LIFECYCLE_STAGES: StageItem[] = [
 /*                            CODE SNIPPET HELPER                             */
 /* -------------------------------------------------------------------------- */
 
-function CodeSnippet({ code, title }: { code: string; title?: string }) {
+function CodeSnippet({
+  code,
+  title,
+  tabs,
+  activeTab,
+  onTabChange,
+}: {
+  code: string;
+  title?: string;
+  tabs?: { id: string; label: string }[];
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+}) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -428,16 +440,54 @@ function CodeSnippet({ code, title }: { code: string; title?: string }) {
   };
 
   return (
-    <div className="relative my-3 overflow-hidden rounded-xl border border-white/[0.08] bg-black/60 font-mono text-xs">
-      <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2">
-        <span className="text-[11px] text-white/50">{title || "Terminal"}</span>
-        <button
-          onClick={handleCopy}
-          type="button"
-          className="text-[11px] text-white/60 hover:text-white transition-colors"
-        >
-          {copied ? "Copied" : "Copy"}
-        </button>
+    <div className="relative my-4 overflow-hidden rounded-2xl border border-white/[0.08] bg-black/70 font-mono text-xs backdrop-blur-md shadow-2xl">
+      <div className="flex flex-wrap items-center justify-between border-b border-white/[0.08] bg-white/[0.02] px-4 py-2.5">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+          </div>
+          {title && <span className="text-[11px] text-white/50">{title}</span>}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {tabs && (
+            <div className="flex items-center gap-1 rounded-lg bg-black/60 p-0.5 border border-white/[0.06]">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => onTabChange?.(tab.id)}
+                  className={`rounded px-2.5 py-0.5 text-[11px] transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-white text-black font-semibold"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={handleCopy}
+            type="button"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {copied ? (
+                <polyline points="20 6 9 17 4 12" />
+              ) : (
+                <>
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </>
+              )}
+            </svg>
+            <span>{copied ? "Copied" : "Copy"}</span>
+          </button>
+        </div>
       </div>
       <pre className="overflow-x-auto p-4 text-white/90 leading-relaxed font-light">
         <code>{code}</code>
@@ -450,29 +500,30 @@ function CodeSnippet({ code, title }: { code: string; title?: string }) {
 /*                               MAIN COMPONENT                               */
 /* -------------------------------------------------------------------------- */
 
+const DOC_SECTIONS = [
+  { id: "getting-started", label: "1. Getting Started", short: "Getting Started" },
+  { id: "installation", label: "2. Installation", short: "Installation" },
+  { id: "quickstart", label: "3. Developer Quickstart", short: "Quickstart" },
+  { id: "cli", label: "4. CLI Reference", short: "CLI Reference" },
+  { id: "configuration", label: "5. Configuration", short: "Configuration" },
+  { id: "lifecycle", label: "6. Execution Lifecycle", short: "Lifecycle" },
+  { id: "security", label: "7. Security & Isolation", short: "Security" },
+  { id: "receipts", label: "8. Receipts & Evidence", short: "Receipts" },
+  { id: "api", label: "9. API Reference", short: "API Reference" },
+  { id: "troubleshooting", label: "10. Troubleshooting", short: "Troubleshooting" },
+];
+
 export function Docs() {
   // Active section tracking for table of contents
-  const [activeSection, setActiveSection] = useState("installation");
+  const [activeSection, setActiveSection] = useState("getting-started");
 
   useEffect(() => {
-    const sectionIds = [
-      "installation",
-      "quickstart",
-      "lifecycle",
-      "config",
-      "cli",
-      "evidence",
-      "receipt-inspector",
-      "api",
-      "troubleshooting",
-    ];
-
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 180;
-      for (let i = sectionIds.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sectionIds[i]);
+      const scrollPos = window.scrollY + 200;
+      for (let i = DOC_SECTIONS.length - 1; i >= 0; i--) {
+        const el = document.getElementById(DOC_SECTIONS[i].id);
         if (el && el.offsetTop <= scrollPos) {
-          setActiveSection(sectionIds[i]);
+          setActiveSection(DOC_SECTIONS[i].id);
           break;
         }
       }
@@ -504,11 +555,11 @@ export function Docs() {
     setTimeout(() => setCopiedReceipt(false), 2000);
   };
 
-  // Interactive CLI state
-  const [activeCliCmd, setActiveCliCmd] = useState(0);
+  // Lifecycle state
+  const [activeLifecycleStage, setActiveLifecycleStage] = useState(0);
 
-  // Interactive 12-Stage Lifecycle state
-  const [activeLifecycleStage, setActiveLifecycleStage] = useState(4); // Default to Kernel Boot (05)
+  // CLI state
+  const [activeCliCmd, setActiveCliCmd] = useState(0);
 
   // Interactive Config Builder state
   const [configHypervisor, setConfigHypervisor] = useState("firecracker");
@@ -590,13 +641,12 @@ receipt:
     },
   ];
 
-  const filteredTroubleshooting = useMemo(() => {
-    if (troubleFilter === "all") return troubleshootingItems;
-    return troubleshootingItems.filter((item) => item.category === troubleFilter);
-  }, [troubleFilter]);
+  const filteredTroubleshooting = troubleFilter === "all"
+    ? troubleshootingItems
+    : troubleshootingItems.filter((i) => i.category === troubleFilter);
 
   return (
-    <div className="landing-root min-h-screen bg-black text-white selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       <Navbar />
 
       {/* ------------------------------------------------------------------ */}
@@ -606,7 +656,7 @@ receipt:
         <SectionBackdrop id="prove" position="70% 50%" />
 
         <div className="relative z-10 mx-auto max-w-6xl">
-          {/* Breadcrumb + Status Badge */}
+          {/* Breadcrumb + Status */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-2 font-mono text-sm text-white/60">
               <span>workflo</span>
@@ -640,201 +690,79 @@ receipt:
             </p>
           </div>
 
-          {/* 
-            FOUR CATEGORY CARDS 
-            Camouflaged into background with proper photographic image headers 
-          */}
+          {/* Quick Pillar Jump Cards */}
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            
-            {/* Card 1: Quickstart (Denoted with plate-execute.webp) */}
-            <a
-              href="#quickstart"
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
-            >
-              <div>
-                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
-                  <img
-                    src="/images/plate-execute.webp"
-                    alt="Execution runtime plate"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="4 17 10 11 4 5" />
-                        <line x1="12" y1="19" x2="20" y2="19" />
-                      </svg>
+            {[
+              {
+                id: "quickstart",
+                plate: "/images/plate-execute.webp",
+                tag: "GETTING STARTED",
+                title: "Quickstart",
+                desc: "Install and run your first verification.",
+              },
+              {
+                id: "lifecycle",
+                plate: "/images/plate-verify.webp",
+                tag: "12 STAGES",
+                title: "Execution Lifecycle",
+                desc: "Inspect all twelve execution stages.",
+              },
+              {
+                id: "receipts",
+                plate: "/images/plate-prove.webp",
+                tag: "ED25519 / MERKLE",
+                title: "Receipt Verification",
+                desc: "Inspect signatures and audit evidence.",
+              },
+              {
+                id: "api",
+                plate: "/images/plate-observe.webp",
+                tag: "REST & SDK",
+                title: "API Reference",
+                desc: "Integrate through the versioned API.",
+              },
+            ].map((card) => (
+              <a
+                key={card.id}
+                href={`#${card.id}`}
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
+              >
+                <div>
+                  <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
+                    <img
+                      src={card.plate}
+                      alt={card.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                    <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
+                        {card.tag}
+                      </span>
                     </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
-                      GETTING STARTED
-                    </span>
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
+                      {card.title}
+                    </h3>
+                    <p className="mt-2 text-xs text-white/60 leading-relaxed">
+                      {card.desc}
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
-                    Quickstart
-                  </h3>
-                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
-                    Install and run your first verification.
-                  </p>
+                <div className="px-5 pb-5 pt-0">
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Jump to section</span>
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </span>
                 </div>
-              </div>
-
-              <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Start reading</span>
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </a>
-
-            {/* Card 2: Execution lifecycle (Denoted with plate-verify.webp) */}
-            <a
-              href="#lifecycle"
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
-            >
-              <div>
-                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
-                  <img
-                    src="/images/plate-verify.webp"
-                    alt="Verification lifecycle plate"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                      </svg>
-                    </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
-                      12 STAGES
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
-                    Execution lifecycle
-                  </h3>
-                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
-                    Understand all 12 execution stages.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Explore stages</span>
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </a>
-
-            {/* Card 3: Receipt verification (Denoted with plate-prove.webp) */}
-            <a
-              href="#receipt-inspector"
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
-            >
-              <div>
-                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
-                  <img
-                    src="/images/plate-prove.webp"
-                    alt="Cryptographic proof plate"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <polyline points="9 15 11 17 15 13" />
-                      </svg>
-                    </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
-                      ED25519 / MERKLE
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
-                    Receipt verification
-                  </h3>
-                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
-                    Inspect signatures and evidence.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Open playground</span>
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </a>
-
-            {/* Card 4: API reference (Denoted with plate-observe.webp) */}
-            <a
-              href="#api"
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/[0.02]"
-            >
-              <div>
-                <div className="relative h-28 w-full overflow-hidden border-b border-white/[0.06]">
-                  <img
-                    src="/images/plate-observe.webp"
-                    alt="Observation and API plate"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-60"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  <div className="absolute bottom-3 left-4 flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-black/70 text-white">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="16 18 22 12 16 6" />
-                        <polyline points="8 6 2 12 8 18" />
-                      </svg>
-                    </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-white font-medium">
-                      REST & SDK
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5">
-                  <h3 className="text-base font-medium text-white group-hover:text-white transition-colors">
-                    API reference
-                  </h3>
-                  <p className="mt-2 text-xs text-white/60 leading-relaxed">
-                    Integrate through the versioned API.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-5 pb-5 pt-0">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>View schemas</span>
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </a>
+              </a>
+            ))}
           </div>
-
-          <p className="mt-4 font-mono text-[11px] text-white/40">
-            Workflo Documentation Specification · 1,390 lines · 7 parts · 20 major sections · reviewed 24 November 2026
-          </p>
         </div>
       </section>
 
@@ -842,7 +770,7 @@ receipt:
       {/*               RELEASE STATUS & ISOLATION BOUNDARY CAVEAT           */}
       {/* ------------------------------------------------------------------ */}
       <section className="relative isolate border-t border-white/[0.08] px-6 py-8 md:px-10">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           <div className="rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-1.5">
               <div>
@@ -871,27 +799,36 @@ receipt:
       {/*                     MAIN DOCUMENTATION BODY                        */}
       {/* ------------------------------------------------------------------ */}
       <div className="relative isolate border-t border-white/[0.08] px-6 py-16 md:px-10">
+        {/* Mobile Navigation Dropdown (< lg) */}
+        <div className="lg:hidden mx-auto max-w-7xl mb-8">
+          <label className="block font-mono text-xs text-white/50 mb-2">JUMP TO SECTION</label>
+          <select
+            value={activeSection}
+            onChange={(e) => {
+              const el = document.getElementById(e.target.value);
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="w-full rounded-xl border border-white/20 bg-black p-3 font-mono text-xs text-white"
+          >
+            {DOC_SECTIONS.map((sec) => (
+              <option key={sec.id} value={sec.id}>
+                {sec.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="mx-auto max-w-7xl grid gap-8 lg:grid-cols-12">
           
-          {/* Left Sticky Navigation */}
-          <aside className="lg:col-span-3 xl:col-span-3">
+          {/* Left Sticky Navigation (Persistent Sidebar) */}
+          <aside className="hidden lg:block lg:col-span-3 xl:col-span-3">
             <div className="sticky top-24 space-y-6 rounded-2xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-wider text-white mb-2 px-2 font-medium">
                   Documentation Index
                 </p>
                 <nav className="space-y-1">
-                  {[
-                    { id: "installation", label: "Installation & Readiness" },
-                    { id: "quickstart", label: "Developer Quickstart" },
-                    { id: "lifecycle", label: "12-Stage Lifecycle" },
-                    { id: "config", label: "Configuration (YAML)" },
-                    { id: "cli", label: "CLI Reference" },
-                    { id: "evidence", label: "Evidence & Receipts" },
-                    { id: "receipt-inspector", label: "Receipt Playground" },
-                    { id: "api", label: "API Reference" },
-                    { id: "troubleshooting", label: "Troubleshooting Guide" },
-                  ].map((item) => (
+                  {DOC_SECTIONS.map((item) => (
                     <a
                       key={item.id}
                       href={`#${item.id}`}
@@ -917,16 +854,52 @@ receipt:
             </div>
           </aside>
 
-          {/* Right Main Article Stream */}
+          {/* Center Main Article Stream */}
           <main className="lg:col-span-9 xl:col-span-7 space-y-24">
 
-            {/* 1. Installation & Host Readiness */}
+            {/* 1. Getting Started */}
+            <section id="getting-started" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-white/[0.08] pb-4">
+                <span className="font-mono text-xs text-white">SECTION 1 / OVERVIEW</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Getting Started with Workflo</h2>
+                <p className="mt-2 text-sm text-white/60">
+                  Understand what Workflo does, why verification must be independent, and how our execution pipeline operates.
+                </p>
+              </div>
+
+              <div className="space-y-4 text-sm text-white/80 leading-relaxed font-light">
+                <p>
+                  Workflo is <strong>software execution and verification infrastructure</strong>. It gives engineering teams a controlled environment in which to execute, test, and inspect software changes, record what happens, verify teardown, and produce evidence-backed execution receipts.
+                </p>
+
+                <div className="grid gap-4 sm:grid-cols-2 my-6">
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4">
+                    <h4 className="text-xs font-mono font-medium text-white uppercase mb-1">What Workflo Does</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      Seals runtime environments in ephemeral microVMs, attaches eBPF kernel probes, runs test suites, records syscalls and network activity, sweeps teardown, and generates Ed25519 signed receipts.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4">
+                    <h4 className="text-xs font-mono font-medium text-white uppercase mb-1">What Receipts Establish</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      A receipt attests to the exact repository SHA, policies enforced, syscalls executed, and teardown verification. It proves <em>what ran</em>, but does not claim that code is bug-free or universally safe.
+                    </p>
+                  </div>
+                </div>
+
+                <p>
+                  Workflo works alongside your existing CI/CD runners, GitHub Actions, and autonomous coding agents. Follow the installation guide below to configure your host environment.
+                </p>
+              </div>
+            </section>
+
+            {/* 2. Installation & Host Readiness */}
             <section id="installation" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 1 / SETUP</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">Installation and Host Readiness</h2>
+                <span className="font-mono text-xs text-white">SECTION 2 / INSTALLATION</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Installation & Host Readiness</h2>
                 <p className="mt-2 text-sm text-white/60">
-                  Prerequisites, virtualization checks, and CLI distribution.
+                  Prerequisites, virtualization checks, and CLI distribution packages.
                 </p>
               </div>
 
@@ -952,7 +925,7 @@ receipt:
                 </p>
                 <CodeSnippet
                   title="Terminal"
-                  code={`# Global npm package (Node 20+ required)
+                  code={`# Global npm package preview (Node 20+ required)
 npm install -g @workflo/cli
 
 # Alternatively, download direct Linux binary
@@ -962,205 +935,121 @@ chmod +x /usr/local/bin/workflo`}
 
                 <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs font-mono text-white/60 mt-4 backdrop-blur-md">
                   <span className="text-white font-semibold">Note on Licensing:</span> The CLI distribution
-                  is currently undergoing licensing reconciliation between npm and Python packaging manifests.
-                  Ensure you inspect the licence file included with your download.
+                  is currently undergoing licensing reconciliation between npm (@workflo/cli) and Python packaging manifests.
+                  Inspect the licence file included with your download.
                 </div>
               </div>
             </section>
 
-            {/* 2. Developer Quickstart */}
+            {/* 3. Developer Quickstart */}
             <section id="quickstart" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 2 / QUICKSTART</span>
+                <span className="font-mono text-xs text-white">SECTION 3 / QUICKSTART</span>
                 <h2 className="mt-2 text-3xl font-medium text-white">Developer Quickstart</h2>
                 <p className="mt-2 text-sm text-white/60">
-                  The 6-step workflow from repository initialization to verified receipt.
+                  Initialize a repository, configure execution bounds, and run your first verified test suite.
                 </p>
               </div>
 
-              <div className="space-y-6">
-                {[
-                  {
-                    step: "01",
-                    title: "Initialize Repository",
-                    cmd: "workflo init",
-                    desc: "Inspects your repository, detects your package manager & test scripts, and writes a default .workflo/config.yaml.",
-                  },
-                  {
-                    step: "02",
-                    title: "Diagnose Virtualization & Isolation",
-                    cmd: "workflo doctor",
-                    desc: "Checks /dev/kvm availability, memory limits, and warns if falling back to development namespace isolation.",
-                  },
-                  {
-                    step: "03",
-                    title: "Dry-Run Policy Compilation",
-                    cmd: "workflo run --dry-run",
-                    desc: "Compiles seccomp rules and network egress allowlists without executing tests to verify boundary syntax.",
-                  },
-                  {
-                    step: "04",
-                    title: "Execute Sandboxed Run",
-                    cmd: "workflo run --command='npm test'",
-                    desc: "Boots isolated microVM, executes tests, records every syscall to the Merkle buffer, and sweeps teardown.",
-                  },
-                  {
-                    step: "05",
-                    title: "Verify Cryptographic Receipt",
-                    cmd: "workflo verify ./receipt.json",
-                    desc: "Recomputes Merkle digest and verifies the Ed25519 signature offline, confirming non-repudiation.",
-                  },
-                  {
-                    step: "06",
-                    title: "Inspect Telemetry & Audit Ledger",
-                    cmd: "workflo inspect ./receipt.json",
-                    desc: "Launches terminal inspector to review exact network packets, file descriptor diffs, and teardown proof.",
-                  },
-                ].map((item) => (
-                  <div key={item.step} className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs text-white font-semibold">STEP {item.step}</span>
-                      <span className="font-mono text-[10px] text-white/60">WORKFLOW</span>
-                    </div>
-                    <h3 className="mt-2 text-lg font-medium text-white">{item.title}</h3>
-                    <p className="mt-1 text-xs text-white/60 leading-relaxed">{item.desc}</p>
-                    <CodeSnippet code={item.cmd} />
-                  </div>
-                ))}
+              <div className="space-y-4 text-sm text-white/80 leading-relaxed font-light">
+                <h3 className="text-base font-medium text-white">Step 1: Initialize Configuration</h3>
+                <p className="text-xs text-white/60">
+                  Run <code className="font-mono text-xs text-white">workflo init</code> in your repository root:
+                </p>
+                <CodeSnippet
+                  title="Terminal"
+                  code={`cd your-project/
+workflo init --template node`}
+                />
+
+                <h3 className="text-base font-medium text-white mt-6">Step 2: Execute Test Suite in Sandbox</h3>
+                <p className="text-xs text-white/60">
+                  Execute tests inside an isolated microVM with eBPF egress monitoring:
+                </p>
+                <CodeSnippet
+                  title="Terminal"
+                  code="workflo run 'npm test' --inspect"
+                />
+
+                <h3 className="text-base font-medium text-white mt-6">Step 3: Verify Cryptographic Receipt</h3>
+                <p className="text-xs text-white/60">
+                  Verify the Ed25519 signature and SHA-256 Merkle root digest:
+                </p>
+                <CodeSnippet
+                  title="Terminal"
+                  code="workflo verify ./receipt.json"
+                />
               </div>
             </section>
 
-            {/* 3. Execution Lifecycle (INTERACTIVE STEPPER) */}
-            <section id="lifecycle" className="scroll-mt-28 space-y-6">
+            {/* 4. CLI Reference (INTERACTIVE PLAYGROUND) */}
+            <section id="cli" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 3 / LIFECYCLE</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">12-Stage Execution Lifecycle</h2>
+                <span className="font-mono text-xs text-white">SECTION 4 / CLI REFERENCE</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">CLI Command Reference & Playground</h2>
                 <p className="mt-2 text-sm text-white/60">
-                  Every execution progresses through an immutable sequence. Click any stage to inspect live runtime telemetry.
+                  Verified command signatures from the Workflo CLI source implementation. Click any command to view syntax, flags, and simulated output.
                 </p>
               </div>
 
-              {/* Reference Benchmark Notice */}
-              <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs text-white/70 font-light leading-relaxed backdrop-blur-md">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-white font-semibold block mb-1">
-                  Illustrative Reference Benchmarks
-                </span>
-                Telemetry metrics and stage durations (e.g. 84ms, 4,119 syscalls) displayed below are illustrative benchmark figures recorded on an AMD EPYC 7763 microVM testbed executing containerized test suites. Actual runtime metrics vary based on workload I/O, binary image size, and guest execution complexity.
-              </div>
-
-              {/* Interactive Stage Selector Bar */}
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
-                {LIFECYCLE_STAGES.map((s, idx) => (
+              {/* Command Tabs */}
+              <div className="flex flex-wrap gap-2">
+                {CLI_COMMANDS.map((cmd, idx) => (
                   <button
-                    key={s.num}
+                    key={cmd.name}
                     type="button"
-                    onClick={() => setActiveLifecycleStage(idx)}
-                    className={`flex flex-col items-center justify-center rounded-lg p-2.5 transition-all border ${
-                      activeLifecycleStage === idx
-                        ? "border-white bg-white text-black font-semibold shadow-lg"
-                        : "border-white/[0.08] bg-black/40 text-white/60 hover:border-white/20 hover:text-white"
+                    onClick={() => setActiveCliCmd(idx)}
+                    className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors ${
+                      activeCliCmd === idx
+                        ? "bg-white text-black font-semibold"
+                        : "border border-white/[0.08] bg-black/40 text-white/60 hover:text-white hover:border-white/20"
                     }`}
                   >
-                    <span className="font-mono text-[10px]">{s.num}</span>
-                    <span className="mt-1 text-[10px] line-clamp-1 text-center font-normal">
-                      {s.name.split(" ")[0]}
-                    </span>
+                    {cmd.name}
                   </button>
                 ))}
               </div>
 
-              {/* Active Stage Detailed Inspector */}
-              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+              {/* Active Command Inspector */}
+              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md space-y-5">
+                <div>
+                  <span className="font-mono text-xs uppercase tracking-wider text-white/60">COMMAND SIGNATURE</span>
+                  <div className="mt-2 rounded-xl border border-white/[0.08] bg-black/70 p-3 font-mono text-sm text-white">
+                    <code>{CLI_COMMANDS[activeCliCmd].syntax}</code>
+                  </div>
+                  <p className="mt-2 text-xs text-white/80 font-light">
+                    {CLI_COMMANDS[activeCliCmd].summary}
+                  </p>
+                </div>
+
+                {CLI_COMMANDS[activeCliCmd].flags.length > 0 && (
                   <div>
-                    <span className="font-mono text-xs uppercase tracking-wider text-white/60">
-                      STAGE {LIFECYCLE_STAGES[activeLifecycleStage].num} · {LIFECYCLE_STAGES[activeLifecycleStage].phase}
-                    </span>
-                    <h3 className="mt-1 text-xl font-medium text-white">
-                      {LIFECYCLE_STAGES[activeLifecycleStage].name}
-                    </h3>
-                  </div>
-
-                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-xs font-mono text-white">
-                    <span className="text-white/40">Duration:</span>
-                    <span>{LIFECYCLE_STAGES[activeLifecycleStage].duration}</span>
-                  </div>
-                </div>
-
-                <p className="mt-4 text-sm text-white/90 leading-relaxed font-light">
-                  {LIFECYCLE_STAGES[activeLifecycleStage].desc}
-                </p>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-xl border border-white/[0.06] bg-black/50 p-4">
-                    <span className="font-mono text-[10px] uppercase text-white/50 block mb-1.5">
-                      RUNTIME TELEMETRY STREAM
-                    </span>
-                    <code className="font-mono text-xs text-white/90 break-all">
-                      {LIFECYCLE_STAGES[activeLifecycleStage].telemetry}
-                    </code>
-                  </div>
-
-                  <div className="rounded-xl border border-white/[0.06] bg-black/50 p-4">
-                    <span className="font-mono text-[10px] uppercase text-white/50 block mb-1.5">
-                      SECURITY & NON-REPUDIATION GUARANTEE
-                    </span>
-                    <p className="text-xs text-white/80 leading-relaxed font-light">
-                      {LIFECYCLE_STAGES[activeLifecycleStage].securityGuarantee}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stepper Navigation */}
-                <div className="mt-6 flex items-center justify-between border-t border-white/[0.06] pt-4">
-                  <button
-                    type="button"
-                    disabled={activeLifecycleStage === 0}
-                    onClick={() => setActiveLifecycleStage((i) => Math.max(0, i - 1))}
-                    className="rounded-lg border border-white/10 px-4 py-1.5 text-xs text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors"
-                  >
-                    ← Previous Stage
-                  </button>
-                  <span className="font-mono text-xs text-white/40">
-                    {activeLifecycleStage + 1} of {LIFECYCLE_STAGES.length}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={activeLifecycleStage === LIFECYCLE_STAGES.length - 1}
-                    onClick={() => setActiveLifecycleStage((i) => Math.min(LIFECYCLE_STAGES.length - 1, i + 1))}
-                    className="rounded-lg border border-white/10 px-4 py-1.5 text-xs text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors"
-                  >
-                    Next Stage →
-                  </button>
-                </div>
-              </div>
-
-              {/* 12-Stage Visual Reference Grid */}
-              <div className="grid gap-3 sm:grid-cols-2 mt-4">
-                {LIFECYCLE_STAGES.map((s, idx) => (
-                  <div
-                    key={s.num}
-                    onClick={() => setActiveLifecycleStage(idx)}
-                    className={`cursor-pointer rounded-xl border p-4 backdrop-blur-md transition-colors ${
-                      activeLifecycleStage === idx
-                        ? "border-white/40 bg-white/[0.06]"
-                        : "border-white/[0.08] bg-black/40 hover:border-white/20"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-white">{s.num}</span>
-                      <h4 className="text-sm font-medium text-white">{s.name}</h4>
+                    <span className="font-mono text-xs uppercase tracking-wider text-white/60 block mb-2">FLAGS & ARGUMENTS</span>
+                    <div className="divide-y divide-white/[0.06] rounded-xl border border-white/[0.08] bg-black/50">
+                      {CLI_COMMANDS[activeCliCmd].flags.map((f) => (
+                        <div key={f.flag} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-2 text-xs">
+                          <code className="font-mono text-white font-medium">{f.flag}</code>
+                          <span className="text-white/60 font-light">{f.desc}</span>
+                        </div>
+                      ))}
                     </div>
-                    <p className="mt-2 text-xs text-white/60 leading-relaxed">{s.desc}</p>
                   </div>
-                ))}
+                )}
+
+                <div>
+                  <span className="font-mono text-xs uppercase tracking-wider text-white/60 block mb-2">SIMULATED TERMINAL OUTPUT</span>
+                  <CodeSnippet
+                    title="Console"
+                    code={CLI_COMMANDS[activeCliCmd].simulatedOutput}
+                  />
+                </div>
               </div>
             </section>
 
-            {/* 4. Run Configuration (INTERACTIVE BUILDER) */}
-            <section id="config" className="scroll-mt-28 space-y-6">
+            {/* 5. Run Configuration (INTERACTIVE BUILDER) */}
+            <section id="configuration" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 4 / SPECIFICATION</span>
+                <span className="font-mono text-xs text-white">SECTION 5 / CONFIGURATION</span>
                 <h2 className="mt-2 text-3xl font-medium text-white">Run Configuration (.workflo/config.yaml)</h2>
                 <p className="mt-2 text-sm text-white/60">
                   Declarative execution policies, runtime parameters, and isolation boundaries. Adjust controls below to dynamically compile.
@@ -1264,311 +1153,382 @@ chmod +x /usr/local/bin/workflo`}
               />
             </section>
 
-            {/* 5. CLI Reference (INTERACTIVE PLAYGROUND) */}
-            <section id="cli" className="scroll-mt-28 space-y-6">
+            {/* 6. Execution Lifecycle (INTERACTIVE STEPPER) */}
+            <section id="lifecycle" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 5 / CLI REFERENCE</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">CLI Command Reference & Playground</h2>
+                <span className="font-mono text-xs text-white">SECTION 6 / LIFECYCLE</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">12-Stage Execution Lifecycle</h2>
                 <p className="mt-2 text-sm text-white/60">
-                  Verified command signatures from the Workflo CLI source implementation. Click any command to view syntax, flags, and simulated output.
+                  Every execution progresses through an immutable sequence. Click any stage to inspect live runtime telemetry.
                 </p>
               </div>
 
-              {/* Command Tabs */}
-              <div className="flex flex-wrap gap-2">
-                {CLI_COMMANDS.map((cmd, idx) => (
+              {/* Reference Benchmark Notice */}
+              <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs text-white/70 font-light leading-relaxed backdrop-blur-md">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-white font-semibold block mb-1">
+                  Illustrative Reference Benchmarks
+                </span>
+                Telemetry metrics and stage durations (e.g. 84ms, 4,119 syscalls) displayed below are illustrative benchmark figures recorded on an AMD EPYC 7763 microVM testbed executing containerized test suites. Actual runtime metrics vary based on workload I/O, binary image size, and guest execution complexity.
+              </div>
+
+              {/* Interactive Stage Selector Bar */}
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+                {LIFECYCLE_STAGES.map((s, idx) => (
                   <button
-                    key={cmd.name}
+                    key={s.num}
                     type="button"
-                    onClick={() => setActiveCliCmd(idx)}
-                    className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors ${
-                      activeCliCmd === idx
-                        ? "bg-white text-black font-semibold"
-                        : "border border-white/[0.08] bg-black/40 text-white/60 hover:text-white hover:border-white/20"
+                    onClick={() => setActiveLifecycleStage(idx)}
+                    className={`rounded-lg py-2 text-center font-mono text-xs transition-colors border ${
+                      activeLifecycleStage === idx
+                        ? "border-white bg-white text-black font-bold"
+                        : "border-white/[0.08] bg-black/40 text-white/60 hover:text-white hover:border-white/20"
                     }`}
                   >
-                    {cmd.name}
+                    {s.num}
                   </button>
                 ))}
               </div>
 
-              {/* Selected Command Card */}
-              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md space-y-6">
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                  <code className="font-mono text-sm font-semibold text-white">
-                    {CLI_COMMANDS[activeCliCmd].syntax}
-                  </code>
-                  <span className="font-mono text-[10px] text-white/60">SOURCE SPEC</span>
+              {/* Active Stage Detailed Inspector */}
+              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+                  <div>
+                    <span className="font-mono text-xs uppercase tracking-wider text-white/60">
+                      STAGE {LIFECYCLE_STAGES[activeLifecycleStage].num} · {LIFECYCLE_STAGES[activeLifecycleStage].phase}
+                    </span>
+                    <h3 className="mt-1 text-xl font-medium text-white">
+                      {LIFECYCLE_STAGES[activeLifecycleStage].name}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-xs font-mono text-white">
+                    <span className="text-white/40">Duration:</span>
+                    <span>{LIFECYCLE_STAGES[activeLifecycleStage].duration}</span>
+                  </div>
                 </div>
 
-                <p className="text-sm text-white/90 leading-relaxed font-light">
-                  {CLI_COMMANDS[activeCliCmd].summary}
+                <p className="mt-4 text-sm text-white/90 leading-relaxed font-light">
+                  {LIFECYCLE_STAGES[activeLifecycleStage].desc}
                 </p>
 
-                {/* Flags Table */}
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-white/[0.06] bg-black/50 p-4">
+                    <span className="font-mono text-[10px] uppercase text-white/50 block mb-1.5">
+                      RUNTIME TELEMETRY STREAM
+                    </span>
+                    <code className="font-mono text-xs text-white/90 break-all">
+                      {LIFECYCLE_STAGES[activeLifecycleStage].telemetry}
+                    </code>
+                  </div>
+
+                  <div className="rounded-xl border border-white/[0.06] bg-black/50 p-4">
+                    <span className="font-mono text-[10px] uppercase text-white/50 block mb-1.5">
+                      SECURITY & NON-REPUDIATION GUARANTEE
+                    </span>
+                    <p className="text-xs text-white/80 leading-relaxed font-light">
+                      {LIFECYCLE_STAGES[activeLifecycleStage].securityGuarantee}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stepper Navigation */}
+                <div className="mt-6 flex items-center justify-between border-t border-white/[0.06] pt-4">
+                  <button
+                    type="button"
+                    disabled={activeLifecycleStage === 0}
+                    onClick={() => setActiveLifecycleStage((i) => Math.max(0, i - 1))}
+                    className="rounded-lg border border-white/10 px-4 py-1.5 text-xs text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors"
+                  >
+                    ← Previous Stage
+                  </button>
+                  <span className="font-mono text-xs text-white/40">
+                    {activeLifecycleStage + 1} of {LIFECYCLE_STAGES.length}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={activeLifecycleStage === LIFECYCLE_STAGES.length - 1}
+                    onClick={() => setActiveLifecycleStage((i) => Math.min(LIFECYCLE_STAGES.length - 1, i + 1))}
+                    className="rounded-lg border border-white/10 px-4 py-1.5 text-xs text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors"
+                  >
+                    Next Stage →
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* 7. Security & Isolation */}
+            <section id="security" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-white/[0.08] pb-4">
+                <span className="font-mono text-xs text-white">SECTION 7 / SECURITY</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Execution Isolation & Security Boundaries</h2>
+                <p className="mt-2 text-sm text-white/60">
+                  Detailed specifications of how untrusted code is confined and why container escapes are mathematically mitigated.
+                </p>
+              </div>
+
+              <div className="space-y-6 text-sm text-white/80 leading-relaxed font-light">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-5">
+                    <h4 className="text-sm font-medium text-white mb-2">Hardware-Accelerated MicroVMs</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      Each job spawns a dedicated Linux guest kernel via KVM. There is zero shared memory, zero shared kernel state, and zero shared filesystem between runs.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-5">
+                    <h4 className="text-sm font-medium text-white mb-2">Default-Deny eBPF Network Boundary</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      All egress is dropped by default. Cloud metadata service IPs (e.g. 169.254.169.254) are unconditionally blocked. Only explicitly declared CIDRs are reachable.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-5">
+                    <h4 className="text-sm font-medium text-white mb-2">Immutable Ephemeral Disks</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      The root filesystem is mounted read-only with a temporary RAM overlay. On execution teardown, memory is zeroed and no artifacts persist on the host disk.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-5">
+                    <h4 className="text-sm font-medium text-white mb-2">Non-Custodial Host Secrets</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      Workflo runners never inherit host credentials, AWS/GCP IAM tokens, or root user privileges. Code executes as an isolated unprivileged guest user.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-white/[0.08] bg-black/50 p-4 font-mono text-xs text-white/70">
+                  <span className="text-white font-semibold">Boundary Clarification:</span> Workflo isolates execution to protect your infrastructure and audit software behavior. Sandboxing proves what code did during that run under specified constraints; it does not constitute a formal proof of application logic correctness.
+                </div>
+              </div>
+            </section>
+
+            {/* 8. Receipts & Evidence (PLAYGROUND) */}
+            <section id="receipts" className="scroll-mt-28 space-y-6">
+              <div className="border-b border-white/[0.08] pb-4">
+                <span className="font-mono text-xs text-white">SECTION 8 / RECEIPTS & PROOF</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Cryptographic Receipts & Evidence Playground</h2>
+                <p className="mt-2 text-sm text-white/60">
+                  Inspect digitally signed execution receipts, Merkle root digests, and verifiable audit ledgers.
+                </p>
+              </div>
+
+              {/* Sample Fixture Mode Banner */}
+              <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs text-white/70 font-light leading-relaxed backdrop-blur-md">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-white font-semibold block mb-1">
+                  Sample Fixture Playground Notice
+                </span>
+                The playground below evaluates pre-recorded execution fixtures to demonstrate Ed25519 signature checks, Merkle tree digests, and policy verdicts. To verify a live production receipt produced by your CI runner, execute <code className="text-white">workflo verify ./receipt.json</code>.
+              </div>
+
+              {/* Playground Container */}
+              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md space-y-6">
+                
+                {/* Sample Selector Tabs */}
                 <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wider text-white/60 mb-3">
-                    Command Flags and Options
-                  </h4>
-                  <div className="space-y-2">
-                    {CLI_COMMANDS[activeCliCmd].flags.map((f, fIdx) => (
-                      <div key={fIdx} className="grid grid-cols-12 gap-2 text-xs font-mono border-b border-white/[0.04] pb-2 last:border-b-0">
-                        <span className="col-span-4 text-white font-medium">{f.flag}</span>
-                        <span className="col-span-8 text-white/60 font-light">{f.desc}</span>
-                      </div>
+                  <label className="block font-mono text-xs text-white/60 mb-2">SELECT SAMPLE FIXTURE</label>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {SAMPLE_RECEIPTS.map((r, idx) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveReceiptIdx(idx);
+                          setVerifiedState("idle");
+                        }}
+                        className={`rounded-xl border p-3 text-left transition-colors ${
+                          activeReceiptIdx === idx
+                            ? "border-white bg-white/10 text-white"
+                            : "border-white/[0.06] bg-black/40 text-white/60 hover:border-white/20 hover:text-white"
+                        }`}
+                      >
+                        <span className="font-mono text-xs font-semibold block">{r.name}</span>
+                        <span className="text-[11px] text-white/50 block mt-1">
+                          Verdict: {r.verdict}
+                        </span>
+                      </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Simulated Terminal Sandbox */}
-                <div>
-                  <h4 className="font-mono text-xs uppercase tracking-wider text-white/60 mb-2">
-                    Simulated Terminal Execution
-                  </h4>
-                  <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-black">
-                    <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2">
-                      <div className="flex items-center gap-1.5">
-                        <div className="h-2 w-2 rounded-full bg-white/20" />
-                        <div className="h-2 w-2 rounded-full bg-white/20" />
-                        <div className="h-2 w-2 rounded-full bg-white/20" />
-                      </div>
-                      <span className="font-mono text-[10px] text-white/40">{CLI_COMMANDS[activeCliCmd].name}</span>
-                    </div>
-                    <pre className="overflow-x-auto p-4 font-mono text-xs text-white/80 leading-relaxed font-light whitespace-pre-wrap">
-                      <code>{CLI_COMMANDS[activeCliCmd].simulatedOutput}</code>
-                    </pre>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* 6. Evidence & Signed Receipts */}
-            <section id="evidence" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 6 / VERIFICATION</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">Evidence and Signed Receipts</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Cryptographic non-repudiation, Merkle audit chains, and explicit receipt limitations.
-                </p>
-              </div>
-
-              <div className="space-y-4 text-sm text-white/80 leading-relaxed font-light">
-                <p>
-                  Workflo compiles an immutable receipt encapsulating the git commit, policy rules,
-                  observed system calls, network sockets, teardown state, and Merkle root.
-                </p>
-
-                <div className="rounded-2xl border border-white/20 bg-black/40 p-5 text-xs text-white/90 backdrop-blur-md">
-                  <span className="text-white font-semibold uppercase font-mono block mb-1">
-                    Fundamental Receipt Boundary:
-                  </span>
-                  A signed receipt proves <em>what ran, what boundaries were enforced, and what was observed</em>.
-                  It <strong>does not prove</strong> that the software is bug-free, safe, or correct.
-                  Humans remain responsible for interpreting the evidence and authorizing deployment.
-                </div>
-              </div>
-            </section>
-
-            {/* 7. Interactive Receipt Inspector (Playground) */}
-            <section id="receipt-inspector" className="scroll-mt-28 space-y-6">
-              <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white uppercase tracking-wider">LIVE PLAYGROUND</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">Interactive Receipt Inspector</h2>
-                <p className="mt-2 text-sm text-white/60">
-                  Test real receipt payloads, verify digital signatures, and audit Merkle digests.
-                </p>
-              </div>
-
-              {/* Scenario Selector */}
-              <div className="flex flex-wrap gap-2">
-                {SAMPLE_RECEIPTS.map((s, idx) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveReceiptIdx(idx);
-                      setVerifiedState("idle");
-                    }}
-                    className={`rounded-full px-4 py-2 font-mono text-xs transition-colors ${
-                      activeReceiptIdx === idx
-                        ? "bg-white text-black font-semibold"
-                        : "border border-white/[0.08] bg-black/40 text-white/60 hover:text-white hover:border-white/20"
-                    }`}
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-
-              {/* Inspector Card */}
-              <div className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md overflow-hidden">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] bg-white/[0.02] p-4 md:px-6">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-white/60">VERDICT:</span>
-                    <span
-                      className={`font-mono text-xs px-3 py-1 rounded-full border ${
-                        currentReceipt.verdict === "APPROVED_YES"
-                          ? "border-white/20 bg-white/10 text-white"
-                          : "border-white/20 bg-white/10 text-white"
+                {/* View Switcher: Visual vs JSON */}
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setReceiptView("visual")}
+                      className={`rounded-lg px-3 py-1 font-mono text-xs transition-colors ${
+                        receiptView === "visual"
+                          ? "bg-white text-black font-semibold"
+                          : "text-white/60 hover:text-white"
                       }`}
                     >
-                      {currentReceipt.verdict}
-                    </span>
+                      Visual Inspector
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReceiptView("json")}
+                      className={`rounded-lg px-3 py-1 font-mono text-xs transition-colors ${
+                        receiptView === "json"
+                          ? "bg-white text-black font-semibold"
+                          : "text-white/60 hover:text-white"
+                      }`}
+                    >
+                      Raw JSON
+                    </button>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg border border-white/[0.08] bg-black/60 p-1 flex">
-                      <button
-                        type="button"
-                        onClick={() => setReceiptView("visual")}
-                        className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
-                          receiptView === "visual" ? "bg-white/10 text-white" : "text-white/60"
-                        }`}
-                      >
-                        Structured Audit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setReceiptView("json")}
-                        className={`rounded px-3 py-1 text-xs font-mono transition-colors ${
-                          receiptView === "json" ? "bg-white/10 text-white" : "text-white/60"
-                        }`}
-                      >
-                        Canonical JSON
-                      </button>
-                    </div>
-
                     <button
                       type="button"
                       onClick={handleCopyReceipt}
-                      className="rounded-lg border border-white/[0.08] bg-black/60 px-3 py-1.5 text-xs font-mono text-white/60 hover:text-white"
+                      className="rounded-lg border border-white/10 px-3 py-1 text-xs font-mono text-white/60 hover:bg-white/10 hover:text-white transition-colors"
                     >
-                      {copiedReceipt ? "COPIED" : "COPY JSON"}
+                      {copiedReceipt ? "Copied" : "Copy JSON"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleVerify}
+                      disabled={verifiedState === "verifying"}
+                      className="rounded-lg bg-white px-4 py-1 text-xs font-mono font-medium text-black hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                    >
+                      {verifiedState === "verifying" ? "Verifying..." : "Verify Signature"}
                     </button>
                   </div>
                 </div>
 
-                <div className="p-6 md:p-8">
-                  {receiptView === "visual" ? (
-                    <div className="space-y-6">
-                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/60">COMMIT SHA</span>
-                          <p className="mt-1 font-mono text-xs text-white truncate">
-                            {currentReceipt.json.commit?.sha || "sha256:unknown"}
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/60">MERKLE ROOT</span>
-                          <p className="mt-1 font-mono text-xs text-white truncate">
-                            {currentReceipt.json.merkle_root}
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/60">SIGNATURE ALGORITHM</span>
-                          <p className="mt-1 font-mono text-xs text-white">
-                            {currentReceipt.json.signature?.algorithm} (Verified)
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-white/[0.06] bg-black/40 p-4">
-                          <span className="font-mono text-[10px] text-white/60">TEARDOWN STATE</span>
-                          <p className="mt-1 font-mono text-xs text-white">
-                            {currentReceipt.json.teardown?.zombie_processes === 0 ? "Clean (0 Zombies)" : "LEAK DETECTED"}
-                          </p>
-                        </div>
-                      </div>
+                {/* Verification Result Banner */}
+                {verifiedState === "valid" && (
+                  <div className="rounded-xl border border-white/30 bg-white/[0.06] p-4 font-mono text-xs text-white">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">ED25519 SIGNATURE VALID</span>
+                      <span className="text-white/50">·</span>
+                      <span className="text-white/70">Key: {currentReceipt.json.signature.key_id}</span>
+                    </div>
+                    <p className="mt-1 text-white/60 text-[11px]">
+                      Merkle root {currentReceipt.json.merkle_root.slice(0, 24)}... verified against audit ledger.
+                    </p>
+                  </div>
+                )}
 
-                      <div className="rounded-2xl border border-white/[0.06] bg-black/30 p-5 flex flex-wrap items-center justify-between gap-4">
-                        <div>
-                          <h4 className="text-sm font-medium text-white">Cryptographic Signature Verification</h4>
-                          <p className="text-xs text-white/60 mt-1 font-light">
-                            Verifies Ed25519 digital signature against Workflo authority public keys.
-                          </p>
+                {/* Visual View */}
+                {receiptView === "visual" && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-white/[0.06] bg-black/50 p-4 space-y-3">
+                      <span className="font-mono text-xs uppercase text-white/50 block">EXECUTION CONTEXT</span>
+                      <div className="space-y-1.5 font-mono text-xs">
+                        <div className="flex justify-between text-white/70">
+                          <span>Execution ID:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.execution_id}</span>
                         </div>
-
-                        <button
-                          type="button"
-                          onClick={handleVerify}
-                          disabled={verifiedState === "valid"}
-                          className={`rounded-full px-5 py-2 font-mono text-xs transition-colors flex items-center gap-2 ${
-                            verifiedState === "valid"
-                              ? "bg-white/20 text-white border border-white/20"
-                              : "bg-white text-black font-semibold hover:bg-neutral-200"
-                          }`}
-                        >
-                          {verifiedState === "verifying" && <span>Recomputing Merkle root...</span>}
-                          {verifiedState === "valid" && (
-                            <>
-                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                              <span>SIGNATURE VERIFIED AUTHENTIC</span>
-                            </>
-                          )}
-                          {verifiedState === "idle" && <span>Verify Cryptographic Proof</span>}
-                        </button>
+                        <div className="flex justify-between text-white/70">
+                          <span>Commit SHA:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.commit?.sha?.slice(0, 10)}...</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Branch:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.commit?.branch}</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Verdict:</span>
+                          <span className="text-white font-bold">{currentReceipt.json.verdict}</span>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <pre className="font-mono text-xs text-white overflow-x-auto leading-relaxed max-h-96">
-                      {JSON.stringify(currentReceipt.json, null, 2)}
-                    </pre>
-                  )}
-                </div>
+
+                    <div className="rounded-xl border border-white/[0.06] bg-black/50 p-4 space-y-3">
+                      <span className="font-mono text-xs uppercase text-white/50 block">AUDIT EVIDENCE</span>
+                      <div className="space-y-1.5 font-mono text-xs">
+                        <div className="flex justify-between text-white/70">
+                          <span>Recorded Syscalls:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.audit?.total_syscalls ?? "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Exit Code:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.audit?.exit_code ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Zombie Daemons:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.teardown?.zombie_processes ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Signing Key ID:</span>
+                          <span className="text-white font-medium">{currentReceipt.json.signature?.key_id}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Raw JSON View */}
+                {receiptView === "json" && (
+                  <pre className="max-h-96 overflow-y-auto rounded-xl border border-white/[0.08] bg-black p-4 font-mono text-xs text-white/80 leading-relaxed">
+                    <code>{JSON.stringify(currentReceipt.json, null, 2)}</code>
+                  </pre>
+                )}
               </div>
             </section>
 
-            {/* 8. API Reference */}
+            {/* 9. API Reference */}
             <section id="api" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 7 / API REFERENCE</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">API Reference & Sandbox</h2>
+                <span className="font-mono text-xs text-white">SECTION 9 / API REFERENCE</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Execution API Reference (/v1/runs)</h2>
                 <p className="mt-2 text-sm text-white/60">
-                  Workflo Product Execution API (/v1/runs) versus Website Public Intake API (/api/v1/*).
+                  Versioned REST API and client libraries for programmatic execution and receipt retrieval.
                 </p>
               </div>
 
-              {/* Product Execution API Header */}
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex gap-2">
-                    {[
-                      { id: "submit", label: "POST /v1/runs" },
-                      { id: "status", label: "GET /v1/runs/{id}" },
-                      { id: "receipt", label: "GET /v1/runs/{id}/receipt" },
-                    ].map((ep) => (
-                      <button
-                        key={ep.id}
-                        type="button"
-                        onClick={() => setApiEndpoint(ep.id as any)}
-                        className={`rounded-lg px-3 py-1 font-mono text-xs transition-colors border ${
-                          apiEndpoint === ep.id
-                            ? "border-white bg-white text-black font-medium"
-                            : "border-white/[0.06] bg-black/40 text-white/60 hover:text-white"
-                        }`}
-                      >
-                        {ep.label}
-                      </button>
-                    ))}
-                  </div>
+              <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs font-mono text-white/70 backdrop-blur-md">
+                <span className="text-white font-semibold">Authentication Header:</span> Authenticate API requests using the <code className="text-white">X-API-Key: wkf_live_...</code> header. Requests without valid keys return HTTP 401 Unauthorized.
+              </div>
 
-                  <div className="flex rounded-lg border border-white/[0.08] bg-black/60 p-1 font-mono text-xs">
-                    {(["curl", "js", "python"] as const).map((tab) => (
+              {/* Endpoint Selector Tabs */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: "submit", method: "POST", path: "/v1/runs", label: "Create Run" },
+                  { id: "status", method: "GET", path: "/v1/runs/:id", label: "Get Run Status" },
+                  { id: "receipt", method: "GET", path: "/v1/runs/:id/receipt", label: "Get Receipt" },
+                ].map((ep) => (
+                  <button
+                    key={ep.id}
+                    type="button"
+                    onClick={() => setApiEndpoint(ep.id as any)}
+                    className={`rounded-lg px-3 py-1.5 font-mono text-xs transition-colors border ${
+                      apiEndpoint === ep.id
+                        ? "border-white bg-white text-black font-semibold"
+                        : "border-white/[0.08] bg-black/40 text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <span className="font-bold mr-1.5">{ep.method}</span>
+                    <span>{ep.path}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Language Tabs & Snippets */}
+              <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md space-y-4">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                  <span className="font-mono text-xs uppercase tracking-wider text-white/60">CLIENT IMPLEMENTATION</span>
+                  <div className="flex items-center gap-1">
+                    {[
+                      { id: "curl", label: "cURL" },
+                      { id: "js", label: "Node.js" },
+                      { id: "python", label: "Python" },
+                    ].map((lang) => (
                       <button
-                        key={tab}
+                        key={lang.id}
                         type="button"
-                        onClick={() => setApiTab(tab)}
-                        className={`rounded px-3 py-1 uppercase transition-colors ${
-                          apiTab === tab ? "bg-white/10 text-white" : "text-white/60 hover:text-white"
+                        onClick={() => setApiTab(lang.id as any)}
+                        className={`rounded px-2.5 py-1 font-mono text-xs transition-colors ${
+                          apiTab === lang.id
+                            ? "bg-white text-black font-semibold"
+                            : "text-white/60 hover:text-white"
                         }`}
                       >
-                        {tab}
+                        {lang.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* API Request Snippet */}
                 {apiEndpoint === "submit" && apiTab === "curl" && (
                   <CodeSnippet
                     title="Submit Execution Run (cURL)"
@@ -1642,106 +1602,56 @@ assert receipt.verdict == "APPROVED_YES"`}
   -H "X-API-Key: wkf_live_9a2f1c84..."`}
                   />
                 )}
-
-                {/* Simulated API Response */}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between border-b border-white/[0.08] bg-black/80 px-4 py-2 rounded-t-xl border-x border-t">
-                    <span className="font-mono text-[11px] text-white/60">Simulated JSON Response (200 OK)</span>
-                    <span className="font-mono text-[10px] text-white/40">application/json</span>
-                  </div>
-                  <pre className="rounded-b-xl border border-white/[0.08] bg-black p-4 font-mono text-xs text-white/80 leading-relaxed overflow-x-auto">
-                    <code>{apiEndpoint === "submit" ? `{
-  "id": "run_9a2f1c84",
-  "status": "QUEUED",
-  "created_at": "2026-11-26T15:40:00.000Z",
-  "estimated_start_ms": 120
-}` : apiEndpoint === "status" ? `{
-  "id": "run_9a2f1c84",
-  "status": "COMPLETED",
-  "verdict": "APPROVED_YES",
-  "duration_ms": 1840,
-  "receipt_url": "https://api.workflo.dev/v1/runs/run_9a2f1c84/receipt"
-}` : `{
-  "receipt_version": "2026-11-24.1",
-  "execution_id": "exec_9a2f1c84",
-  "verdict": "APPROVED_YES",
-  "merkle_root": "sha256:88e09f182bc20e98124589d9abef729a765c1920831a2938472910fae8293c41",
-  "signature": {
-    "algorithm": "Ed25519",
-    "key_id": "workflo-signer-2026-a",
-    "sig": "3045022100e49a201...b2f9104a"
-  }
-}`}</code>
-                  </pre>
-                </div>
-
-                {/* Website Intake API Section */}
-                <h3 className="text-lg font-medium text-white pt-6">2. Website Public Intake APIs (/api/v1/*)</h3>
-                <p className="text-xs text-white/60">
-                  CloudFront edge & regional API Gateway endpoints powering website intake workflows:
-                </p>
-
-                <div className="grid gap-3 sm:grid-cols-3 mt-3">
-                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
-                    <span className="font-mono text-xs text-white">GET /api/v1/health</span>
-                    <p className="mt-1 text-xs text-white/60">Website API Gateway health check.</p>
-                  </div>
-                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
-                    <span className="font-mono text-xs text-white">POST /api/v1/early-access</span>
-                    <p className="mt-1 text-xs text-white/60">Early access cohort submission.</p>
-                  </div>
-                  <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
-                    <span className="font-mono text-xs text-white">POST /api/v1/contact</span>
-                    <p className="mt-1 text-xs text-white/60">Enterprise & sales intake.</p>
-                  </div>
-                </div>
               </div>
             </section>
 
-            {/* 9. Troubleshooting (INTERACTIVE FILTER) */}
+            {/* 10. Troubleshooting */}
             <section id="troubleshooting" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <span className="font-mono text-xs text-white">PART 8 / DIAGNOSTICS</span>
-                <h2 className="mt-2 text-3xl font-medium text-white">Troubleshooting Guide</h2>
+                <span className="font-mono text-xs text-white">SECTION 10 / TROUBLESHOOTING</span>
+                <h2 className="mt-2 text-3xl font-medium text-white">Troubleshooting & Error Catalog</h2>
                 <p className="mt-2 text-sm text-white/60">
-                  Common execution anomalies, isolation errors, and remediation steps. Filter by category:
+                  Resolutions for hypervisor permissions, network policy denials, and teardown anomalies.
                 </p>
               </div>
 
-              {/* Troubleshooting Category Filter Tabs */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-2">
                 {[
-                  { id: "all", label: "All Anomalies" },
-                  { id: "kvm", label: "Virtualization / KVM" },
+                  { id: "all", label: "All Errors" },
+                  { id: "kvm", label: "KVM / Virtualization" },
                   { id: "network", label: "Network Egress" },
-                  { id: "teardown", label: "Teardown & Zombies" },
-                ].map((tab) => (
+                  { id: "teardown", label: "Teardown Sweeps" },
+                ].map((f) => (
                   <button
-                    key={tab.id}
+                    key={f.id}
                     type="button"
-                    onClick={() => setTroubleFilter(tab.id as any)}
+                    onClick={() => setTroubleFilter(f.id as any)}
                     className={`rounded-lg px-3 py-1 font-mono text-xs transition-colors border ${
-                      troubleFilter === tab.id
+                      troubleFilter === f.id
                         ? "border-white bg-white text-black font-semibold"
                         : "border-white/[0.08] bg-black/40 text-white/60 hover:text-white"
                     }`}
                   >
-                    {tab.label}
+                    {f.label}
                   </button>
                 ))}
               </div>
 
-              <div className="space-y-4">
+              <div className="grid gap-4">
                 {filteredTroubleshooting.map((item) => (
                   <div key={item.code} className="rounded-xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-semibold text-white">{item.code}</span>
+                    <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 mb-3">
+                      <code className="font-mono text-xs font-semibold text-white">{item.code}</code>
                       <span className="font-mono text-[10px] uppercase text-white/40">{item.category}</span>
                     </div>
-                    <p className="mt-1 text-xs text-white font-medium">{item.cause}</p>
-                    <p className="mt-2 text-xs text-white/60 font-light">
-                      <strong className="text-white font-mono">Remedy:</strong> {item.fix}
-                    </p>
+                    <div className="space-y-1.5 text-xs">
+                      <p className="text-white/60">
+                        <strong className="text-white/80 font-medium">Cause:</strong> {item.cause}
+                      </p>
+                      <p className="text-white/90 font-mono text-[11px] bg-black/50 p-2 rounded border border-white/[0.04]">
+                        <strong>Resolution:</strong> {item.fix}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1757,17 +1667,7 @@ assert receipt.verdict == "APPROVED_YES"`}
                   On this page
                 </p>
                 <nav className="mt-2 space-y-1">
-                  {[
-                    { id: "installation", label: "1. Installation" },
-                    { id: "quickstart", label: "2. Quickstart" },
-                    { id: "lifecycle", label: "3. 12-Stage Lifecycle" },
-                    { id: "config", label: "4. Run Configuration" },
-                    { id: "cli", label: "5. CLI Reference" },
-                    { id: "evidence", label: "6. Evidence & Receipts" },
-                    { id: "receipt-inspector", label: "7. Receipt Playground" },
-                    { id: "api", label: "8. API Reference" },
-                    { id: "troubleshooting", label: "9. Troubleshooting" },
-                  ].map((sec) => (
+                  {DOC_SECTIONS.map((sec) => (
                     <a
                       key={sec.id}
                       href={`#${sec.id}`}
@@ -1787,13 +1687,13 @@ assert receipt.verdict == "APPROVED_YES"`}
                 <span className="font-mono text-[10px] text-white/40 block mb-2 uppercase tracking-wider">Quick Actions</span>
                 <div className="space-y-1.5">
                   <a
-                    href="#receipt-inspector"
+                    href="#receipts"
                     className="block text-[11px] font-mono text-white/70 hover:text-white transition-colors"
                   >
                     → Verify Receipt
                   </a>
                   <a
-                    href="#config"
+                    href="#configuration"
                     className="block text-[11px] font-mono text-white/70 hover:text-white transition-colors"
                   >
                     → Build YAML
@@ -1804,10 +1704,17 @@ assert receipt.verdict == "APPROVED_YES"`}
                   >
                     → Test API cURL
                   </a>
+                  <a
+                    href="#installation"
+                    className="block text-[11px] font-mono text-white/70 hover:text-white transition-colors"
+                  >
+                    → Run Doctor Check
+                  </a>
                 </div>
               </div>
             </div>
           </aside>
+
         </div>
       </div>
 
