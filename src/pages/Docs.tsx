@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Navbar } from "../landing/Navbar";
 import { Footer } from "../landing/Footer";
 import { SectionBackdrop } from "../landing/SectionBackdrop";
@@ -451,6 +451,38 @@ function CodeSnippet({ code, title }: { code: string; title?: string }) {
 /* -------------------------------------------------------------------------- */
 
 export function Docs() {
+  // Active section tracking for table of contents
+  const [activeSection, setActiveSection] = useState("installation");
+
+  useEffect(() => {
+    const sectionIds = [
+      "installation",
+      "quickstart",
+      "lifecycle",
+      "config",
+      "cli",
+      "evidence",
+      "receipt-inspector",
+      "api",
+      "troubleshooting",
+    ];
+
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 180;
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(sectionIds[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Receipt Playground states
   const [activeReceiptIdx, setActiveReceiptIdx] = useState(0);
   const [verifiedState, setVerifiedState] = useState<"idle" | "verifying" | "valid">("idle");
@@ -582,12 +614,9 @@ receipt:
               <span className="text-white font-medium">docs</span>
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 backdrop-blur-md">
-              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-white">
-                DEVELOPMENT PREVIEW
-              </span>
-            </div>
+            <span className="font-mono text-xs font-medium uppercase tracking-wider text-white/50">
+              DEVELOPMENT PREVIEW
+            </span>
           </div>
 
           {/* Headline & Lede */}
@@ -603,9 +632,8 @@ receipt:
 
           {/* Minimal Company Overview Plate */}
           <div className="mt-8 rounded-2xl border border-white/[0.08] bg-black/40 p-6 backdrop-blur-md">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-white/50 mb-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-white" />
-              <span>ABOUT WORKFLO</span>
+            <div className="font-mono text-xs uppercase tracking-wider text-white/50 mb-2">
+              ABOUT WORKFLO
             </div>
             <p className="text-sm md:text-base text-white/90 font-light leading-relaxed">
               Workflo provides deterministic, cryptographically verified software execution. Every release runs inside an isolated microVM sandbox and produces a signed Ed25519 audit receipt detailing every syscall, network packet, and teardown verification.
@@ -817,10 +845,9 @@ receipt:
         <div className="mx-auto max-w-6xl">
           <div className="rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-white" />
+              <div>
                 <span className="font-mono text-xs uppercase tracking-wider text-white font-semibold">
-                  Product Release Status and Security Boundary Disclosure
+                  Product Release Status & Security Boundary Disclosure
                 </span>
               </div>
               <p className="text-xs text-white/80 leading-relaxed max-w-3xl font-light">
@@ -844,10 +871,10 @@ receipt:
       {/*                     MAIN DOCUMENTATION BODY                        */}
       {/* ------------------------------------------------------------------ */}
       <div className="relative isolate border-t border-white/[0.08] px-6 py-16 md:px-10">
-        <div className="mx-auto max-w-6xl grid gap-12 lg:grid-cols-12">
+        <div className="mx-auto max-w-7xl grid gap-8 lg:grid-cols-12">
           
           {/* Left Sticky Navigation */}
-          <aside className="lg:col-span-3">
+          <aside className="lg:col-span-3 xl:col-span-3">
             <div className="sticky top-24 space-y-6 rounded-2xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-md">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-wider text-white mb-2 px-2 font-medium">
@@ -855,20 +882,24 @@ receipt:
                 </p>
                 <nav className="space-y-1">
                   {[
-                    { id: "installation", label: "Installation & Host Readiness" },
+                    { id: "installation", label: "Installation & Readiness" },
                     { id: "quickstart", label: "Developer Quickstart" },
-                    { id: "lifecycle", label: "12-Stage Execution Lifecycle" },
-                    { id: "config", label: "Run Configuration (YAML)" },
-                    { id: "cli", label: "CLI Command Reference" },
-                    { id: "evidence", label: "Evidence & Signed Receipts" },
-                    { id: "receipt-inspector", label: "Receipt Playground (Interactive)" },
-                    { id: "api", label: "API Reference (Execution vs Intake)" },
+                    { id: "lifecycle", label: "12-Stage Lifecycle" },
+                    { id: "config", label: "Configuration (YAML)" },
+                    { id: "cli", label: "CLI Reference" },
+                    { id: "evidence", label: "Evidence & Receipts" },
+                    { id: "receipt-inspector", label: "Receipt Playground" },
+                    { id: "api", label: "API Reference" },
                     { id: "troubleshooting", label: "Troubleshooting Guide" },
                   ].map((item) => (
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="block rounded-lg px-2.5 py-1.5 text-xs font-mono text-white/60 hover:bg-white/[0.04] hover:text-white transition-colors"
+                      className={`block rounded-lg px-2.5 py-1.5 text-xs font-mono transition-colors ${
+                        activeSection === item.id
+                          ? "bg-white/10 text-white font-medium border-l-2 border-white pl-2"
+                          : "text-white/60 hover:bg-white/[0.04] hover:text-white"
+                      }`}
                     >
                       {item.label}
                     </a>
@@ -887,7 +918,7 @@ receipt:
           </aside>
 
           {/* Right Main Article Stream */}
-          <main className="lg:col-span-9 space-y-24">
+          <main className="lg:col-span-9 xl:col-span-7 space-y-24">
 
             {/* 1. Installation & Host Readiness */}
             <section id="installation" className="scroll-mt-28 space-y-6">
@@ -1007,6 +1038,14 @@ chmod +x /usr/local/bin/workflo`}
                 <p className="mt-2 text-sm text-white/60">
                   Every execution progresses through an immutable sequence. Click any stage to inspect live runtime telemetry.
                 </p>
+              </div>
+
+              {/* Reference Benchmark Notice */}
+              <div className="rounded-xl border border-white/[0.08] bg-black/40 p-4 text-xs text-white/70 font-light leading-relaxed backdrop-blur-md">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-white font-semibold block mb-1">
+                  Illustrative Reference Benchmarks
+                </span>
+                Telemetry metrics and stage durations (e.g. 84ms, 4,119 syscalls) displayed below are illustrative benchmark figures recorded on an AMD EPYC 7763 microVM testbed executing containerized test suites. Actual runtime metrics vary based on workload I/O, binary image size, and guest execution complexity.
               </div>
 
               {/* Interactive Stage Selector Bar */}
@@ -1333,10 +1372,7 @@ chmod +x /usr/local/bin/workflo`}
             {/* 7. Interactive Receipt Inspector (Playground) */}
             <section id="receipt-inspector" className="scroll-mt-28 space-y-6">
               <div className="border-b border-white/[0.08] pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                  <span className="font-mono text-xs text-white">LIVE PLAYGROUND</span>
-                </div>
+                <span className="font-mono text-xs text-white uppercase tracking-wider">LIVE PLAYGROUND</span>
                 <h2 className="mt-2 text-3xl font-medium text-white">Interactive Receipt Inspector</h2>
                 <p className="mt-2 text-sm text-white/60">
                   Test real receipt payloads, verify digital signatures, and audit Merkle digests.
@@ -1537,7 +1573,7 @@ chmod +x /usr/local/bin/workflo`}
                   <CodeSnippet
                     title="Submit Execution Run (cURL)"
                     code={`curl -X POST https://api.workflo.dev/v1/runs \\
-  -H "Authorization: Bearer wkf_live_9a2f1c84..." \\
+  -H "X-API-Key: wkf_live_9a2f1c84..." \\
   -H "Content-Type: application/json" \\
   -d '{
     "repository": "https://github.com/acme/service",
@@ -1595,7 +1631,7 @@ assert receipt.verdict == "APPROVED_YES"`}
                   <CodeSnippet
                     title="Poll Run Status (cURL)"
                     code={`curl https://api.workflo.dev/v1/runs/exec_9a2f1c84 \\
-  -H "Authorization: Bearer wkf_live_9a2f1c84..."`}
+  -H "X-API-Key: wkf_live_9a2f1c84..."`}
                   />
                 )}
 
@@ -1603,7 +1639,7 @@ assert receipt.verdict == "APPROVED_YES"`}
                   <CodeSnippet
                     title="Fetch Signed Execution Receipt (cURL)"
                     code={`curl https://api.workflo.dev/v1/runs/exec_9a2f1c84/receipt \\
-  -H "Authorization: Bearer wkf_live_9a2f1c84..."`}
+  -H "X-API-Key: wkf_live_9a2f1c84..."`}
                   />
                 )}
 
@@ -1712,6 +1748,66 @@ assert receipt.verdict == "APPROVED_YES"`}
             </section>
 
           </main>
+
+          {/* Right Sticky Table of Contents ("On this page") */}
+          <aside className="hidden xl:block xl:col-span-2">
+            <div className="sticky top-24 space-y-5 rounded-2xl border border-white/[0.08] bg-black/40 p-4 backdrop-blur-md">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-white/50 px-2 font-medium">
+                  On this page
+                </p>
+                <nav className="mt-2 space-y-1">
+                  {[
+                    { id: "installation", label: "1. Installation" },
+                    { id: "quickstart", label: "2. Quickstart" },
+                    { id: "lifecycle", label: "3. 12-Stage Lifecycle" },
+                    { id: "config", label: "4. Run Configuration" },
+                    { id: "cli", label: "5. CLI Reference" },
+                    { id: "evidence", label: "6. Evidence & Receipts" },
+                    { id: "receipt-inspector", label: "7. Receipt Playground" },
+                    { id: "api", label: "8. API Reference" },
+                    { id: "troubleshooting", label: "9. Troubleshooting" },
+                  ].map((sec) => (
+                    <a
+                      key={sec.id}
+                      href={`#${sec.id}`}
+                      className={`block rounded px-2 py-1 text-[11px] font-mono transition-colors ${
+                        activeSection === sec.id
+                          ? "text-white font-medium bg-white/10"
+                          : "text-white/50 hover:text-white hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      {sec.label}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="border-t border-white/[0.06] pt-3 px-2">
+                <span className="font-mono text-[10px] text-white/40 block mb-2 uppercase tracking-wider">Quick Actions</span>
+                <div className="space-y-1.5">
+                  <a
+                    href="#receipt-inspector"
+                    className="block text-[11px] font-mono text-white/70 hover:text-white transition-colors"
+                  >
+                    → Verify Receipt
+                  </a>
+                  <a
+                    href="#config"
+                    className="block text-[11px] font-mono text-white/70 hover:text-white transition-colors"
+                  >
+                    → Build YAML
+                  </a>
+                  <a
+                    href="#api"
+                    className="block text-[11px] font-mono text-white/70 hover:text-white transition-colors"
+                  >
+                    → Test API cURL
+                  </a>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
 
