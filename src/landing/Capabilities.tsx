@@ -9,20 +9,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const ROWS = [
   {
-    title: "autonomous test generation",
-    body: "tests are written from the app's own routes and states.",
+    title: "Isolated Code Execution",
+    body: "Runs untrusted code inside controlled, network-restricted sandboxes.",
   },
   {
-    title: "self-healing tests",
-    body: "broken selectors are repaired, not switched off.",
+    title: "Automated Testing",
+    body: "Executes tests, security checks, and application-level probes.",
   },
   {
-    title: "release risk scoring",
-    body: "each change gets a score based on what broke.",
+    title: "AI Agent Testing",
+    body: "Lets agents inspect running applications, APIs, logs, and runtime behaviour.",
   },
   {
-    title: "ci/cd integration",
-    body: "results attach to the pull request that opened them.",
+    title: "Cryptographic Evidence",
+    body: "Generates signed execution receipts documenting what happened during a run.",
+  },
+  {
+    title: "Verification & Teardown",
+    body: "Verifies execution evidence and checks that sandbox resources are properly cleaned up.",
   },
 ];
 
@@ -63,7 +67,7 @@ function CapabilityTitle({ text, delay }: { text: string; delay: number }) {
   return (
     <h2
       ref={ref}
-      className="text-2xl font-normal leading-snug text-white/70 transition-colors group-hover:text-white"
+      className="text-2xl font-normal leading-snug text-white/80 transition-colors group-hover:text-white"
     >
       {words.map((word, wIdx) => (
         <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.25em]">
@@ -92,12 +96,12 @@ export function Capabilities() {
       <SectionBackdrop id="execute" position="68% 50%" />
       <div className="relative z-10 mx-auto max-w-6xl">
         <Reveal>
-          <p className="text-xs uppercase tracking-[0.2em] text-white/50">capabilities</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-white/50">capabilities</p>
         </Reveal>
 
-        <ul className="mt-10 border-y border-white/20">
+        <ul className="mt-10 border-y border-white/[0.08]">
           {ROWS.map((row, index) => (
-            <li key={row.title} className="border-b border-white/20 last:border-b-0">
+            <li key={row.title} className="border-b border-white/[0.08] last:border-b-0">
               <Reveal delay={index * 0.05}>
                 <div className="group flex flex-col gap-2 py-7 md:flex-row md:items-baseline md:justify-between md:gap-10">
                   <CapabilityTitle text={row.title} delay={index * 0.06} />
