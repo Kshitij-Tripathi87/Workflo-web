@@ -15,7 +15,6 @@ import { Footer } from "../landing/Footer";
 import { FinalCta } from "../landing/FinalCta";
 import { Hero } from "../landing/Hero";
 import { HowItWorks } from "../landing/HowItWorks";
-import { Proof } from "../landing/Proof";
 import { setLenis } from "../landing/smooth";
 import { useReducedMotion } from "../lib/hooks";
 
@@ -64,12 +63,11 @@ export function Landing() {
         skip to content
       </a>
       <main id="main" className="landing">
-      <Hero />
-      <HowItWorks />
-      <Decision />
-      <Capabilities />
-      <Proof />
-      <FinalCta />
+        <Hero />
+        <HowItWorks />
+        <Decision />
+        <Capabilities />
+        <FinalCta />
         <Footer />
       </main>
     </>
