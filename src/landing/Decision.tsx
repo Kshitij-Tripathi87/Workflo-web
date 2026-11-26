@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const SENTENCE = "every release gets a clear yes or no.";
 const WORDS = SENTENCE.split(" ");
-const EXPLAINS = ["what failed", "how risky it is", "what to fix first"];
+const EXPLAINS = ["what failed", "how risky it is", "what to fix first", "where to fix it"];
 
 export function Decision() {
   const sectionRef = useRef<HTMLElement>(null);
