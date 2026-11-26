@@ -67,7 +67,7 @@ function CapabilityTitle({ text, delay }: { text: string; delay: number }) {
   return (
     <h2
       ref={ref}
-      className="text-2xl font-normal leading-snug text-white/80 transition-colors group-hover:text-white"
+      className="text-xl lg:text-2xl font-normal leading-snug text-white/80 transition-colors group-hover:text-white"
     >
       {words.map((word, wIdx) => (
         <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.25em]">
@@ -103,9 +103,11 @@ export function Capabilities() {
           {ROWS.map((row, index) => (
             <li key={row.title} className="border-b border-white/[0.08] last:border-b-0">
               <Reveal delay={index * 0.05}>
-                <div className="group flex flex-col gap-2 py-7 md:flex-row md:items-baseline md:justify-between md:gap-10">
-                  <CapabilityTitle text={row.title} delay={index * 0.06} />
-                  <p className="max-w-md text-sm leading-relaxed text-white/60 md:text-right">
+                <div className="group flex flex-col gap-2 py-6 md:flex-row md:items-baseline md:justify-between md:gap-8">
+                  <div className="shrink-0">
+                    <CapabilityTitle text={row.title} delay={index * 0.06} />
+                  </div>
+                  <p className="text-xs lg:text-sm text-white/60 md:text-right md:whitespace-nowrap shrink-0">
                     {row.body}
                   </p>
                 </div>
