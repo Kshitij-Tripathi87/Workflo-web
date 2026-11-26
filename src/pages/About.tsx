@@ -81,12 +81,6 @@ export function About() {
         <SectionBackdrop id="observe" position="56% 50%" />
         
         <div className="relative z-10 mx-auto max-w-6xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-1.5 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
-              Company Mission · Principles & Contact
-            </span>
-          </div>
 
           <LetterReveal
             text="deterministic verification for the autonomous era."
