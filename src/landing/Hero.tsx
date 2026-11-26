@@ -187,7 +187,7 @@ export function Hero() {
         .to(a3, { y: "26vh", opacity: 0, duration: 0.12 }, atVerify)
         .to(overlay, { opacity: 0.4, duration: 0.12 }, atVerify);
 
-      // --- PROVE PHASE ("know it's safe" reveals letter by letter on scroll) ---
+      // --- PROVE PHASE ("knowing it's safe" reveals letter by letter on scroll) ---
       const atProve = 0.65;
       tl.addLabel("prove", atProve);
       const p3 = plateRefs.current[3];
@@ -321,7 +321,7 @@ export function Hero() {
                 aria-hidden="true"
                 className={`${WORD_CLASS} right-4 top-[18%] md:right-10`}
               >
-                <SplitLetters word="know" />
+                <SplitLetters word="knowing" />
               </span>
               <span
                 ref={b2Ref}
