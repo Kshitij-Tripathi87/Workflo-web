@@ -7,8 +7,8 @@ import { plateSrcSet } from "../scene/plates";
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * Full-bleed environment plate behind a section with refined, varied lighting
- * tailored to each photographic plate's architectural composition.
+ * Full-bleed environment plate behind a section. The image is decorative and
+ * parallaxes slowly; the paragraph copy always sits on the scrimmed area.
  */
 export function SectionBackdrop({
   id,
@@ -29,9 +29,9 @@ export function SectionBackdrop({
 
     const tween = gsap.fromTo(
       image,
-      { yPercent: -4, scale: 1.04 },
+      { yPercent: -5, scale: 1.05 },
       {
-        yPercent: 4,
+        yPercent: 5,
         scale: 1,
         ease: "none",
         scrollTrigger: {
@@ -49,17 +49,6 @@ export function SectionBackdrop({
     };
   }, [reduced]);
 
-  // Lighting variations per plate to avoid repetitive dark washes
-  const overlayMap: Record<string, string> = {
-    execute: "bg-gradient-to-b from-black via-black/20 to-black/90",
-    observe: "bg-gradient-to-b from-black via-black/15 to-black/85",
-    verify: "bg-gradient-to-b from-black via-black/25 to-black/95",
-    prove: "bg-gradient-to-b from-black via-black/20 to-black/90",
-    trust: "bg-gradient-to-b from-black via-black/30 to-black/95",
-  };
-
-  const overlayGrad = overlayMap[id] || "bg-gradient-to-b from-black via-black/25 to-black/90";
-
   return (
     <div ref={ref} aria-hidden="true" className="absolute inset-0 overflow-hidden">
       <img
@@ -69,11 +58,11 @@ export function SectionBackdrop({
         alt=""
         loading="lazy"
         decoding="async"
-        className="absolute inset-x-0 h-[120%] w-full object-cover will-change-transform opacity-75"
+        className="absolute inset-x-0 h-[120%] w-full object-cover"
         style={{ top: "-10%", objectPosition: position }}
       />
-      <div className="absolute inset-0 bg-black/45" />
-      <div className={`absolute inset-0 ${overlayGrad}`} />
+      <div className="absolute inset-0 bg-black/62" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-black/25 to-black/90" />
     </div>
   );
 }

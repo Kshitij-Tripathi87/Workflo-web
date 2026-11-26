@@ -8,7 +8,7 @@ import { Navbar } from "./Navbar";
 gsap.registerPlugin(ScrollTrigger);
 
 const WORD_CLASS =
-  "hero-title absolute whitespace-nowrap text-[13vw] font-medium text-white md:text-[11.5vw] tracking-tight drop-shadow-2xl";
+  "hero-title absolute whitespace-nowrap text-[14vw] font-medium text-white md:text-[13vw]";
 
 /** One environment plate per cinematic phase, crossfaded by the master timeline. */
 const PLATES = [
@@ -27,7 +27,7 @@ function SplitLetters({ word }: { word: string }) {
           key={index}
           data-hero-char
           className="inline-block will-change-transform"
-          style={{ opacity: 0, transform: "translate3d(0, 20px, 0)" }}
+          style={{ opacity: 0, transform: "translate3d(0, 24px, 0)" }}
         >
           {char}
         </span>
@@ -83,7 +83,7 @@ export function Hero() {
       // Initial state of letter spans: hidden
       gsap.set([...a1Letters, ...a2Letters, ...a3Letters, ...b1Letters, ...b2Letters, ...b3Letters], {
         opacity: 0,
-        y: 20,
+        y: 24,
       });
 
       // Master timeline driven directly by scroll scrub
@@ -92,9 +92,9 @@ export function Hero() {
         scrollTrigger: {
           trigger: el,
           start: "top top",
-          end: "+=420%",
+          end: "+=450%",
           pin: screen,
-          scrub: 0.3,
+          scrub: 0.35,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
@@ -106,11 +106,11 @@ export function Hero() {
         const drift = PLATES[index]?.drift ?? 1;
         tl.fromTo(
           plate,
-          { scale: 1.14, xPercent: 1.8 * drift, yPercent: -1.0 },
+          { scale: 1.16, xPercent: 2.2 * drift, yPercent: -1.2 },
           {
             scale: 1.02,
-            xPercent: -1.8 * drift,
-            yPercent: 1.0,
+            xPercent: -2.2 * drift,
+            yPercent: 1.2,
             duration: 1,
             ease: "none",
           },
@@ -119,108 +119,111 @@ export function Hero() {
       });
 
       // Scroll cue fades out immediately on initial scroll
-      tl.to(cue, { opacity: 0, duration: 0.02 }, 0.0);
+      tl.to(cue, { opacity: 0, duration: 0.03 }, 0.0);
 
-      // --- PHASE 1: "release with proof" reveals letter by letter ---
-      // 1. "release" (0.01 - 0.12)
+      // --- SCROLL-DRIVEN LETTER-BY-LETTER REVEAL ---
+      // 1. "release" (r, e, l, e, a, s, e) - reveals letter by letter as user scrolls down
       tl.to(
         a1Letters,
         {
           opacity: 1,
           y: 0,
-          stagger: 0.014,
-          duration: 0.015,
+          stagger: 0.018,
+          duration: 0.02,
           ease: "none",
         },
         0.01
       );
 
-      // 2. "with" (0.13 - 0.20)
+      // 2. "with" (w, i, t, h) - reveals letter by letter at the side as user continues scrolling
       tl.to(
         a2Letters,
         {
           opacity: 1,
           y: 0,
-          stagger: 0.014,
-          duration: 0.015,
+          stagger: 0.018,
+          duration: 0.02,
           ease: "none",
         },
-        0.13
+        0.15
       );
 
-      // 3. "proof" (0.21 - 0.29)
+      // 3. "proof" (p, r, o, o, f) - reveals letter by letter as user scrolls further
       tl.to(
         a3Letters,
         {
           opacity: 1,
           y: 0,
-          stagger: 0.014,
-          duration: 0.015,
+          stagger: 0.018,
+          duration: 0.02,
           ease: "none",
         },
-        0.21
+        0.24
       );
 
-      // --- OBSERVE TRANSITION (0.34 - 0.44) ---
-      const atObserve = 0.34;
+      // --- OBSERVE PHASE ---
+      const atObserve = 0.38;
       tl.addLabel("observe", atObserve);
       const p1 = plateRefs.current[1];
       const p0 = plateRefs.current[0];
-      if (p1) tl.to(p1, { opacity: 1, duration: 0.04 }, atObserve);
-      if (p0) tl.set(p0, { opacity: 0 }, atObserve + 0.04);
+      if (p1) tl.to(p1, { opacity: 1, duration: 0.035 }, atObserve);
+      if (p0) tl.set(p0, { opacity: 0 }, atObserve + 0.035);
 
-      tl.to(media, { scale: 1.12, duration: 0.10 }, atObserve);
+      tl.to(media, { scale: 1.15, duration: 0.12 }, atObserve)
+        .to(a1, { y: "-12vh", duration: 0.08 }, atObserve)
+        .to(a2, { y: "-8vh", duration: 0.08 }, atObserve)
+        .to(a3, { y: "-4vh", duration: 0.08 }, atObserve);
 
-      // --- VERIFY & PHASE A CLEAN DISSOLVE (0.44 - 0.52) ---
-      // Instead of throwing words to opposite off-screen edges, cleanly dissolve Phase A together
-      const atVerify = 0.46;
+      // --- VERIFY PHASE ---
+      const atVerify = 0.50;
       tl.addLabel("verify", atVerify);
       const p2 = plateRefs.current[2];
-      if (p2) tl.to(p2, { opacity: 1, duration: 0.04 }, atVerify);
-      if (p1) tl.set(p1, { opacity: 0 }, atVerify + 0.04);
+      if (p2) tl.to(p2, { opacity: 1, duration: 0.035 }, atVerify);
+      if (p1) tl.set(p1, { opacity: 0 }, atVerify + 0.035);
 
-      tl.to(media, { scale: 1.22, duration: 0.10 }, atVerify)
-        .to([a1, a2, a3], { opacity: 0, y: -28, duration: 0.06 }, atVerify)
-        .to(overlay, { opacity: 0.35, duration: 0.08 }, atVerify);
+      tl.to(media, { scale: 1.3, duration: 0.12 }, atVerify)
+        .to(a1, { x: "-60vw", opacity: 0, duration: 0.12 }, atVerify)
+        .to(a2, { x: "60vw", opacity: 0, duration: 0.12 }, atVerify)
+        .to(a3, { y: "26vh", opacity: 0, duration: 0.12 }, atVerify)
+        .to(overlay, { opacity: 0.4, duration: 0.12 }, atVerify);
 
-      // --- PROVE PHASE: "knowing it's safe" reveals in a cohesive composition (0.54 - 0.76) ---
-      const atProve = 0.54;
+      // --- PROVE PHASE ("knowing it's safe" reveals letter by letter on scroll) ---
+      const atProve = 0.65;
       tl.addLabel("prove", atProve);
       const p3 = plateRefs.current[3];
-      if (p3) tl.to(p3, { opacity: 1, duration: 0.04 }, atProve);
-      if (p2) tl.set(p2, { opacity: 0 }, atProve + 0.04);
+      if (p3) tl.to(p3, { opacity: 1, duration: 0.035 }, atProve);
+      if (p2) tl.set(p2, { opacity: 0 }, atProve + 0.035);
 
-      tl.to(media, { scale: 1.34, duration: 0.14 }, atProve)
+      tl.to(media, { scale: 1.5, rotate: 3, duration: 0.15 }, atProve)
         .to(
           b1Letters,
-          { opacity: 1, y: 0, stagger: 0.012, duration: 0.015, ease: "none" },
+          { opacity: 1, y: 0, stagger: 0.015, duration: 0.02, ease: "none" },
           atProve + 0.02
         )
         .to(
           b2Letters,
-          { opacity: 1, y: 0, stagger: 0.012, duration: 0.015, ease: "none" },
+          { opacity: 1, y: 0, stagger: 0.015, duration: 0.02, ease: "none" },
           atProve + 0.08
         )
         .to(
           b3Letters,
-          { opacity: 1, y: 0, stagger: 0.012, duration: 0.015, ease: "none" },
+          { opacity: 1, y: 0, stagger: 0.015, duration: 0.02, ease: "none" },
           atProve + 0.14
         );
 
-      // --- TRUST & SETTLE PHASE (0.78 - 0.96) ---
-      // Let the text settle into a balanced, highly legible lockup before final dissolve
-      const atTrust = 0.80;
+      // --- TRUST PHASE ---
+      const atTrust = 0.85;
       tl.addLabel("trust", atTrust);
       const p4 = plateRefs.current[4];
-      if (p4) tl.to(p4, { opacity: 1, duration: 0.04 }, atTrust);
-      if (p3) tl.set(p3, { opacity: 0 }, atTrust + 0.04);
+      if (p4) tl.to(p4, { opacity: 1, duration: 0.035 }, atTrust);
+      if (p3) tl.set(p3, { opacity: 0 }, atTrust + 0.035);
 
       tl.to(overlay, { opacity: 0.85, duration: 0.12 }, atTrust)
         .to(wipe, { opacity: 1, duration: 0.01 }, atTrust)
         .to(wipe, { scaleY: 1, duration: 0.12 }, atTrust)
-        .to(nav, { scale: 0.95, opacity: 0.8, duration: 0.10 }, atTrust)
+        .to(nav, { scale: 0.9, duration: 0.12 }, atTrust)
         .to(media, { opacity: 0, duration: 0.12 }, atTrust)
-        .to([b1, b2, b3], { y: -30, opacity: 0, duration: 0.10 }, atTrust + 0.04);
+        .to([b1Letters, b2Letters, b3Letters], { y: "-10vh", opacity: 0, duration: 0.12, stagger: 0.01 }, atTrust);
 
       return tl;
     }, el);
@@ -257,9 +260,7 @@ export function Hero() {
             />
           ))}
 
-          {/* Scrim overlay with subtle metallic reflection depth */}
-          <div className="pointer-events-none absolute inset-0 bg-black/45" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+          <div className="pointer-events-none absolute inset-0 bg-black/55" />
         </div>
 
         <div
@@ -276,7 +277,7 @@ export function Hero() {
         />
 
         <div className="pointer-events-none relative z-20 h-full w-full">
-          <h1 className="sr-only">release with proof</h1>
+          <h1 className="sr-only">release</h1>
 
           <header
             ref={navRef}
@@ -285,12 +286,12 @@ export function Hero() {
             <Navbar />
           </header>
 
-          {/* Phase 1: Letter-by-letter entrance words */}
+          {/* Letter-by-letter scroll-scrubbed entrance words */}
           <span
             ref={a1Ref}
             data-hero-a
             aria-hidden="true"
-            className={`${WORD_CLASS} left-6 top-[20%] md:left-14`}
+            className={`${WORD_CLASS} left-4 top-[18%] md:left-10`}
           >
             <SplitLetters word="release" />
           </span>
@@ -298,7 +299,7 @@ export function Hero() {
             ref={a2Ref}
             data-hero-a
             aria-hidden="true"
-            className={`${WORD_CLASS} right-6 top-[38%] md:right-16`}
+            className={`${WORD_CLASS} right-4 top-[38%] md:right-10`}
           >
             <SplitLetters word="with" />
           </span>
@@ -306,19 +307,19 @@ export function Hero() {
             ref={a3Ref}
             data-hero-a
             aria-hidden="true"
-            className={`${WORD_CLASS} left-10 top-[56%] md:left-28`}
+            className={`${WORD_CLASS} left-[18%] top-[58%] md:left-[28%]`}
           >
             <SplitLetters word="proof" />
           </span>
 
-          {/* Phase 2: Letter-by-letter cohesive lockup: knowing it's safe */}
+          {/* Letter-by-letter scroll-scrubbed proof words */}
           {reduced ? null : (
             <>
               <span
                 ref={b1Ref}
                 data-hero-b
                 aria-hidden="true"
-                className={`${WORD_CLASS} left-6 top-[20%] md:left-14`}
+                className={`${WORD_CLASS} right-4 top-[18%] md:right-10`}
               >
                 <SplitLetters word="knowing" />
               </span>
@@ -326,7 +327,7 @@ export function Hero() {
                 ref={b2Ref}
                 data-hero-b
                 aria-hidden="true"
-                className={`${WORD_CLASS} right-6 top-[38%] md:right-16`}
+                className={`${WORD_CLASS} left-4 top-[38%] md:left-10`}
               >
                 <SplitLetters word="it's" />
               </span>
@@ -334,7 +335,7 @@ export function Hero() {
                 ref={b3Ref}
                 data-hero-b
                 aria-hidden="true"
-                className={`${WORD_CLASS} left-10 top-[56%] md:left-28`}
+                className={`${WORD_CLASS} right-[18%] top-[58%] md:right-[28%]`}
               >
                 <SplitLetters word="safe" />
               </span>
