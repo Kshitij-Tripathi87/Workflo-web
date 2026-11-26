@@ -150,10 +150,9 @@ export function About() {
             {PRINCIPLES.map((p) => (
               <div
                 key={p.index}
-                className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8 backdrop-blur"
+                className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-md p-8"
               >
-                <span className="font-mono text-xs text-white/40">{p.index} / PRINCIPLE</span>
-                <h3 className="mt-4 text-2xl font-medium text-white">{p.title}</h3>
+                <h3 className="text-2xl font-medium text-white">{p.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/70 font-light">{p.body}</p>
               </div>
             ))}
