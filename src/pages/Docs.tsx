@@ -833,7 +833,14 @@ print(f"Receipt verified: {is_valid}")`,
 
             {/* Expanded Content */}
             {openCards.lifecycle && (
-              <div className="border-t border-white/[0.06] p-6 pt-2">
+              <div className="border-t border-white/[0.06] p-6 pt-4">
+                <div className="mb-5 rounded-xl border border-white/[0.08] bg-black/50 p-3.5 text-xs text-white/70 font-light leading-relaxed">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-white font-semibold block mb-1">
+                    Illustrative Reference Benchmarks
+                  </span>
+                  Telemetry figures and timings displayed below are illustrative benchmarks recorded on a KVM microVM testbed executing sample test suites. Actual timings vary by workload.
+                </div>
+
                 {/* Stage Progress Bar / Grid */}
                 <div className="mb-6 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
                   {STAGES.map((s, idx) => (
@@ -1119,7 +1126,14 @@ print(f"Receipt verified: {is_valid}")`,
 
             {/* Expanded Content */}
             {openCards.receipt && (
-              <div className="border-t border-white/[0.06] p-6 pt-2">
+              <div className="border-t border-white/[0.06] p-6 pt-4">
+                <div className="mb-5 rounded-xl border border-white/[0.08] bg-black/50 p-3.5 text-xs text-white/70 font-light leading-relaxed">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-white font-semibold block mb-1">
+                    Sample Fixture Playground Notice
+                  </span>
+                  This interactive playground evaluates pre-recorded sample fixtures to demonstrate receipt structure and Ed25519 signature checks. For live production verification, run <code className="text-white">workflo verify ./receipt.json</code>.
+                </div>
+
                 {/* Sample Selector */}
                 <div className="mb-4 flex flex-wrap gap-2">
                   {SAMPLE_RECEIPTS.map((sample) => (

@@ -9,15 +9,15 @@ const PILLARS = [
   {
     id: "isolation",
     index: "01",
-    title: "Isolated MicroVM Runtime",
-    summary: "Sealed, ephemeral sandboxes booted in under 120ms with unshared memory and read-only base layers.",
+    title: "Isolated Execution Runtime",
+    summary: "Sealed, ephemeral sandboxes designed for fast microVM boot with unshared memory and read-only base layers.",
     details: [
       "Zero shared state between execution runs",
       "Memory ballooning with strict limits and cgroups v2 resource capping",
       "Ephemeral rootfs discarded immediately on completion",
-      "Hardware-level virtualization avoiding container escape vulnerabilities"
+      "Firecracker/KVM production target (Gate B acceptance) with dev namespace fallback"
     ],
-    tag: "FIRECRACKER / EPH_VIRT"
+    tag: "FIRECRACKER / ISOLATION"
   },
   {
     id: "policy",
@@ -251,8 +251,8 @@ export function Product() {
               className="mt-3 text-4xl font-medium tracking-tight text-white md:text-5xl"
             />
             <p className="mt-4 max-w-2xl text-base text-white/60">
-              CI pipelines answer: "did scripts exit without crashing?" Workflo answers: "did the code
-              respect its boundaries and is the release provably safe?"
+              CI pipelines answer: &ldquo;did scripts exit without crashing?&rdquo; Workflo answers: &ldquo;did the code
+              respect its boundaries and what verifiable evidence was produced?&rdquo;
             </p>
           </div>
 

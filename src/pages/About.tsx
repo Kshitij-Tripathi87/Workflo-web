@@ -124,8 +124,9 @@ export function About() {
               </p>
               <p className="text-white font-normal">
                 Workflo was founded on a simple conviction: software execution must be isolated,
-                observed, verified, and sealed with cryptographic proof before it is allowed to touch
-                production infrastructure.
+                observed, verified for clean teardown, and sealed with cryptographic proof. A signed
+                receipt proves what ran and what was observed — empowering human engineers to make
+                informed release decisions.
               </p>
             </div>
           </div>
@@ -176,24 +177,24 @@ export function About() {
 
           <div className="grid gap-6 md:grid-cols-3">
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-white">NON-CUSTODIAL EXECUTION</h4>
+              <h4 className="font-mono text-sm text-white">EPHEMERAL ISOLATION</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
-                Your proprietary code runs inside RAM-backed ephemeral microVMs. We never store source
-                code on persistent disks.
+                Execution environments are scoped to a single run and torn down on completion, with
+                zero shared workspace state between jobs.
               </p>
             </div>
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
               <h4 className="font-mono text-sm text-white">CRYPTOGRAPHIC INTEGRITY</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
-                Receipts are sealed with Ed25519 digital signatures. Once generated, an execution record
-                is mathematically immutable.
+                Receipts are sealed with Ed25519 digital signatures and SHA-256 Merkle roots. Once
+                generated, an execution record is tamper-evident.
               </p>
             </div>
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur">
-              <h4 className="font-mono text-sm text-white">SOC2 & AUDIT READY</h4>
+              <h4 className="font-mono text-sm text-white">INDEPENDENT EVIDENCE</h4>
               <p className="mt-3 text-xs leading-relaxed text-white/70">
-                Provides the exact attestation evidence required by security and compliance officers for
-                automated software delivery pipelines.
+                Produces structured execution receipts—capturing commit SHA, policy enforcement, and
+                teardown verification—for human release review.
               </p>
             </div>
           </div>

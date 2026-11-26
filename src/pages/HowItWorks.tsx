@@ -276,8 +276,8 @@ export function HowItWorks() {
               className="mt-3 text-4xl font-medium tracking-tight text-white md:text-5xl"
             />
             <p className="mt-4 max-w-2xl text-base text-white/60">
-              Security should not slow down deployment. Workflo hypervisors are optimized for fast-start
-              microVM execution.
+              Security should not slow down deployment. Workflo hypervisors are engineered for fast-start
+              microVM execution. Figures below represent illustrative target benchmarks on KVM testbeds.
             </p>
           </div>
 
