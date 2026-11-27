@@ -38,7 +38,8 @@ export async function handleSubmission(
 
     const reference = crypto.randomUUID();
     const createdAt = new Date().toISOString();
-    const { website: _honeypot, ...payload } = input;
+    const payload: Record<string, unknown> = { ...input };
+    delete payload.website;
     await persistSubmission(
       env.DB,
       reference,
