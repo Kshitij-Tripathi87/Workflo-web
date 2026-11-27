@@ -24,7 +24,7 @@
 
 ## Retention Cleanup
 
-`workflo-web-retention-cleanup` executes `cleanupExpiredSubmissions` daily at `03:00 UTC`, purging expired `rate_limit_buckets`, `api_idempotency`, and `submissions` (cascading to `notification_outbox` and `submission_events`), and writes an audit row into `retention_runs`.
+`workflo-web-retention-cleanup` executes `cleanupExpiredSubmissions` daily at `03:00 UTC` across staging and production using `Promise.allSettled` failure isolation (so staging issues never block production cleanup), purging expired `rate_limit_buckets`, `api_idempotency`, and `submissions` (cascading to `notification_outbox` and `submission_events`), and writes an audit row into `retention_runs`.
 
 ## Rollback
 

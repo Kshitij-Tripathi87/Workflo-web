@@ -27,7 +27,7 @@
 
 ## Rate Limiting & Edge Protection
 
-- While operating on `*.pages.dev` without a custom Zone, Cloudflare Zone WAF rulesets do not apply directly to `pages.dev`. Rate limiting (`RATE_LIMIT_MAX_PER_MINUTE=10`, returning HTTP `429` + `Retry-After: 60`) is enforced at the application edge via D1 (`rate_limit_buckets`) using SHA-256-hashed client IPs.
+- While operating on `*.pages.dev` without a custom Zone, Cloudflare Zone WAF rulesets do not apply directly to `pages.dev`. Rate limiting (`RATE_LIMIT_MAX_PER_MINUTE=10`, returning HTTP `429` + `Retry-After: 60`) is enforced at the application edge via D1 (`rate_limit_buckets`) using sliding-window counter estimation and keyed HMAC-SHA256 (`RATE_LIMIT_SECRET`, falling back to a runtime salt) over `CF-Connecting-IP` (strictly ignoring unverified `X-Forwarded-For`).
 - Once a custom domain Zone is onboarded, run `scripts/cloudflare/configure-waf.sh` in addition to the built-in limiter.
 
 ## Production Cutover Checklist

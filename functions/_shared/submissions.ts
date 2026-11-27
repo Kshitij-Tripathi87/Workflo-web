@@ -106,12 +106,38 @@ export async function persistSubmission(
     );
   }
 
-  const results = await db.batch(statements);
-  if (results.length !== statements.length || results.some((result) => !result.success)) {
-    throw new Error("submission_persistence_failed");
-  }
+  try {
+    const results = await db.batch(statements);
+    if (results.length !== statements.length || results.some((result) => !result.success)) {
+      throw new Error("submission_persistence_failed");
+    }
 
-  return { reference: id, duplicate: false };
+    return { reference: id, duplicate: false };
+  } catch (error) {
+    // Concurrency race handling: if two concurrent identical requests raced past the
+    // initial idempotency check, the unique constraint on (idempotency_key, kind) will fail
+    // for the losing request. Re-read the committed idempotency record rather than returning 503.
+    if (idempotencyKey && requestHash) {
+      const concurrent = await db
+        .prepare(
+          `SELECT submission_id, request_hash, expires_at
+           FROM api_idempotency
+           WHERE idempotency_key = ? AND kind = ?
+           LIMIT 1`,
+        )
+        .bind(idempotencyKey, kind)
+        .first<IdempotencyRow>();
+
+      if (concurrent) {
+        if (concurrent.request_hash !== requestHash) {
+          throw new HttpInputError(409, "idempotency_key_conflict");
+        }
+        return { reference: concurrent.submission_id, duplicate: true };
+      }
+    }
+
+    throw error;
+  }
 }
 
 export async function cleanupExpiredSubmissions(

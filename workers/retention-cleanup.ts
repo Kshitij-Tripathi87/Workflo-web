@@ -15,17 +15,58 @@ export interface ExecutionContextLike {
   waitUntil(promise: Promise<unknown>): void;
 }
 
-export async function runScheduledCleanup(env: RetentionWorkerEnv, nowEpoch?: number) {
-  const results: Record<string, { deletedSubmissions: number }> = {};
+export type RetentionTargetResult =
+  | { status: "fulfilled"; deletedSubmissions: number }
+  | { status: "rejected"; error: string };
 
-  if (env.STAGING_DB) {
-    results.staging = await cleanupExpiredSubmissions(env.STAGING_DB, nowEpoch);
-  }
-  if (env.PRODUCTION_DB) {
-    results.production = await cleanupExpiredSubmissions(env.PRODUCTION_DB, nowEpoch);
-  }
+export interface RetentionSummary {
+  staging?: RetentionTargetResult;
+  production?: RetentionTargetResult;
+  hasFailures: boolean;
+}
 
-  return results;
+export async function runScheduledCleanup(
+  env: RetentionWorkerEnv,
+  nowEpoch?: number,
+): Promise<RetentionSummary> {
+  const targets: Array<{ name: "staging" | "production"; db: D1Database }> = [];
+  if (env.STAGING_DB) targets.push({ name: "staging", db: env.STAGING_DB });
+  if (env.PRODUCTION_DB) targets.push({ name: "production", db: env.PRODUCTION_DB });
+
+  const settlements = await Promise.allSettled(
+    targets.map((target) => cleanupExpiredSubmissions(target.db, nowEpoch)),
+  );
+
+  const summary: RetentionSummary = { hasFailures: false };
+
+  settlements.forEach((result, idx) => {
+    const targetName = targets[idx].name;
+    if (result.status === "fulfilled") {
+      summary[targetName] = {
+        status: "fulfilled",
+        deletedSubmissions: result.value.deletedSubmissions,
+      };
+    } else {
+      summary.hasFailures = true;
+      const errorMsg =
+        result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason ?? "retention_cleanup_failed");
+      summary[targetName] = {
+        status: "rejected",
+        error: errorMsg,
+      };
+      console.error(
+        JSON.stringify({
+          event: "retention_cleanup_target_failed",
+          database: targetName,
+          error: errorMsg,
+        }),
+      );
+    }
+  });
+
+  return summary;
 }
 
 export default {
@@ -46,7 +87,21 @@ export default {
   ): Promise<void> {
     ctx.waitUntil(
       runScheduledCleanup(env).then((summary) => {
-        console.log(JSON.stringify({ event: "retention_cleanup_completed", summary }));
+        if (summary.hasFailures) {
+          console.error(
+            JSON.stringify({
+              event: "retention_cleanup_finished_with_failures",
+              summary,
+            }),
+          );
+        } else {
+          console.log(
+            JSON.stringify({
+              event: "retention_cleanup_completed",
+              summary,
+            }),
+          );
+        }
       }),
     );
   },
