@@ -1,6 +1,15 @@
 name: Cloudflare Functions CI
 
 on:
+  push:
+    branches:
+      - feat/cloudflare-pages-backend
+    paths:
+      - "functions/**"
+      - "migrations/**"
+      - "cloudflare/**"
+      - "scripts/cloudflare/**"
+      - ".github/workflows/cloudflare-*.yml"
   pull_request:
     paths:
       - "functions/**"
