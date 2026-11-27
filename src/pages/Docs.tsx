@@ -634,7 +634,7 @@ print(f"Receipt verified: {is_valid}")`,
               ABOUT WORKFLO
             </div>
             <p className="text-sm md:text-base text-white/90 font-light leading-relaxed">
-              Workflo provides deterministic, cryptographically verified software execution. Every release runs inside an isolated microVM sandbox and produces a signed Ed25519 audit receipt detailing every syscall, network packet, and teardown verification.
+              Workflo brings control and verifiability to software execution. It runs code in isolated environments, captures execution evidence, verifies sandbox teardown and generates receipts, giving engineering teams a traceable record of what ran, what happened and what could be verified.
             </p>
           </div>
 
