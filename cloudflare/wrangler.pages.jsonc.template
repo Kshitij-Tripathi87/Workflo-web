@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "workflo-site",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-11-27",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "workflo-web-staging",
+      "database_id": "__D1_DATABASE_ID__",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "vars": {
+    "SUBMISSION_RETENTION_DAYS": "365"
+  }
+}
