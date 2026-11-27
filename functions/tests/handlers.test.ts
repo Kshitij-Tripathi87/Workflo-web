@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import retentionWorker, { runScheduledCleanup } from "../../workers/retention-cleanup";
 import { onRequest as apiMiddleware } from "../api/_middleware";
 import { onRequest as contactHandler } from "../api/v1/contact";
 import { onRequest as earlyAccessHandler } from "../api/v1/early-access";
@@ -50,12 +51,20 @@ type RetentionRunRow = {
   notes: string | null;
 };
 
+type RateLimitRow = {
+  bucket_key: string;
+  window_start: number;
+  request_count: number;
+  expires_at: number;
+};
+
 class MockD1Database implements D1Database {
   submissions: SubmissionRow[] = [];
   outbox: OutboxRow[] = [];
   events: EventRow[] = [];
   idempotency: IdempotencyRow[] = [];
   retentionRuns: RetentionRunRow[] = [];
+  rateLimits: RateLimitRow[] = [];
   failNextBatch = false;
 
   prepare(query: string): D1PreparedStatement {
@@ -68,6 +77,28 @@ class MockD1Database implements D1Database {
         return stmt;
       },
       async first<T = unknown>(): Promise<T | null> {
+        if (query.includes("INTO rate_limit_buckets")) {
+          const [bucketKey, windowStart, expiresAt] = bound as [string, number, number];
+          const existing = db.rateLimits.find((r) => r.bucket_key === bucketKey);
+          if (!existing) {
+            const inserted = {
+              bucket_key: bucketKey,
+              window_start: windowStart,
+              request_count: 1,
+              expires_at: expiresAt,
+            };
+            db.rateLimits.push(inserted);
+            return inserted as T;
+          }
+          if (existing.window_start === windowStart) {
+            existing.request_count += 1;
+          } else {
+            existing.window_start = windowStart;
+            existing.request_count = 1;
+          }
+          existing.expires_at = expiresAt;
+          return existing as T;
+        }
         if (query.includes("FROM api_idempotency")) {
           const [key, kind] = bound as [string, string];
           const found = db.idempotency.find(
@@ -78,6 +109,12 @@ class MockD1Database implements D1Database {
         return null;
       },
       async run<T = unknown>() {
+        if (query.startsWith("DELETE FROM rate_limit_buckets WHERE expires_at")) {
+          const [now] = bound as [number];
+          const before = db.rateLimits.length;
+          db.rateLimits = db.rateLimits.filter((row) => row.expires_at > now);
+          return { success: true, meta: { changes: before - db.rateLimits.length } };
+        }
         if (query.startsWith("DELETE FROM api_idempotency WHERE idempotency_key")) {
           const [key, kind] = bound as [string, string];
           db.idempotency = db.idempotency.filter(
@@ -283,7 +320,7 @@ test("contact and early-access persist submissions, outbox, and audit events", a
   const contactRes = await contactHandler({
     request: new Request("https://workflo-site.pages.dev/api/v1/contact", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "cf-connecting-ip": "203.0.113.10" },
       body: JSON.stringify(VALID_CONTACT),
     }),
     env,
@@ -296,7 +333,7 @@ test("contact and early-access persist submissions, outbox, and audit events", a
   const eaRes = await earlyAccessHandler({
     request: new Request("https://workflo-site.pages.dev/api/v1/early-access", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "cf-connecting-ip": "203.0.113.10" },
       body: JSON.stringify(VALID_EARLY_ACCESS),
     }),
     env,
@@ -316,7 +353,6 @@ test("honeypot submissions accept cleanly without writing to D1", async () => {
     body: JSON.stringify({ ...VALID_CONTACT, website: "https://spam.example" }),
   });
 
-  // Note: validateContact enforces website max 0, so a filled honeypot fails validation OR silent-drops.
   const res = await contactHandler({ request: req, env: { DB: db } });
   assert.ok(res.status === 400 || res.status === 202);
   assert.equal(db.submissions.length, 0);
@@ -390,35 +426,91 @@ test("Idempotency-Key avoids duplicate writes and flags conflicting payloads", a
   assert.equal(conflict.status, 409);
 });
 
-test("cleanupExpiredSubmissions removes expired records and records audit run", async () => {
+test("rate limit enforces 429 after window quota is exceeded without storing raw IP", async () => {
   const db = new MockD1Database();
-  db.submissions.push(
-    {
-      id: "expired-1",
-      kind: "contact",
-      created_at: "2025-01-01T00:00:00Z",
-      expires_at: 1_700_000_000,
-      status: "received",
-      payload_json: "{}",
-      notification_status: "pending",
-    },
-    {
-      id: "active-1",
-      kind: "contact",
-      created_at: "2026-11-27T00:00:00Z",
-      expires_at: 2_000_000_000,
-      status: "received",
-      payload_json: "{}",
-      notification_status: "pending",
-    },
-  );
+  const env: Env = { DB: db, RATE_LIMIT_MAX_PER_MINUTE: "2" };
 
-  const result = await cleanupExpiredSubmissions(db, 1_800_000_000);
-  assert.equal(result.deletedSubmissions, 1);
-  assert.equal(db.submissions.length, 1);
-  assert.equal(db.submissions[0].id, "active-1");
-  assert.equal(db.retentionRuns.length, 1);
-  assert.equal(db.retentionRuns[0].status, "ok");
+  const send = () =>
+    contactHandler({
+      request: new Request("https://workflo-site.pages.dev/api/v1/contact", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "cf-connecting-ip": "198.51.100.42",
+        },
+        body: JSON.stringify(VALID_CONTACT),
+      }),
+      env,
+    });
+
+  const r1 = await send();
+  const r2 = await send();
+  const r3 = await send();
+
+  assert.equal(r1.status, 202);
+  assert.equal(r1.headers.get("x-ratelimit-remaining"), "1");
+  assert.equal(r2.status, 202);
+  assert.equal(r2.headers.get("x-ratelimit-remaining"), "0");
+  assert.equal(r3.status, 429);
+  assert.equal(r3.headers.get("retry-after"), "60");
+
+  // Confirm raw IP is hashed, never stored plaintext
+  assert.equal(db.rateLimits.length, 1);
+  assert.equal(db.rateLimits[0].bucket_key.includes("198.51.100.42"), false);
+});
+
+test("cleanupExpiredSubmissions and retention worker purge expired data and return 404 on HTTP", async () => {
+  const stagingDb = new MockD1Database();
+  const prodDb = new MockD1Database();
+
+  stagingDb.submissions.push({
+    id: "expired-s1",
+    kind: "contact",
+    created_at: "2025-01-01T00:00:00Z",
+    expires_at: 1_700_000_000,
+    status: "received",
+    payload_json: "{}",
+    notification_status: "pending",
+  });
+  stagingDb.outbox.push({
+    id: "outbox-s1",
+    submission_id: "expired-s1",
+    status: "pending",
+    created_at: "2025-01-01T00:00:00Z",
+    attempt_count: 0,
+  });
+  stagingDb.rateLimits.push({
+    bucket_key: "old-bucket",
+    window_start: 1_700_000_000,
+    request_count: 3,
+    expires_at: 1_700_000_120,
+  });
+
+  prodDb.submissions.push({
+    id: "active-p1",
+    kind: "early_access",
+    created_at: "2026-11-27T00:00:00Z",
+    expires_at: 2_000_000_000,
+    status: "received",
+    payload_json: "{}",
+    notification_status: "pending",
+  });
+
+  const summary = await runScheduledCleanup(
+    { STAGING_DB: stagingDb, PRODUCTION_DB: prodDb },
+    1_800_000_000,
+  );
+  assert.equal(summary.staging.deletedSubmissions, 1);
+  assert.equal(summary.production.deletedSubmissions, 0);
+  assert.equal(stagingDb.outbox.length, 0);
+  assert.equal(stagingDb.rateLimits.length, 0);
+  assert.equal(prodDb.submissions.length, 1);
+
+  const directCleanup = await cleanupExpiredSubmissions(prodDb, 1_800_000_000);
+  assert.equal(directCleanup.deletedSubmissions, 0);
+
+  const httpRes = await retentionWorker.fetch();
+  assert.equal(httpRes.status, 404);
 });
 
 test("API middleware converts SPA HTML fallback to JSON 404", async () => {

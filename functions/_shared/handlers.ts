@@ -8,6 +8,7 @@ import {
   parseJson,
   sha256Hex,
 } from "./http";
+import { enforceRateLimit } from "./rate-limit";
 import { persistSubmission, submissionExpiryEpoch, type SubmissionKind } from "./submissions";
 import type { Env } from "./types";
 import { validateContact, validateEarlyAccess } from "./validation";
@@ -31,6 +32,8 @@ export async function handleSubmission(
   try {
     const idempotencyKey = parseIdempotencyKey(request);
     const body = await parseJson(request);
+    const limit = await enforceRateLimit(env.DB, request, env, kind);
+
     const validation = kind === "contact" ? validateContact(body) : validateEarlyAccess(body);
     if (!validation.success) {
       return jsonResponse(
@@ -65,12 +68,14 @@ export async function handleSubmission(
       { idempotencyKey, requestHash },
     );
 
-    return jsonResponse(
+    const response = jsonResponse(
       202,
       { accepted: true, reference: persisted.reference, requestId: id },
       request,
       id,
     );
+    response.headers.set("x-ratelimit-remaining", String(limit.remaining));
+    return response;
   } catch (error) {
     const inputError = error instanceof HttpInputError ? error : undefined;
     console.error(JSON.stringify({
@@ -78,11 +83,15 @@ export async function handleSubmission(
       requestId: id,
       name: error instanceof Error ? error.name : "unknown",
     }));
-    return jsonResponse(
+    const response = jsonResponse(
       inputError?.statusCode ?? 503,
       { error: inputError?.code ?? "submission_unavailable", requestId: id },
       request,
       id,
     );
+    if (inputError?.statusCode === 429) {
+      response.headers.set("retry-after", "60");
+    }
+    return response;
   }
 }

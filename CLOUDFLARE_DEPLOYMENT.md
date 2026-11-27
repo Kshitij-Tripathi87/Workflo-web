@@ -1,12 +1,13 @@
 # Cloudflare Deployment Guide
 
-## Prerequisites
+## Active Resources
 
-1. **Cloudflare API Token** stored securely as GitHub Actions secret `CLOUDFLARE_API_TOKEN` with:
-   - `Account > D1 > Edit`
-   - `Account > Cloudflare Pages > Edit`
-2. **Cloudflare Account ID** stored as GitHub Actions variable `CLOUDFLARE_ACCOUNT_ID`.
-3. Never commit API tokens, passwords, or private keys into source files or chat logs.
+| Environment | Resource | Name / Identifier | Status |
+| :--- | :--- | :--- | :--- |
+| Staging (`preview`) | Cloudflare Pages | `workflo-site` (`workflo-site-3av.pages.dev`) | Live (`feat/cloudflare-pages-backend`) |
+| Staging (`preview`) | Cloudflare D1 (`DB`) | `workflo-web-staging` (`9db21a01-4a2d-4548-9bc7-1f62977a7785`) | Applied (`0001`–`0003`) |
+| Production (`production`) | Cloudflare D1 (`DB`) | `workflo-web-production` (`2cb08cf0-2c0e-4fef-9d40-d927ad49a329`) | Applied (`0001`–`0003`), bound to `production` |
+| Shared Cron | Cloudflare Worker | `workflo-web-retention-cleanup` (`0 3 * * *` UTC) | Daily expiry cleanup across both DBs |
 
 ## Pages Build Configuration
 
@@ -16,32 +17,23 @@
 | Production branch | `main` |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
-| Functions directory | `/functions` (automatically detected at repo root) |
+| Functions directory | `/functions` |
 
-## Provisioning & Migration Workflow
+## Prerequisites for Automated CI Deployments
 
-1. **Provision staging resources & preview deployment** via `.github/workflows/cloudflare-staging.yml` (`scripts/cloudflare/provision-staging.sh`), or manually with Wrangler:
-   ```bash
-   export CLOUDFLARE_API_TOKEN="<token>"
-   export CLOUDFLARE_ACCOUNT_ID="<account-id>"
-   bash scripts/cloudflare/provision-staging.sh
-   bash scripts/cloudflare/migrate-production.sh workflo-web-staging wrangler.jsonc
-   npx --yes wrangler@4 pages deploy dist --project-name workflo-site --branch feat/cloudflare-pages-backend --config wrangler.jsonc
-   ```
-2. **Local development with D1 bindings**:
-   ```bash
-   npm run build
-   # Copy cloudflare/wrangler.pages.jsonc.template to wrangler.jsonc (ignored by git)
-   bash scripts/cloudflare/migrate-local.sh workflo-web-staging wrangler.jsonc
-   npx --yes wrangler@4 pages dev dist --config wrangler.jsonc --d1 DB=workflo-web-staging
-   ```
-3. **Verify deployment**:
-   ```bash
-   bash scripts/cloudflare/verify-deployment.sh https://feat-cloudflare-pages-backend.workflo-site.pages.dev
-   ```
+1. **Cloudflare API Token** stored securely as GitHub Actions secret `CLOUDFLARE_API_TOKEN` (`Account > D1 > Edit`, `Account > Cloudflare Pages > Edit`).
+2. **Cloudflare Account ID** stored as GitHub Actions variable `CLOUDFLARE_ACCOUNT_ID`.
+3. Never commit API tokens, passwords, or private keys into source files or chat logs.
 
-## Separate Systems & Deferred Capabilities
+## Rate Limiting & Edge Protection
 
-- **Workflo Execution Platform** remains isolated on dedicated execution infrastructure; it never shares the website D1 database or receives traffic from website endpoints.
-- **Email notifications (Proton destination)**: `notification_outbox` records are durably queued in D1. Outbound email workers and R2 buckets are deferred until a custom sending domain is onboarded to Cloudflare DNS and the Proton inbox destination is verified.
-- **Production cutover**: Only create `workflo-web-production` D1 and deploy `main` after staging API, validation, idempotency, and persistence checks pass. Keep AWS CDK stacks intact until cutover sign-off.
+- While operating on `*.pages.dev` without a custom Zone, Cloudflare Zone WAF rulesets do not apply directly to `pages.dev`. Rate limiting (`RATE_LIMIT_MAX_PER_MINUTE=10`, returning HTTP `429` + `Retry-After: 60`) is enforced at the application edge via D1 (`rate_limit_buckets`) using SHA-256-hashed client IPs.
+- Once a custom domain Zone is onboarded, run `scripts/cloudflare/configure-waf.sh` in addition to the built-in limiter.
+
+## Production Cutover Checklist
+
+1. Verify staging preview API (`verify-deployment.sh`), rate limit `429` enforcement, outbox recording, and Cron retention worker schedule.
+2. Confirm `workflo-web-production` schema migrations (`0001`–`0003`) and Pages `production` binding (`DB`).
+3. Merge `feat/cloudflare-pages-backend` into `main` to deploy the `production` branch.
+4. Run `verify-deployment.sh` against the live production URL.
+5. Keep legacy AWS CDK stacks intact until production cutover verification completes.

@@ -125,6 +125,11 @@ export async function cleanupExpiredSubmissions(
 
   try {
     await db
+      .prepare("DELETE FROM rate_limit_buckets WHERE expires_at <= ?")
+      .bind(nowEpoch)
+      .run();
+
+    await db
       .prepare("DELETE FROM api_idempotency WHERE expires_at <= ?")
       .bind(nowEpoch)
       .run();

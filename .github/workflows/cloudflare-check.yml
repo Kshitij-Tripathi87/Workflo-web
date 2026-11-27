@@ -7,6 +7,7 @@ on:
       - feat/cloudflare-pages-backend
     paths:
       - "functions/**"
+      - "workers/**"
       - "migrations/**"
       - "cloudflare/**"
       - "scripts/cloudflare/**"
@@ -14,6 +15,7 @@ on:
   pull_request:
     paths:
       - "functions/**"
+      - "workers/**"
       - "migrations/**"
       - "cloudflare/**"
       - "scripts/cloudflare/**"
@@ -45,10 +47,11 @@ jobs:
         run: bash scripts/cloudflare/check-protected-paths.sh origin/main
       - name: Verify frontend build
         run: npm run build
-      - name: Typecheck Pages Functions
+      - name: Typecheck Pages Functions and Retention Worker
         run: >
           npx tsc --noEmit --strict --target ES2022 --module ESNext
           --moduleResolution Bundler --lib ES2022,DOM,DOM.Iterable
-          --skipLibCheck functions/_shared/*.ts functions/api/_middleware.ts functions/api/v1/*.ts
+          --skipLibCheck functions/_shared/*.ts functions/api/_middleware.ts
+          functions/api/v1/*.ts workers/*.ts
       - name: Run API & validation tests
         run: npx --yes tsx@4 --test functions/tests/*.test.ts

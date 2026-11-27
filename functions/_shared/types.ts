@@ -14,6 +14,7 @@ export interface D1Database {
 export interface Env {
   DB?: D1Database;
   SUBMISSION_RETENTION_DAYS?: string;
+  RATE_LIMIT_MAX_PER_MINUTE?: string;
 }
 
 export interface PagesContext {
