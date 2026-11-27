@@ -86,6 +86,40 @@ class MockD1Database implements D1Database {
           );
           return (found ?? null) as T | null;
         }
+        if (query.includes("INTO rate_limit_buckets")) {
+          const [currentBucketKey, currentWindowStart, expiresAt, prevBucketKey, prevWeight, maxRequests] = bound as [
+            string,
+            number,
+            number,
+            string,
+            number,
+            number,
+          ];
+          const prevRow = db.rateLimits.find((r) => r.bucket_key === prevBucketKey);
+          const prevCount = prevRow ? prevRow.request_count : 0;
+          const weightedPrev = Math.floor(prevCount * Number(prevWeight));
+
+          const existing = db.rateLimits.find((r) => r.bucket_key === currentBucketKey);
+          const currentCount = existing ? existing.request_count : 0;
+
+          if (currentCount + weightedPrev >= maxRequests) {
+            return null;
+          }
+
+          if (!existing) {
+            db.rateLimits.push({
+              bucket_key: currentBucketKey,
+              window_start: currentWindowStart,
+              request_count: 1,
+              expires_at: expiresAt,
+            });
+            return { request_count: 1, prev_count: prevCount } as T;
+          } else {
+            existing.request_count += 1;
+            existing.expires_at = expiresAt;
+            return { request_count: existing.request_count, prev_count: prevCount } as T;
+          }
+        }
         return null;
       },
       async all<T = unknown>() {
@@ -100,22 +134,6 @@ class MockD1Database implements D1Database {
         if (db.failNextRun) {
           db.failNextRun = false;
           throw new Error("D1_RUN_ERROR");
-        }
-        if (query.includes("INTO rate_limit_buckets")) {
-          const [bucketKey, windowStart, expiresAt] = bound as [string, number, number];
-          const existing = db.rateLimits.find((r) => r.bucket_key === bucketKey);
-          if (!existing) {
-            db.rateLimits.push({
-              bucket_key: bucketKey,
-              window_start: windowStart,
-              request_count: 1,
-              expires_at: expiresAt,
-            });
-          } else {
-            existing.request_count += 1;
-            existing.expires_at = expiresAt;
-          }
-          return { success: true, meta: { changes: 1 } };
         }
         if (query.startsWith("DELETE FROM rate_limit_buckets WHERE expires_at")) {
           const [now] = bound as [number];
@@ -258,6 +276,8 @@ class MockD1Database implements D1Database {
   }
 }
 
+const TEST_RATE_LIMIT_SECRET = "test-secret-salt-key-42";
+
 const VALID_CONTACT = {
   name: "Ada Example",
   email: "ada@example.com",
@@ -332,7 +352,11 @@ test("oversized payloads return 413 without hitting DB", async () => {
 
 test("contact and early-access persist submissions, outbox, and audit events", async () => {
   const db = new MockD1Database();
-  const env: Env = { DB: db, SUBMISSION_RETENTION_DAYS: "90" };
+  const env: Env = {
+    DB: db,
+    SUBMISSION_RETENTION_DAYS: "90",
+    RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET,
+  };
 
   const contactRes = await contactHandler({
     request: new Request("https://workflo-site.pages.dev/api/v1/contact", {
@@ -370,7 +394,10 @@ test("honeypot submissions accept cleanly without writing to D1", async () => {
     body: JSON.stringify({ ...VALID_CONTACT, website: "https://spam.example" }),
   });
 
-  const res = await contactHandler({ request: req, env: { DB: db } });
+  const res = await contactHandler({
+    request: req,
+    env: { DB: db, RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET },
+  });
   assert.ok(res.status === 400 || res.status === 202);
   assert.equal(db.submissions.length, 0);
 });
@@ -399,7 +426,7 @@ test("missing DB binding or D1 error returns 503 and logs zero PII", async () =>
         headers: { "content-type": "application/json" },
         body: JSON.stringify(VALID_EARLY_ACCESS),
       }),
-      env: { DB: db },
+      env: { DB: db, RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET },
     });
     assert.equal(resDbFail.status, 503);
 
@@ -413,7 +440,7 @@ test("missing DB binding or D1 error returns 503 and logs zero PII", async () =>
 
 test("Idempotency-Key avoids duplicate writes and flags conflicting payloads", async () => {
   const db = new MockD1Database();
-  const env: Env = { DB: db };
+  const env: Env = { DB: db, RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET };
 
   const makeReq = (payload: unknown, key = "req-retry-001") =>
     new Request("https://workflo-site.pages.dev/api/v1/contact", {
@@ -445,7 +472,11 @@ test("Idempotency-Key avoids duplicate writes and flags conflicting payloads", a
 
 test("rate limit enforces 429 after window quota is exceeded without storing raw IP", async () => {
   const db = new MockD1Database();
-  const env: Env = { DB: db, RATE_LIMIT_MAX_PER_MINUTE: "2" };
+  const env: Env = {
+    DB: db,
+    RATE_LIMIT_MAX_PER_MINUTE: "2",
+    RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET,
+  };
 
   const send = () =>
     contactHandler({
@@ -569,7 +600,7 @@ test("retention worker isolates staging failure so production cleanup succeeds",
 
 test("concurrent duplicate submissions with identical idempotency key resolve cleanly without 503", async () => {
   const db = new MockD1Database();
-  const env: Env = { DB: db };
+  const env: Env = { DB: db, RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET };
 
   const payload = { ...VALID_CONTACT };
   const key = "race-key-123";
@@ -644,7 +675,11 @@ test("persistSubmission handles concurrent unique constraint collision on api_id
 
 test("rate limiter enforces sliding-window boundary smoothing across clock minutes", async () => {
   const db = new MockD1Database();
-  const env: Env = { DB: db, RATE_LIMIT_MAX_PER_MINUTE: "10" };
+  const env: Env = {
+    DB: db,
+    RATE_LIMIT_MAX_PER_MINUTE: "10",
+    RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET,
+  };
   const req = new Request("https://workflo-site.pages.dev/api/v1/contact", {
     method: "POST",
     headers: { "content-type": "application/json", "cf-connecting-ip": "203.0.113.55" },
@@ -694,7 +729,10 @@ test("rate limiter uses keyed HMAC-SHA256 and ignores spoofed X-Forwarded-For", 
       body: JSON.stringify(VALID_CONTACT),
     });
 
-  await contactHandler({ request: makeSpoofedReq(), env: { DB: db } });
+  await contactHandler({
+    request: makeSpoofedReq(),
+    env: { DB: db, RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET },
+  });
   assert.equal(db.rateLimits.length, 1);
   const keyDefault = db.rateLimits[0].bucket_key;
   assert.equal(keyDefault.includes("8.8.8.8"), false);
@@ -708,6 +746,78 @@ test("rate limiter uses keyed HMAC-SHA256 and ignores spoofed X-Forwarded-For", 
   const keyCustom = db2.rateLimits[0].bucket_key;
 
   assert.notEqual(keyDefault, keyCustom);
+});
+
+test("enforceRateLimit and handlers reject when RATE_LIMIT_SECRET is missing or empty", async () => {
+  const db = new MockD1Database();
+  const req = new Request("https://workflo-site.pages.dev/api/v1/contact", {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": "1.2.3.4" },
+    body: JSON.stringify(VALID_CONTACT),
+  });
+
+  // Direct call with missing secret throws rate_limit_secret_missing
+  await assert.rejects(
+    async () => enforceRateLimit(db, req, { DB: db }, "contact"),
+    (err: unknown) => {
+      assert.equal((err as Error).message, "rate_limit_secret_missing");
+      return true;
+    },
+  );
+
+  // Direct call with empty or whitespace secret throws rate_limit_secret_missing
+  await assert.rejects(
+    async () => enforceRateLimit(db, req, { DB: db, RATE_LIMIT_SECRET: "   " }, "contact"),
+    (err: unknown) => {
+      assert.equal((err as Error).message, "rate_limit_secret_missing");
+      return true;
+    },
+  );
+
+  // Contact handler returns 503 submission_unavailable without leaking internal details
+  const res = await contactHandler({
+    request: req,
+    env: { DB: db }, // missing secret
+  });
+  assert.equal(res.status, 503);
+  const body = (await res.json()) as { error: string };
+  assert.equal(body.error, "submission_unavailable");
+});
+
+test("concurrent rate-limit burst requests are atomically admitted up to quota and excess rejected with 429", async () => {
+  const db = new MockD1Database();
+  const env: Env = {
+    DB: db,
+    RATE_LIMIT_MAX_PER_MINUTE: "10",
+    RATE_LIMIT_SECRET: TEST_RATE_LIMIT_SECRET,
+  };
+
+  const makeReq = () =>
+    new Request("https://workflo-site.pages.dev/api/v1/contact", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "cf-connecting-ip": "192.0.2.1",
+      },
+      body: JSON.stringify(VALID_CONTACT),
+    });
+
+  // Send 20 concurrent requests simultaneously
+  const responses = await Promise.all(
+    Array.from({ length: 20 }, () => contactHandler({ request: makeReq(), env })),
+  );
+
+  const statuses = responses.map((r) => r.status);
+  const admitted = statuses.filter((s) => s === 202);
+  const rejected = statuses.filter((s) => s === 429);
+
+  // Atomic admission ensures exactly 10 succeed and exactly 10 are rejected with 429
+  assert.equal(admitted.length, 10);
+  assert.equal(rejected.length, 10);
+
+  // D1 counter reflects exactly 10 admitted requests (no runaway increments)
+  assert.equal(db.rateLimits.length, 1);
+  assert.equal(db.rateLimits[0].request_count, 10);
 });
 
 test("API middleware converts SPA HTML fallback to JSON 404", async () => {
