@@ -1,67 +1,38 @@
 # Workflo website operations runbook
 
-## Deployment
+## Cloudflare Staging & Preview Deployment
 
-Use the manual workflow `Deploy Workflo website to AWS`:
+Staging deployments run via `.github/workflows/cloudflare-staging.yml` (or manually via Wrangler):
 
-### Staging
-1. Select the exact release ref and choose `staging`.
-2. Confirm CI is green for that commit.
-3. Confirm the staging GitHub Environment has its OIDC role and SES configuration.
-4. Trigger the deployment and wait for the run to succeed.
-5. Review output: edge WAF deployment, app stack deployment, S3 sync, CloudFront invalidation, homepage and API health smoke tests.
-6. Record the staging workflow run ID and deployed commit SHA.
+1. Ensure GitHub Actions secret `CLOUDFLARE_API_TOKEN` and variable `CLOUDFLARE_ACCOUNT_ID` are set.
+2. Dispatch **Cloudflare Staging Deployment** on `feat/cloudflare-pages-backend`.
+3. Provisioning creates/reuses D1 `workflo-web-staging` and Pages project `workflo-site`, applies SQL migrations (`0001_initial_schema.sql`, `0002_indexes_and_retention.sql`), builds `dist/`, and deploys the preview branch.
+4. Run smoke checks:
+   ```bash
+   bash scripts/cloudflare/verify-deployment.sh https://feat-cloudflare-pages-backend.workflo-site.pages.dev
+   ```
 
-### Production promotion
-1. Select the same exact ref/commit used by the successful staging run.
-2. Choose `production`.
-3. Supply the successful staging workflow run ID as `staging_run_id`.
-4. Confirm the production gate reports the exact same commit SHA.
-5. Complete the required production GitHub Environment approval.
+## Smoke Checks Checklist
 
-The workflow rejects an unsuccessful/non-staging run, a run from an unsupported branch, or a different commit SHA. It also blocks deployment while legal operator placeholders remain in the privacy and terms pages.
+- `GET /` serves the Vite application cleanly.
+- `GET /api/v1/health` returns `200 {"status":"ok","service":"workflo-web-api",...}`.
+- Invalid `POST /api/v1/contact` rejects with `400`.
+- Valid `POST /api/v1/contact` and `POST /api/v1/early-access` persist rows across `submissions`, `notification_outbox`, and `submission_events` in D1 and return `202`.
+- Replaying a request with the same `Idempotency-Key` returns the same `reference` without creating duplicate rows; mismatched payload returns `409`.
+- `GET /api/v1/unknown` returns `404` JSON, not SPA HTML.
 
-## Smoke checks
+## Persistence or Quota Failures
 
-- `GET /` responds successfully.
-- `GET /api/v1/health` returns `status=ok`.
-- Contact form creates one DynamoDB submission.
-- Early-access form creates one DynamoDB submission.
-- DynamoDB stream dispatches a minimal event to SQS.
-- SES worker sends the notification to the controlled internal mailbox.
-- Verify no raw lead list API is publicly available.
-- Check CloudFront WAF and regional API WAF metrics.
-- Check CloudWatch stream-dispatch and notification DLQ alarms.
+1. Check Cloudflare Pages Functions real-time logs and D1 metrics in the Cloudflare Dashboard.
+2. Verify `DB` binding is present on both Preview and Production Pages environments.
+3. Confirm daily free-tier D1 limits (5M reads / 100k writes) have not been exhausted.
+4. API handlers return HTTP `503` when `DB` is unavailable so no submission is silently lost.
 
-## Notification delivery failure
+## Retention Cleanup
 
-1. Check CloudWatch alarms and Lambda errors for dispatcher/worker.
-2. Inspect stream-dispatch DLQ and notification DLQ counts.
-3. Retrieve the relevant submission ID from the message metadata.
-4. Confirm the durable DynamoDB record still exists.
-5. Check SES sender verification, account sandbox status, identity ARN permissions and recipient suppression/bounce status.
-6. Correct the fault before replaying messages.
-7. Avoid blind replay that could send duplicate emails; SES message delivery is not exactly-once.
+D1 does not auto-delete rows at `expires_at`. Schedule periodic execution of `cleanupExpiredSubmissions` (which purges `api_idempotency` and `submissions` where `expires_at <= now`, cascading to `notification_outbox` and `submission_events`, and logs a row to `retention_runs`).
 
-## Frontend rollback
+## Rollback
 
-1. Identify the last known good release commit/artifact.
-2. Build its frontend from the matching lockfile.
-3. Use `infra/deploy-frontend.sh <bucket> <distribution-id> <dist-dir>`.
-4. Verify the homepage, API health and browser behaviour.
-
-## Infrastructure rollback
-
-Use `cdk diff` and review the proposed changes. Prefer a corrective forward deployment. Production S3 and DynamoDB resources are retained; do not delete or replace them casually.
-
-## Data recovery and privacy requests
-
-- Production DynamoDB PITR is enabled by the CDK stack; test table restore into a separate table in staging.
-- TTL expiry is asynchronous and not an exact deletion deadline.
-- Privacy requests must be handled by an authorised operator using the controlled data store and documented retention policy.
-- Review related copies in email, security logs, backups and any exported records before confirming deletion.
-- The public website has no admin API for retrieving leads. Do not make the DynamoDB table public or add a public unauthenticated listing endpoint.
-
-## Incident response
-
-Restrict affected IAM roles or credentials, preserve relevant CloudTrail/CloudWatch evidence, rotate compromised secrets, inspect WAF/API access logs, restore service using least-privilege credentials, and document impact and any required notifications.
+- Keep the existing AWS CDK / CloudFront / DynamoDB deployment (`infra/`, `.github/workflows/deploy-aws.yml`) available as rollback until Cloudflare production verification passes.
+- For Pages rollback, promote the previous verified Cloudflare Pages deployment or trigger `Deploy Workflo website to AWS`.

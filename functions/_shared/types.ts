@@ -1,5 +1,6 @@
 export interface D1PreparedStatement {
   bind(...values: Array<string | number | null>): D1PreparedStatement;
+  first<T = unknown>(): Promise<T | null>;
   run<T = unknown>(): Promise<{ success: boolean; results?: T[]; meta?: Record<string, unknown> }>;
 }
 
@@ -11,11 +12,12 @@ export interface D1Database {
 }
 
 export interface Env {
-  DB: D1Database;
+  DB?: D1Database;
   SUBMISSION_RETENTION_DAYS?: string;
 }
 
 export interface PagesContext {
   request: Request;
   env: Env;
+  next?: () => Promise<Response>;
 }

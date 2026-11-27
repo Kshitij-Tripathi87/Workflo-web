@@ -3,6 +3,7 @@ name: Cloudflare Functions CI
 on:
   push:
     branches:
+      - main
       - feat/cloudflare-pages-backend
     paths:
       - "functions/**"
@@ -28,19 +29,26 @@ concurrency:
 
 jobs:
   functions:
-    name: Pages Functions typecheck and validation tests
+    name: Pages Functions typecheck, frontend build & validation tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Verify protected frontend paths untouched
+        if: github.ref_name != 'main'
+        run: bash scripts/cloudflare/check-protected-paths.sh origin/main
+      - name: Verify frontend build
+        run: npm run build
       - name: Typecheck Pages Functions
         run: >
           npx tsc --noEmit --strict --target ES2022 --module ESNext
           --moduleResolution Bundler --lib ES2022,DOM,DOM.Iterable
-          --skipLibCheck functions/_shared/*.ts functions/api/v1/*.ts
-      - name: Run validation tests
+          --skipLibCheck functions/_shared/*.ts functions/api/_middleware.ts functions/api/v1/*.ts
+      - name: Run API & validation tests
         run: npx --yes tsx@4 --test functions/tests/*.test.ts

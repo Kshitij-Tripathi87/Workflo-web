@@ -1,12 +1,14 @@
 # Public API contract
 
-All routes are served under the same-origin CloudFront `/api/*` behaviour and are backed by API Gateway REST API + Lambda.
+All routes are served on the same origin under `/api/v1/*` via Cloudflare Pages Functions (`functions/api/v1/*`) backed by Cloudflare D1 (`DB` binding). Historical AWS API Gateway + Lambda handlers in `backend/` and `infra/` are retained as rollback reference until Cloudflare cutover is complete.
+
+Unknown `/api/*` paths return HTTP `404` JSON (`{"error":"not_found","requestId":"..."}`) rather than falling through to the frontend HTML shell.
 
 ## GET /api/v1/health
 
 Returns service status and a timestamp. Does not inspect or start the Workflo execution runtime.
 
-Response 200:
+Response `200`:
 
 ```json
 {"status":"ok","service":"workflo-web-api","timestamp":"2026-11-23T00:00:00.000Z"}
@@ -34,8 +36,18 @@ Request:
 - `company`, `role`: optional.
 - `inquiryType`: `product | security | partnership | privacy | other`.
 - `message`: required, 10–5,000 characters.
-- `consentToReply`: must be true.
+- `consentToReply`: must be `true`.
 - `website`: honeypot, must be empty.
+- Optional header `Idempotency-Key` (`[A-Za-z0-9._:-]{1,128}`): prevents duplicate writes on retries; returns `409 idempotency_key_conflict` if reused with a different payload.
+
+Responses:
+- `202 Accepted`: `{ "accepted": true, "reference": "<uuid>", "requestId": "<uuid>" }` (only after durable D1 persistence succeeds)
+- `400 Bad Request`: invalid JSON, missing body, schema error, or malformed `Idempotency-Key`
+- `403 Forbidden`: cross-origin browser `Origin` mismatch
+- `405 Method Not Allowed`: non-`POST` method
+- `409 Conflict`: conflicting payload for an active `Idempotency-Key`
+- `413 Payload Too Large`: request body exceeds 16 KiB
+- `503 Service Unavailable`: D1 persistence binding missing or write failure
 
 ## POST /api/v1/early-access
 
@@ -61,22 +73,6 @@ Request:
 - `teamSize`: `1 | 2-5 | 6-20 | 21-50 | 51-200 | 200+`.
 - `useCase`: required, 20–3,000 characters.
 - `workflow`, `role`: optional.
-- `consentToReply`: must be true.
+- `consentToReply`: must be `true`.
 - `website`: honeypot, must be empty.
-
-## Responses
-
-- `202 Accepted`: request persisted; response includes `accepted`, a reference ID and a request ID.
-- `400 Bad Request`: malformed JSON or schema validation error.
-- `405 Method Not Allowed`: method not supported.
-- `413 Payload Too Large`: body exceeds the 16 KiB limit.
-- `503 Service Unavailable`: durable persistence failed; request was not confirmed.
-
-A 202 means the submission is durably stored. Email notifications are asynchronous and may arrive later. A notification delivery problem does not mean the submission was lost.
-
-## Security
-
-- Strict Zod schemas reject unexpected fields.
-- Validation occurs on the server regardless of browser validation.
-- Do not put credentials, source code, government identity numbers or sensitive personal data in forms.
-- Admin lead listing/update endpoints are intentionally not exposed.
+- Optional header `Idempotency-Key`: retry-safe duplicate protection (same semantics as `/api/v1/contact`).

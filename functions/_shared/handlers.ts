@@ -1,4 +1,13 @@
-import { createRequestId, HttpInputError, isSameOrigin, jsonResponse, optionsResponse, parseJson } from "./http";
+import {
+  createRequestId,
+  HttpInputError,
+  isSameOrigin,
+  jsonResponse,
+  optionsResponse,
+  parseIdempotencyKey,
+  parseJson,
+  sha256Hex,
+} from "./http";
 import { persistSubmission, submissionExpiryEpoch, type SubmissionKind } from "./submissions";
 import type { Env } from "./types";
 import { validateContact, validateEarlyAccess } from "./validation";
@@ -20,6 +29,7 @@ export async function handleSubmission(
   }
 
   try {
+    const idempotencyKey = parseIdempotencyKey(request);
     const body = await parseJson(request);
     const validation = kind === "contact" ? validateContact(body) : validateEarlyAccess(body);
     if (!validation.success) {
@@ -40,18 +50,24 @@ export async function handleSubmission(
     const createdAt = new Date().toISOString();
     const payload: Record<string, unknown> = { ...input };
     delete payload.website;
-    await persistSubmission(
+
+    const requestHash = idempotencyKey
+      ? await sha256Hex(JSON.stringify({ kind, payload }))
+      : undefined;
+
+    const persisted = await persistSubmission(
       env.DB,
       reference,
       kind,
       payload,
       createdAt,
       submissionExpiryEpoch(env),
+      { idempotencyKey, requestHash },
     );
 
     return jsonResponse(
       202,
-      { accepted: true, reference, requestId: id },
+      { accepted: true, reference: persisted.reference, requestId: id },
       request,
       id,
     );

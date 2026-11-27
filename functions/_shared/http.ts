@@ -1,6 +1,7 @@
 import type { PagesContext } from "./types";
 
 export const MAX_BODY_BYTES = 16_384;
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
 
 export class HttpInputError extends Error {
   constructor(
@@ -21,16 +22,12 @@ export function isSameOrigin(request: Request): boolean {
   return !origin || origin === new URL(request.url).origin;
 }
 
-export function jsonResponse(
-  status: number,
-  body: unknown,
-  request: Request,
-  requestId: string,
-): Response {
+export function securityHeaders(request: Request, requestId: string): Headers {
   const headers = new Headers({
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
     "referrer-policy": "no-referrer",
     "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
     "x-request-id": requestId,
@@ -41,29 +38,50 @@ export function jsonResponse(
   if (origin && origin === new URL(request.url).origin) {
     headers.set("access-control-allow-origin", origin);
     headers.set("access-control-allow-methods", "POST,GET,OPTIONS");
-    headers.set("access-control-allow-headers", "content-type");
+    headers.set("access-control-allow-headers", "content-type,idempotency-key");
   }
 
-  return new Response(JSON.stringify(body), { status, headers });
+  return headers;
+}
+
+export function jsonResponse(
+  status: number,
+  body: unknown,
+  request: Request,
+  requestId: string,
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: securityHeaders(request, requestId),
+  });
 }
 
 export function optionsResponse(request: Request, requestId: string): Response {
-  const headers = new Headers({
-    "cache-control": "no-store",
-    "x-content-type-options": "nosniff",
-    "x-request-id": requestId,
-    vary: "Origin",
-  });
-
-  const origin = request.headers.get("origin");
-  if (origin && origin === new URL(request.url).origin) {
-    headers.set("access-control-allow-origin", origin);
-    headers.set("access-control-allow-methods", "POST,GET,OPTIONS");
-    headers.set("access-control-allow-headers", "content-type");
+  const headers = securityHeaders(request, requestId);
+  headers.delete("content-type");
+  if (headers.has("access-control-allow-origin")) {
     headers.set("access-control-max-age", "600");
   }
 
   return new Response(null, { status: 204, headers });
+}
+
+export function parseIdempotencyKey(request: Request): string | undefined {
+  const raw = request.headers.get("idempotency-key");
+  if (raw === null) return undefined;
+  const trimmed = raw.trim();
+  if (!IDEMPOTENCY_KEY_PATTERN.test(trimmed)) {
+    throw new HttpInputError(400, "invalid_idempotency_key");
+  }
+  return trimmed;
+}
+
+export async function sha256Hex(value: string): Promise<string> {
+  const encoded = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function parseJson(request: Request): Promise<unknown> {
